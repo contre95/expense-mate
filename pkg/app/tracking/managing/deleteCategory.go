@@ -7,31 +7,31 @@ import (
 	"time"
 )
 
-type DeleteResponse struct {
+type DeleteCategoryResp struct {
 	DeletedDate time.Time
 	Softdelete  bool
 }
 
-type DeleteRequest struct {
-	ID expense.CategoryID
+type DeleteCategoryReq struct {
+	ID string
 }
 
-type DeleteUseCase struct {
+type DeleteCategoryUseCase struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewDeleteUseCase(l app.Logger, e expense.Expenses) *DeleteUseCase {
-	return &DeleteUseCase{l, e}
+func NewDeleteUseCase(l app.Logger, e expense.Expenses) *DeleteCategoryUseCase {
+	return &DeleteCategoryUseCase{l, e}
 }
 
-func (s *DeleteUseCase) Delete(req DeleteRequest) (*DeleteResponse, error) {
-	err := s.expenses.DeleteCategory(req.ID)
+func (s *DeleteCategoryUseCase) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
+	err := s.expenses.DeleteCategory(expense.CategoryID(req.ID))
 	if err != nil {
 		s.logger.Err("Error updating client", err)
 		return nil, errors.New("Could not Delete client information.")
 	}
-	resp := &DeleteResponse{
+	resp := &DeleteCategoryResp{
 		DeletedDate: time.Now(),
 		Softdelete:  false,
 	}
