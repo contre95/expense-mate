@@ -14,7 +14,7 @@ func hash(s string) uint32 {
 
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
 func NewExpense(product, shop, city, town string, date time.Time, category Category) (*Expense, error) {
-	expenseID := expenseID(hash(shop + town + string(category.ID) + date.String()))
+	expenseID := ID(hash(shop + town + string(category.ID) + date.String()))
 	newExpense := Expense{
 		ID:       expenseID,
 		Product:  product,

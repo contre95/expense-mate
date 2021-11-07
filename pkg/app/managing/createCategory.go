@@ -20,7 +20,7 @@ type CreateCategoryUseCase struct {
 	expenses expense.Expenses
 }
 
-func NewCategoryCreator(l app.Logger, e expense.Expenses) *CreateCategoryUseCase {
+func NewCreateCategoryUseCase(l app.Logger, e expense.Expenses) *CreateCategoryUseCase {
 	return &CreateCategoryUseCase{l, e}
 }
 
