@@ -7,7 +7,7 @@ import (
 )
 
 type ImporertResp struct {
-	ID  expense.CategoryID
+	ID  string
 	Msg string
 }
 
@@ -37,9 +37,9 @@ func NewSheetsImporter(l app.Logger, i Importer, e expense.Expenses) *ImportUseC
 
 // Create use cases function creates a new category
 func (u *ImportUseCase) Import(req ImporertReq) (*ImporertResp, error) {
-	categories, err := u.importer.GetAllCategories()
-	if err != nil {
-		return nil, err
-	}
+	//categories, err := u.importer.GetAllCategories()
+	//if err != nil {
+	//return nil, err
+	//}
 	// En blanco, preguntarle a Lois
 }

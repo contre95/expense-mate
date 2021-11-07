@@ -1,15 +1,15 @@
 package http
 
 import (
+	"expenses/pkg/app/tracking/managing"
 	"fmt"
 	"log"
 	"net/http"
-	"spain-gastos/pkg/domain/categories"
 
 	fiber "github.com/gofiber/fiber/v2"
 )
 
-func createCategories(s categories.CreateUseCase) func(*fiber.Ctx) error {
+func createCategories(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoriesJSON{}
 		err := c.BodyParser(&catJSON)
@@ -23,7 +23,7 @@ func createCategories(s categories.CreateUseCase) func(*fiber.Ctx) error {
 		}
 		failed_categories := map[string]string{}
 		for _, name := range catJSON.Names {
-			req := &categories.CreateRequest{
+			req := &managing.CreateCategoryReq{
 				Name: name,
 			}
 			_, err := s.Create(*req)
@@ -46,7 +46,7 @@ func createCategories(s categories.CreateUseCase) func(*fiber.Ctx) error {
 	}
 }
 
-func createCategory(s categories.createUseCase) func(*fiber.Ctx) error {
+func createCategory(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoryJSON{}
 		err := c.BodyParser(&catJSON)
@@ -59,7 +59,7 @@ func createCategory(s categories.createUseCase) func(*fiber.Ctx) error {
 			})
 		}
 		log.Println(catJSON)
-		req := &categories.CreateRequest{
+		req := &managing.CreateCategoryReq{
 			Name: catJSON.Name,
 		}
 		resp, err := s.Create(*req)
@@ -80,10 +80,10 @@ func createCategory(s categories.createUseCase) func(*fiber.Ctx) error {
 	}
 }
 
-func deleteCategory(s categories.DeleteUseCase) func(*fiber.Ctx) error {
+func deleteCategory(s managing.DeleteCategoryUseCase) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		req := &categories.DeleteRequest{ID: id}
+		req := &managing.DeleteCategoryReq{ID: id}
 		resp, err := s.Delete(*req)
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(&fiber.Map{

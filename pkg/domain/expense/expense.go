@@ -24,11 +24,11 @@ type Expense struct {
 }
 
 // CategoryID is the unique identifier for the domain object of type Category
-type categoryID string
+type CategoryID string
 
 // Category is an entity that is supposed to be accessed only from the Expense aggregate
 type Category struct {
-	ID   categoryID
+	ID   CategoryID
 	Name string
 }
 
@@ -41,7 +41,7 @@ type Expenses interface {
 	// Add is used to save a new category for future expenses
 	SaveCategory(c Category) error
 	// Add is used to save a new category for future expenses
-	DeleteCategory(id categoryID) error
+	DeleteCategory(id CategoryID) error
 }
 
 func (c *Expense) validate() error {

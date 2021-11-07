@@ -24,14 +24,17 @@ func NewExpense(product, shop, city, town string, date time.Time, category Categ
 		Town:     town,
 		Category: category,
 	}
-
+	err := newExpense.validate()
+	if err != nil {
+		return nil, err
+	}
 	return &newExpense, nil
 }
 
-// NewCategory creates a new category for expenses
+// NewCategory creates a new category for expenses (Factory Method)
 func NewCategory(name string) Category {
 	return Category{
-		ID:   categoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
+		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
 		Name: name,
 	}
 }
