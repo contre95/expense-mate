@@ -9,11 +9,11 @@ import (
 )
 
 // ID is the unique identifier for the domain objects of type Expense
-type expenseID uint32
+type ID uint32
 
 // Expense is the aggregate root for other entities such as Category
 type Expense struct {
-	ID      expenseID `validate:"required,min=3,max=32"`
+	ID      ID        `validate:"required,min=3,max=32"`
 	Product string    `validate:"required,min=3,max=32"`
 	Shop    string    `validate:"required,min=3,max=32"`
 	Date    time.Time `validate:"required,min=3,max=32"`
@@ -37,7 +37,7 @@ type Expenses interface {
 	// Add is used to add a new Expense to the system
 	Add(e Expense) error
 	// Delete is used to remove a Expense from the system
-	Delete(id expenseID) error
+	Delete(id ID) error
 	// Add is used to save a new category for future expenses
 	SaveCategory(c Category) error
 	// Add is used to save a new category for future expenses

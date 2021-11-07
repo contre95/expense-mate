@@ -21,7 +21,7 @@ type DeleteCategoryUseCase struct {
 	expenses expense.Expenses
 }
 
-func NewDeleteUseCase(l app.Logger, e expense.Expenses) *DeleteCategoryUseCase {
+func NewDeleteCategoryUseCase(l app.Logger, e expense.Expenses) *DeleteCategoryUseCase {
 	return &DeleteCategoryUseCase{l, e}
 }
 

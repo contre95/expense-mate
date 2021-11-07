@@ -45,7 +45,7 @@ func (sql *SQLStorage) Add(e expense.Expense) error {
 }
 
 // Delete is used to remove a Expense from the system
-func (sql *SQLStorage) Delete(id expense.ExpenseID) error {
+func (sql *SQLStorage) Delete(id expense.ID) error {
 	panic("not implemented") // TODO: Implement
 }
 

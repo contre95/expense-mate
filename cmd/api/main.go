@@ -1,6 +1,7 @@
 package main
 
 import (
+	"expenses/pkg/app/tracking/managing"
 	"expenses/pkg/gateways/logger"
 	"expenses/pkg/gateways/storage/sql"
 	"expenses/pkg/presenters/http"
@@ -16,7 +17,10 @@ func main() {
 	storage.Migrate()
 
 	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	categoriesLogger := logger.NewSTDLogger("CATEGORIES", logger.VIOLET)
+	managingLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
+
+	createCategory := managing.NewCreateCategoryUseCase(managingLogger, storage)
+	deleteCategory := managing.NewDeleteCategoryUseCase(managingLogger, storage)
 
 	http.MapRoutes(fiberApp, &healthService, &categoriesService)
 	fiberApp.Listen(":3000")
