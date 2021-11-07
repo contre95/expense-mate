@@ -13,6 +13,7 @@ type Category struct {
 	Name string
 }
 
+// ExpenseID is the unique identifier for the domain objects of type Expense
 type ExpenseID uint
 
 // Expense is the aggregate root for other entities such as Category
@@ -22,6 +23,7 @@ type Expense struct {
 	Shop    string
 	Date    time.Time
 	City    string
+	Town    string
 
 	Category Category
 }
@@ -30,6 +32,7 @@ type Expense struct {
 type Expenses interface {
 	// Add is used to add a new Expense to the system
 	Add(e Expense) error
+	// Delete is used to remove a Expense from the system
 	Delete(id ExpenseID) error
 	// Add is used to save a new category for future expenses
 	SaveCategory(c Category) error

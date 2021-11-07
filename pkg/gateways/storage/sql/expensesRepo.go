@@ -8,6 +8,19 @@ import (
 	"gorm.io/plugin/soft_delete"
 )
 
+type Expense struct {
+	ID         string `gorm:"index:idx_name,uniqueIndex:udx_name,primaryKey"`
+	Product    string
+	Shop       string
+	City       string
+	Date       time.Time
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	CategoryID string
+
+	Category Category // TODO: is this needed ?
+}
+
 type Category struct {
 	ID        string `gorm:"index:idx_name,uniqueIndex:udx_name,primaryKey"`
 	Name      string `gorm:"uniqueIndex:udx_name"`
@@ -15,25 +28,42 @@ type Category struct {
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:udx_name"`
 }
 
-func (sql *SQLStorage) SaveCategory(c expense.Category) error {
-	var category Category
-	result := sql.db.Unscoped().FirstOrCreate(&category, &Category{ID: string(c.ID), Name: c.Name}) // Filter for "unscoped" rows (i.e already soft-deleted) due to unique constraints at DB level
-	sql.db.Model(&category).Update("deleted_at", 0)                                                 // Updated deleted at, I'm I supposed to do this manually
+// Add is used to add a new Expense to the system
+func (sql *SQLStorage) Add(e expense.Expense) error {
+	result := sql.db.Create(&Expense{
+		ID:         string(e.ID),
+		Product:    e.Product,
+		Shop:       e.Shop,
+		City:       e.Town,
+		Date:       e.Date,
+		CategoryID: string(e.Category.ID),
+	})
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-//func (sql *SQLStorage) CategoryExist(id categories.CategoryID) bool {
-//var category Category
-//var result *gorm.DB
-//result = sql.db.First(&category, "id = ?", id)
-//return !errors.Is(result.Error, gorm.ErrRecordNotFound)
-//}
+// Delete is used to remove a Expense from the system
+func (sql *SQLStorage) Delete(id expense.ExpenseID) error {
+	panic("not implemented") // TODO: Implement
+}
 
-func (sql *SQLStorage) DeleteCategory(id categories.CategoryID) error {
-	result := sql.db.Delete(&Category{ID: id})
+// SaveCategory stores a category insto a sql database using Gorm ORM
+func (sql *SQLStorage) SaveCategory(c expense.Category) error {
+	var category Category
+	// Filter for "unscoped" rows (i.e already soft-deleted) due to unique constraints at DB level
+	result := sql.db.Unscoped().FirstOrCreate(&category, &Category{ID: string(c.ID), Name: c.Name})
+	sql.db.Model(&category).Update("deleted_at", 0) // Updated deleted at, I'm I supposed to do this manually
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteCategory deletes a category from the database using Gorm ORM
+func (sql *SQLStorage) DeleteCategory(id expense.CategoryID) error {
+	result := sql.db.Delete(&Category{ID: string(id)})
 	if result.Error != nil {
 		return result.Error
 	}
