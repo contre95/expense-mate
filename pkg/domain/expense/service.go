@@ -1,0 +1,37 @@
+package expense
+
+import (
+	"hash/fnv"
+	"strings"
+	"time"
+)
+
+func hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
+// NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
+func NewExpense(product, shop, city, town string, date time.Time, category Category) (*Expense, error) {
+	expenseID := expenseID(hash(shop + town + string(category.ID) + date.String()))
+	newExpense := Expense{
+		ID:       expenseID,
+		Product:  product,
+		Shop:     shop,
+		Date:     date,
+		City:     city,
+		Town:     town,
+		Category: category,
+	}
+
+	return &newExpense, nil
+}
+
+// NewCategory creates a new category for expenses
+func NewCategory(name string) Category {
+	return Category{
+		ID:   categoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
+		Name: name,
+	}
+}
