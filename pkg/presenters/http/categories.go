@@ -1,7 +1,7 @@
 package http
 
 import (
-	"expenses/pkg/app/tracking/managing"
+	"expenses-app/pkg/app/managing"
 	"fmt"
 	"log"
 	"net/http"

@@ -1,8 +1,8 @@
 package importing
 
 import (
-	"expenses/pkg/app"
-	"expenses/pkg/domain/expense"
+	"expenses-app/pkg/app"
+	"expenses-app/pkg/domain/expense"
 	"time"
 )
 
@@ -37,6 +37,7 @@ func NewSheetsImporter(l app.Logger, i Importer, e expense.Expenses) *ImportUseC
 
 // Create use cases function creates a new category
 func (u *ImportUseCase) Import(req ImporertReq) (*ImporertResp, error) {
+	return nil, nil
 	//categories, err := u.importer.GetAllCategories()
 	//if err != nil {
 	//return nil, err

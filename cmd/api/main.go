@@ -1,10 +1,13 @@
 package main
 
 import (
-	"expenses/pkg/app/tracking/managing"
-	"expenses/pkg/gateways/logger"
-	"expenses/pkg/gateways/storage/sql"
-	"expenses/pkg/presenters/http"
+	"expenses-app/pkg/app/health"
+	"expenses-app/pkg/app/managing"
+	"expenses-app/pkg/gateways/logger"
+	"expenses-app/pkg/gateways/storage/sql"
+	"expenses-app/pkg/presenters/http"
+
+	fiber "github.com/gofiber/fiber/v2"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -12,16 +15,25 @@ import (
 
 func main() {
 
+	// SQL Storage
 	db, _ := gorm.Open(sqlite.Open("db/ims.db"), &gorm.Config{})
 	storage := sql.NewStorage(db)
 	storage.Migrate()
 
-	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	managingLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
+	// Application Healthching
+	healthLogger1 := logger.NewSTDLogger("HEALTH", logger.GREEN2)
+	healthLogger2 := logger.NewSTDLogger("HEALTH", logger.GREEN)
 
+	healthService := health.NewService(healthLogger1, healthLogger2)
+
+	// Application Managing
+	managingLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
 	createCategory := managing.NewCreateCategoryUseCase(managingLogger, storage)
 	deleteCategory := managing.NewDeleteCategoryUseCase(managingLogger, storage)
+	managingService := managing.NewService(*createCategory, *deleteCategory)
 
-	http.MapRoutes(fiberApp, &healthService, &categoriesService)
+	// API
+	fiberApp := fiber.New()
+	http.MapRoutes(fiberApp, &healthService, &managingService)
 	fiberApp.Listen(":3000")
 }

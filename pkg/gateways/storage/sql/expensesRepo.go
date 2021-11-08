@@ -1,8 +1,7 @@
 package sql
 
 import (
-	"expenses/pkg/domain/expense"
-
+	"expenses-app/pkg/domain/expense"
 	"time"
 
 	"gorm.io/plugin/soft_delete"

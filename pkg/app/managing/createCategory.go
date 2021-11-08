@@ -1,8 +1,8 @@
 package managing
 
 import (
-	"expenses/pkg/app"
-	"expenses/pkg/domain/expense"
+	"expenses-app/pkg/app"
+	"expenses-app/pkg/domain/expense"
 )
 
 type CreateCategoryResp struct {
