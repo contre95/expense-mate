@@ -4,7 +4,7 @@ import (
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/managing"
 
-	fiber "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
 )
 
 // MapRoutes is where http REST routes are mapped to functions
