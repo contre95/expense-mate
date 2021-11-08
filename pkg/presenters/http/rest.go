@@ -1,20 +1,20 @@
 package http
 
 import (
-	"spain-gastos/pkg/domain/categories"
-	"spain-gastos/pkg/domain/health"
+	"expenses-app/pkg/app/health"
+	"expenses-app/pkg/app/managing"
 
 	fiber "github.com/gofiber/fiber/v2"
 )
 
 // MapRoutes is where http REST routes are mapped to functions
-func MapRoutes(fi *fiber.App, he *health.Service, c *categories.Service) {
+func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service) {
 	fi.Get("/ping", ping(*he)) // /api/v1/ping
 	api := fi.Group("/api")    // /api
 	v1 := api.Group("/v1")     // /api/v1
-	v1.Post("/categories", createCategory(*&c.AddUseCase))
-	v1.Post("/categories/batch", createCategories(*&c.AddUseCase))
-	v1.Delete("/categories/:id", deleteCategory(*&c.DelUseCase))
+	v1.Post("/categories", createCategory(*&m.CreateCategoryUseCase))
+	v1.Post("/categories/batch", createCategories(*&m.CreateCategoryUseCase))
+	v1.Delete("/categories/:id", deleteCategory(*&m.DeleteCategoryUseCase))
 	//v1.Get("/clients/:id", getClient(*&c.GetUseCase))
 	//v1.Get("/categories", listClients(*&c.))
 }

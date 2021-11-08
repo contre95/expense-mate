@@ -2,8 +2,8 @@ package managing
 
 import (
 	"errors"
-	"expenses/pkg/app"
-	"expenses/pkg/domain/expense"
+	"expenses-app/pkg/app"
+	"expenses-app/pkg/domain/expense"
 	"time"
 )
 
