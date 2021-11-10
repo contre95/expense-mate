@@ -26,10 +26,13 @@ type Expense struct {
 // CategoryID is the unique identifier for the domain object of type Category
 type CategoryID string
 
+// CategoryName is type for the Name of a category. This value should be unique among all categories
+type CategoryName string
+
 // Category is an entity that is supposed to be accessed only from the Expense aggregate
 type Category struct {
 	ID   CategoryID
-	Name string
+	Name CategoryName
 }
 
 // Expenses is the repository for all the command actions for Expense

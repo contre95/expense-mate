@@ -1,0 +1,27 @@
+package sql
+
+import (
+	"time"
+
+	"gorm.io/plugin/soft_delete"
+)
+
+type Expense struct {
+	ID         string `gorm:"primaryKey"`
+	Product    string
+	Shop       string
+	City       string
+	Date       time.Time
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	CategoryID string
+
+	Category Category
+}
+
+type Category struct {
+	ID        string `gorm:"primaryKey;type:varchar(255)"`
+	Name      string `gorm:"uniqueIndex"`
+	CreatedAt time.Time
+	DeletedAt soft_delete.DeletedAt
+}

@@ -19,9 +19,19 @@ type ImporertReq struct {
 // ver con mi dominio, es una feature más de mi app que me permite
 // trackear mi expenses. Interfáz tiene que vivir en este mismo archivo,
 // lo más cerca de donde se vaya a usar posible.
+type ImportedExpense struct {
+	Product string
+	Shop    string
+	Date    time.Time
+	City    string
+	Town    string
+
+	Category string
+}
+
 type Importer interface {
-	GetAllCategories() ([]expense.Category, error) // Está bien pedir que esto me devuelva un objeto de dominio ? Le va a quedar la responsabilidad de inicializar ese objeto de dominio a la infra. Me manejo todo con strings ?
-	GetAllExpenses(categoryName string, fromDate time.Time) ([]expense.Expense, error)
+	//GetAllCategories() ([]string, error)
+	GetImpoertedExpenses(categoryName string) ([]ImportedExpense, error)
 }
 
 // The createCategory use case creates a category for a expense
@@ -31,16 +41,11 @@ type ImportUseCase struct {
 	expenses expense.Expenses
 }
 
-func NewSheetsImporter(l app.Logger, i Importer, e expense.Expenses) *ImportUseCase {
+func NewImporterUseCase(l app.Logger, i Importer, e expense.Expenses) *ImportUseCase {
 	return &ImportUseCase{l, i, e}
 }
 
 // Create use cases function creates a new category
 func (u *ImportUseCase) Import(req ImporertReq) (*ImporertResp, error) {
-	return nil, nil
-	//categories, err := u.importer.GetAllCategories()
-	//if err != nil {
-	//return nil, err
-	//}
-	// En blanco, preguntarle a Lois
+
 }
