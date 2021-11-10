@@ -35,6 +35,6 @@ func NewExpense(product, shop, city, town string, date time.Time, category Categ
 func NewCategory(name string) Category {
 	return Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
-		Name: name,
+		Name: CategoryName(name),
 	}
 }

@@ -15,6 +15,7 @@ func NewStorage(db *gorm.DB) *SQLStorage {
 func (sql *SQLStorage) Migrate() {
 	sql.db.AutoMigrate(&Category{})
 	sql.db.AutoMigrate(&Expense{})
+	sql.db.Model(&Expense{}).AddForeignKey()
 
 }
 

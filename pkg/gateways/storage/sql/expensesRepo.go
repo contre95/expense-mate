@@ -2,30 +2,7 @@ package sql
 
 import (
 	"expenses-app/pkg/domain/expense"
-	"time"
-
-	"gorm.io/plugin/soft_delete"
 )
-
-type Expense struct {
-	ID         string `gorm:"index:idx_name,uniqueIndex:udx_name,primaryKey"`
-	Product    string
-	Shop       string
-	City       string
-	Date       time.Time
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	CategoryID string
-
-	Category Category // TODO: is this needed ?
-}
-
-type Category struct {
-	ID        string `gorm:"index:idx_name,uniqueIndex:udx_name,primaryKey"`
-	Name      string `gorm:"uniqueIndex:udx_name"`
-	CreatedAt time.Time
-	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:udx_name"`
-}
 
 // Add is used to add a new Expense to the system
 func (sql *SQLStorage) Add(e expense.Expense) error {
@@ -36,6 +13,10 @@ func (sql *SQLStorage) Add(e expense.Expense) error {
 		City:       e.Town,
 		Date:       e.Date,
 		CategoryID: string(e.Category.ID),
+		//Category: Category{
+		//ID:   string(e.Category.ID),
+		//Name: e.Category.Name,
+		//},
 	})
 	if result.Error != nil {
 		return result.Error
