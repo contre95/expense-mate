@@ -7,45 +7,88 @@ import (
 )
 
 type ImporertResp struct {
-	ID  string
-	Msg string
+	ID                string
+	Msg               string
+	SuccesfullImports int
+	FailedImports     int
 }
 
 type ImporertReq struct {
+	ByPassWrongExpenses bool
 }
 
-// Importer (is a Repository ?) is an Interface that defines a dependency for the importing expenses use cases
-// TODO: Está bien que esto viva en el dominio ? No, porque no tiene que
-// ver con mi dominio, es una feature más de mi app que me permite
-// trackear mi expenses. Interfáz tiene que vivir en este mismo archivo,
-// lo más cerca de donde se vaya a usar posible.
+// IImportedExpense holds the values that should be imported by the Importer
 type ImportedExpense struct {
-	Product string
-	Shop    string
-	Date    time.Time
-	City    string
-	Town    string
+	Amount   float32
+	Currency string
+	Product  string
+	Shop     string
+	Date     time.Time
+	City     string
+	Town     string
 
 	Category string
 }
 
+// Importer is the main dependency of the ImportExpensesUseCase and defines how an importer should behave
 type Importer interface {
 	//GetAllCategories() ([]string, error)
-	GetImpoertedExpenses(categoryName string) ([]ImportedExpense, error)
+	GetImportedExpenses() ([]ImportedExpense, error)
 }
 
 // The createCategory use case creates a category for a expense
-type ImportUseCase struct {
+type ImportExpensesUseCase struct {
 	logger   app.Logger
 	importer Importer
 	expenses expense.Expenses
 }
 
-func NewImporterUseCase(l app.Logger, i Importer, e expense.Expenses) *ImportUseCase {
-	return &ImportUseCase{l, i, e}
+// Contructor for Import
+func NewImporterUseCase(l app.Logger, i Importer, e expense.Expenses) *ImportExpensesUseCase {
+	return &ImportExpensesUseCase{l, i, e}
 }
 
-// Create use cases function creates a new category
-func (u *ImportUseCase) Import(req ImporertReq) (*ImporertResp, error) {
+func parseExpense(e ImportedExpense) (*expense.Expense, error) {
+	price := expense.Price{
+		Currency: e.Currency,
+		Amount:   e.Amount,
+	}
+	place := expense.Place{
+		City: e.City,
+		Town: e.Town,
+		Shop: e.Shop,
+	}
+	return expense.NewExpense(price, e.Product, place, e.Date, e.Category)
+}
 
+// Import imports a all the categories provided by the importer
+func (u *ImportExpensesUseCase) Import(req ImporertReq) (*ImporertResp, error) {
+	importedExpenses, err := u.importer.GetImportedExpenses()
+	if err != nil {
+		u.logger.Err("Could not import expenses: %s", err)
+		return nil, err
+	}
+	var expensesToAdd []expense.Expense
+	for _, e := range importedExpenses {
+		newExp, err := parseExpense(e)
+		if err != nil && req.ByPassWrongExpenses {
+			u.logger.Err("Could not import expense: %s of %d %s: %s", e.Product, e.Amount, e.Currency, err)
+			if !req.ByPassWrongExpenses {
+				return nil, err
+			}
+		} else {
+			expensesToAdd = append(expensesToAdd, *newExp)
+		}
+	}
+	for _, exp := range expensesToAdd {
+		err := u.expenses.Add(exp)
+		if err != nil {
+			u.logger.Err("Failed to save expense %s : %s", exp.ID, err)
+			return nil, err
+		}
+	}
+	return &ImporertResp{
+		SuccesfullImports: len(expensesToAdd),
+		FailedImports:     len(importedExpenses) - len(expensesToAdd),
+	}, nil
 }
