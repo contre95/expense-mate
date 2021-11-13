@@ -13,7 +13,6 @@ func NewExampleImporter(data string) *ExampleImporter {
 	return &ExampleImporter{data}
 }
 
-//GetAllCategories() ([]string, error)
 func (i *ExampleImporter) GetImportedExpenses() ([]importing.ImportedExpense, error) {
 	return []importing.ImportedExpense{
 		{

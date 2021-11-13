@@ -9,6 +9,7 @@ import (
 	"expenses-app/pkg/gateways/storage/sql"
 	"expenses-app/pkg/presenters/http"
 	"fmt"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/sqlite"
@@ -26,8 +27,13 @@ func main() {
 
 	// Importers
 	exampleImporter := importers.NewExampleImporter("example data")
+
+	srv, _ := importers.NewSheetService(os.Getenv("SHEETS_CREDS_PATH"))
+	sheetsImporter := importers.NewSheetsImporter(srv, os.Getenv("SHEETS_IMPORTER_SA_PATH"), os.Getenv("SHEETS_IMPORTER_PAGERANGE"))
+
 	importers := map[string]importing.Importer{
 		"example": exampleImporter,
+		"sheets":  sheetsImporter,
 	}
 
 	// Healthching
