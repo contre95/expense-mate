@@ -7,7 +7,7 @@ import (
 )
 
 type Expense struct {
-	ID         string `gorm:"primaryKey"`
+	ID         uint64 `gorm:"primaryKey"`
 	Price      float32
 	Product    string
 	Currency   string

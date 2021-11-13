@@ -1,6 +1,7 @@
 package expense
 
 import (
+	"fmt"
 	"hash/fnv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ func hash(s string) uint32 {
 func NewExpense(price Price, product string, place Place, date time.Time, category string) (*Expense, error) {
 	newExpense := Expense{
 		Product: product,
+		Price:   price,
 		Place:   place,
 		Date:    date,
 		Category: Category{
@@ -24,6 +26,7 @@ func NewExpense(price Price, product string, place Place, date time.Time, catego
 		},
 	}
 	newExpense.ID = ID(hash(place.Shop + place.Town + string(newExpense.Category.ID) + date.String()))
+	fmt.Println(newExpense.ID)
 	err := newExpense.validate()
 	if err != nil {
 		return nil, err

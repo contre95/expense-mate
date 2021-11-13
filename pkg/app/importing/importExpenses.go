@@ -1,8 +1,11 @@
 package importing
 
 import (
+	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+	"fmt"
+	"log"
 	"time"
 )
 
@@ -14,7 +17,7 @@ type ImportExpensesResp struct {
 }
 
 type ImportExpensesReq struct {
-	ByPassWrongExpenses bool
+	BypassWrongExpenses bool
 	ImporterID          string
 }
 
@@ -69,13 +72,17 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		u.logger.Err("Could not import expenses: %s", err)
 		return nil, err
 	}
-	var expensesToAdd []expense.Expense
+	expensesToAdd := []expense.Expense{}
 	for _, e := range importedExpenses {
+		log.Println("Import(1)")
 		newExp, err := parseExpense(e)
-		if err != nil && req.ByPassWrongExpenses {
-			u.logger.Err("Could not import expense: %s of %d %s: %s", e.Product, e.Amount, e.Currency, err)
-			if !req.ByPassWrongExpenses {
-				return nil, err
+		log.Println("Import(2)")
+		if err != nil {
+			u.logger.Err("Could not import expense: %s of %f %s: %s", e.Product, e.Amount, e.Currency, err)
+			log.Println("Import(3a)")
+			if !req.BypassWrongExpenses {
+				fmt.Println(req.BypassWrongExpenses)
+				return nil, errors.New(fmt.Sprintf("Failed to import expense: %s of %f %s", e.Product, e.Amount, e.Currency))
 			}
 		} else {
 			expensesToAdd = append(expensesToAdd, *newExp)

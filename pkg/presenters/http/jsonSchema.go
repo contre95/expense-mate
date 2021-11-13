@@ -9,5 +9,5 @@ type addCategoryJSON struct {
 }
 
 type expenseImporterJSON struct {
-	ByPassWrongExpenses bool `json:"by_pass_wrong_expenses"`
+	BypassWrongExpenses bool `json:"bypass_wrong_expenses"`
 }
