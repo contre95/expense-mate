@@ -7,7 +7,7 @@ import (
 // Add is used to add a new Expense to the system
 func (sql *SQLStorage) Add(e expense.Expense) error {
 	result := sql.db.Create(&Expense{
-		ID:         string(e.ID),
+		ID:         uint64(e.ID),
 		Price:      e.Price.Amount,
 		Currency:   e.Price.Currency,
 		Product:    e.Product,
@@ -15,10 +15,6 @@ func (sql *SQLStorage) Add(e expense.Expense) error {
 		City:       e.Place.Town,
 		Date:       e.Date,
 		CategoryID: string(e.Category.ID),
-		//Category: Category{
-		//ID:   string(e.Category.ID),
-		//Name: e.Category.Name,
-		//},
 	})
 	if result.Error != nil {
 		return result.Error

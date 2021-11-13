@@ -9,12 +9,12 @@ import (
 )
 
 // ID is the unique identifier for the domain objects of type Expense
-type ID uint32
+type ID uint64
 
 type Place struct {
-	City string `validate:"min=3,max=32"`
-	Town string `validate:"min=3,max=32"`
-	Shop string `validate:"min=3,max=32"`
+	City string `validate:"min=3,max=64"`
+	Town string `validate:"min=3,max=64"`
+	Shop string `validate:"min=3,max=64"`
 }
 type Price struct {
 	Currency string  `validate:"required"`
@@ -23,11 +23,11 @@ type Price struct {
 
 // Expense is the aggregate root for other entities such as Category
 type Expense struct {
-	ID      ID `validate:"required,min=3,max=32"`
+	ID      ID `validate:"required"`
 	Price   Price
 	Place   Place
-	Product string    `validate:"required,min=3,max=32"`
-	Date    time.Time `validate:"required,min=3,max=32"`
+	Product string    `validate:"required,min=3,max=64"`
+	Date    time.Time `validate:"required"`
 
 	Category Category
 }

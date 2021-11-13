@@ -7,7 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.21.0
 	google.golang.org/api v0.60.0
 	gorm.io/driver/sqlite v1.2.3
-	gorm.io/gorm v1.22.2
+	gorm.io/gorm v1.22.3
 	gorm.io/plugin/soft_delete v1.0.4
 )
 
