@@ -1,7 +1,6 @@
 package managing
 
 import (
-	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"time"
@@ -16,26 +15,26 @@ type DeleteCategoryReq struct {
 	ID string
 }
 
-type DeleteCategoryUseCase struct {
+type DeleteCategory struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewDeleteCategoryUseCase(l app.Logger, e expense.Expenses) *DeleteCategoryUseCase {
-	return &DeleteCategoryUseCase{l, e}
+func NewDeleteCategory(l app.Logger, e expense.Expenses) *DeleteCategory {
+	return &DeleteCategory{l, e}
 }
 
-func (s *DeleteCategoryUseCase) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
-	err := s.expenses.DeleteCategory(expense.CategoryID(req.ID))
-	if err != nil {
-		s.logger.Err("Error updating client", err)
-		return nil, errors.New("Could not Delete client information.")
-	}
-	resp := &DeleteCategoryResp{
-		DeletedDate: time.Now(),
-		Softdelete:  false,
-	}
-	s.logger.Info("Category %s deleted", req.ID)
-	return resp, nil
-
+func (s *DeleteCategory) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
+	panic("Implement me ?")
+	//err := s.expenses.DeleteCategory(expense.CategoryID(req.ID))
+	//if err != nil {
+	//s.logger.Err("Error updating client", err)
+	//return nil, errors.New("Could not Delete client information.")
+	//}
+	//resp := &DeleteCategoryResp{
+	//DeletedDate: time.Now(),
+	//Softdelete:  false,
+	//}
+	//s.logger.Info("Category %s deleted", req.ID)
+	//return resp, nil
 }
