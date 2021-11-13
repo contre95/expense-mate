@@ -8,9 +8,11 @@ import (
 func (sql *SQLStorage) Add(e expense.Expense) error {
 	result := sql.db.Create(&Expense{
 		ID:         string(e.ID),
+		Price:      e.Price.Amount,
+		Currency:   e.Price.Currency,
 		Product:    e.Product,
-		Shop:       e.Shop,
-		City:       e.Town,
+		Shop:       e.Place.Shop,
+		City:       e.Place.Town,
 		Date:       e.Date,
 		CategoryID: string(e.Category.ID),
 		//Category: Category{
@@ -33,12 +35,17 @@ func (sql *SQLStorage) Delete(id expense.ID) error {
 func (sql *SQLStorage) SaveCategory(c expense.Category) error {
 	var category Category
 	// Filter for "unscoped" rows (i.e already soft-deleted) due to unique constraints at DB level
-	result := sql.db.Unscoped().FirstOrCreate(&category, &Category{ID: string(c.ID), Name: c.Name})
+	result := sql.db.Unscoped().FirstOrCreate(&category, &Category{ID: string(c.ID), Name: string(c.Name)})
 	sql.db.Model(&category).Update("deleted_at", 0) // Updated deleted at, I'm I supposed to do this manually
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
+}
+
+// GetCategories is used to save a new category for future expenses
+func (s *SQLStorage) GetCategories() error {
+	panic("not implemented") // TODO: Implement
 }
 
 // DeleteCategory deletes a category from the database using Gorm ORM

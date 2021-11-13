@@ -9,7 +9,7 @@ import (
 	fiber "github.com/gofiber/fiber/v2"
 )
 
-func createCategories(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
+func createCategories(s managing.CreateCategory) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoriesJSON{}
 		err := c.BodyParser(&catJSON)
@@ -46,7 +46,7 @@ func createCategories(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
 	}
 }
 
-func createCategory(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
+func createCategory(s managing.CreateCategory) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoryJSON{}
 		err := c.BodyParser(&catJSON)
@@ -80,7 +80,7 @@ func createCategory(s managing.CreateCategoryUseCase) func(*fiber.Ctx) error {
 	}
 }
 
-func deleteCategory(s managing.DeleteCategoryUseCase) func(*fiber.Ctx) error {
+func deleteCategory(s managing.DeleteCategory) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		req := &managing.DeleteCategoryReq{ID: id}
@@ -101,7 +101,7 @@ func deleteCategory(s managing.DeleteCategoryUseCase) func(*fiber.Ctx) error {
 	}
 }
 
-//func listClients(s clients.ListUseCase) func(*fiber.Ctx) error {
+//func listClients(s clients.List) func(*fiber.Ctx) error {
 //return func(c *fiber.Ctx) error {
 //page, err1 := strconv.Atoi(c.Query("page", "0"))
 //pageSize, err2 := strconv.Atoi(c.Query("pageSize", "10"))

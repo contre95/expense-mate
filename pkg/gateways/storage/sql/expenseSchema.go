@@ -8,7 +8,9 @@ import (
 
 type Expense struct {
 	ID         string `gorm:"primaryKey"`
+	Price      float32
 	Product    string
+	Currency   string
 	Shop       string
 	City       string
 	Date       time.Time

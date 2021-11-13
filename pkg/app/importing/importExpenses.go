@@ -6,15 +6,16 @@ import (
 	"time"
 )
 
-type ImporertResp struct {
+type ImportExpensesResp struct {
 	ID                string
 	Msg               string
 	SuccesfullImports int
 	FailedImports     int
 }
 
-type ImporertReq struct {
+type ImportExpensesReq struct {
 	ByPassWrongExpenses bool
+	ImporterID          string
 }
 
 // IImportedExpense holds the values that should be imported by the Importer
@@ -30,22 +31,22 @@ type ImportedExpense struct {
 	Category string
 }
 
-// Importer is the main dependency of the ImportExpensesUseCase and defines how an importer should behave
+// Importer is the main dependency of the ImportExpenses and defines how an importer should behave
 type Importer interface {
 	//GetAllCategories() ([]string, error)
 	GetImportedExpenses() ([]ImportedExpense, error)
 }
 
-// The createCategory use case creates a category for a expense
-type ImportExpensesUseCase struct {
-	logger   app.Logger
-	importer Importer
-	expenses expense.Expenses
+// The ImportExpenses use case creates a category for a expense
+type ImportExpenses struct {
+	logger    app.Logger
+	importers map[string]Importer
+	expenses  expense.Expenses
 }
 
 // Contructor for Import
-func NewImporterUseCase(l app.Logger, i Importer, e expense.Expenses) *ImportExpensesUseCase {
-	return &ImportExpensesUseCase{l, i, e}
+func NewExpenseImporter(l app.Logger, i map[string]Importer, e expense.Expenses) *ImportExpenses {
+	return &ImportExpenses{l, i, e}
 }
 
 func parseExpense(e ImportedExpense) (*expense.Expense, error) {
@@ -62,8 +63,8 @@ func parseExpense(e ImportedExpense) (*expense.Expense, error) {
 }
 
 // Import imports a all the categories provided by the importer
-func (u *ImportExpensesUseCase) Import(req ImporertReq) (*ImporertResp, error) {
-	importedExpenses, err := u.importer.GetImportedExpenses()
+func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, error) {
+	importedExpenses, err := u.importers[req.ImporterID].GetImportedExpenses()
 	if err != nil {
 		u.logger.Err("Could not import expenses: %s", err)
 		return nil, err
@@ -87,7 +88,7 @@ func (u *ImportExpensesUseCase) Import(req ImporertReq) (*ImporertResp, error) {
 			return nil, err
 		}
 	}
-	return &ImporertResp{
+	return &ImportExpensesResp{
 		SuccesfullImports: len(expensesToAdd),
 		FailedImports:     len(importedExpenses) - len(expensesToAdd),
 	}, nil
