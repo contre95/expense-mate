@@ -14,7 +14,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *import
 	log.Println("asdasd")
 	api := fi.Group("/api")    // /api
 	v1 := api.Group("/v1")     // /api/v1
-	v1.Get("/ping", ping(*he)) // /api/v1/ping
+	fi.Get("/ping", ping(*he)) // /api/v1/ping
 	v1.Post("/importers/:id", importExpenses(i.ImportExpenses))
 	v1.Delete("/categories/:id", deleteCategory(m.DeleteCategory))
 	//v1.Get("/categories", listClients(*&c.))
