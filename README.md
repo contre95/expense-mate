@@ -5,7 +5,7 @@ It's just an API made with [Fiber](https://github.com/gofiber/fiber) and [Gorm](
 
 ## Features
 * Import expenses from different source
-    * Google sheets 
+    * Google sheets (you will need a [service account](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-gcloud) and share you spread sheet with it.
     * Sample Data ([exampleImporter.go](https://github.com/contre95/expenses-app/blob/main/pkg/gateways/importers/exampleImporter.go)) 
 * Add / Delete individual expenses (TODO)
 
