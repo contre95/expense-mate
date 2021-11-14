@@ -18,7 +18,7 @@ type Place struct {
 }
 type Price struct {
 	Currency string  `validate:"required"`
-	Amount   float32 `validate:"required"`
+	Amount   float64 `validate:"required"`
 }
 
 // Expense is the aggregate root for other entities such as Category
@@ -28,6 +28,7 @@ type Expense struct {
 	Place   Place
 	Product string    `validate:"required,min=3"`
 	Date    time.Time `validate:"required"`
+	People  string    `validate:"required,min=3"`
 
 	Category Category
 }

@@ -1,18 +1,17 @@
 CREATE TABLE `categories` (
 `id` varchar(255),
 `name` text,
-`created_at` datetime,
-`deleted_at` integer,
   PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `expenses` (
-`id` integer,
+`id` bigint(64),
 `price` float(16),
 `product` text,
 `currency` text,
 `shop` text,
 `city` text,
+`people` text,
 `date` datetime,
 `created_at` datetime,
 `updated_at` datetime,

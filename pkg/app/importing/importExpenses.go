@@ -5,7 +5,6 @@ import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -23,13 +22,14 @@ type ImportExpensesReq struct {
 
 // IImportedExpense holds the values that should be imported by the Importer
 type ImportedExpense struct {
-	Amount   float32
+	Amount   float64
 	Currency string
 	Product  string
 	Shop     string
 	Date     time.Time
 	City     string
 	Town     string
+	People   string
 
 	Category string
 }
@@ -62,7 +62,7 @@ func parseExpense(e ImportedExpense) (*expense.Expense, error) {
 		Town: e.Town,
 		Shop: e.Shop,
 	}
-	return expense.NewExpense(price, e.Product, place, e.Date, e.Category)
+	return expense.NewExpense(price, e.Product, e.People, place, e.Date, e.Category)
 }
 
 // Import imports a all the categories provided by the importer
@@ -70,7 +70,7 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 	importedExpenses, err := u.importers[req.ImporterID].GetImportedExpenses()
 	if err != nil {
 		u.logger.Err("Could not import expenses: %s", err)
-		return nil, err
+		return nil, errors.New("Could not import expenses from importer" + req.ImporterID)
 	}
 	expensesToAdd := []expense.Expense{}
 	for _, e := range importedExpenses {
@@ -86,7 +86,6 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		}
 	}
 	for _, exp := range expensesToAdd {
-		log.Println("pizza 1")
 		err := u.expenses.Add(exp)
 		if err != nil {
 			u.logger.Err("Failed to save expense %s : %s", exp.ID, err)

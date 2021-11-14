@@ -5,6 +5,7 @@ import (
 	"expenses-app/pkg/app/importing"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"google.golang.org/api/option"
@@ -44,15 +45,26 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 		log.Println("No data found")
 	} else {
 		//TODO: fix this values
-		for _, row := range resp.Values {
+		for _, row := range resp.Values[1:] {
+			date, dateErr := time.Parse("1/2/2006", row[7].(string))
+			if dateErr != nil {
+				fmt.Println("tiempo")
+				return nil, dateErr
+			}
+			price, priceErr := strconv.ParseFloat(row[0].(string), 32)
+			if priceErr != nil {
+				fmt.Println("tiempo")
+				return nil, priceErr
+			}
 			e := importing.ImportedExpense{
-				Amount:   10,
+				Amount:   price,
 				Currency: row[1].(string),
 				Product:  row[2].(string),
 				Shop:     row[4].(string),
-				Date:     time.Now(),
+				Date:     date,
 				City:     row[5].(string),
 				Town:     row[6].(string),
+				People:   row[8].(string),
 				Category: row[3].(string),
 			}
 			importedExpenses = append(importedExpenses, e)
