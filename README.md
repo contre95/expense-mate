@@ -23,7 +23,7 @@ go run main.go
 
 # Endpoints
 
-## SheetsImporter
+## Google Sheets Importer
 ```sh
 # /api/v1/importers/:importer_id
 curl -H "Content-Type: application/json" -X POST \
