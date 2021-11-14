@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"google.golang.org/api/option"
@@ -60,7 +61,7 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 				Amount:   price,
 				Currency: row[1].(string),
 				Product:  row[2].(string),
-				Shop:     row[4].(string),
+				Shop:     strings.TrimSpace(row[4].(string)),
 				Date:     date,
 				City:     row[5].(string),
 				Town:     row[6].(string),
