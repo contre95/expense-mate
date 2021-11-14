@@ -10,7 +10,6 @@ import (
 
 // ImportExpensesResp is the Response Model por the ImportExpenses use case
 type ImportExpensesResp struct {
-	ID                string
 	Msg               string
 	SuccesfullImports int
 	FailedImports     int
@@ -96,8 +95,15 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 			}
 		}
 	}
+	var msg string
+	if failedExpenses == 0 {
+		msg = "All the expenses where imported"
+	} else {
+		msg = "Some expenses could not be imported"
+	}
 	return &ImportExpensesResp{
 		SuccesfullImports: len(importedExpenses) - failedExpenses,
 		FailedImports:     failedExpenses,
+		Msg:               msg,
 	}, nil
 }
