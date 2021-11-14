@@ -8,8 +8,6 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASS: ${MYSQL_PASS}
       MYSQL_DATABASE: ${MYSQL_DB}
-    depends_on:
-      - db
     volumes:
       - ./db/grafana/data:/var/lib/grafana/data
       - ./db/grafana/provisioning:/etc/grafana/provisioning
@@ -23,6 +21,7 @@ services:
     ports:
       - "3306:3306"
     container_name: db
+    command: mysqld --sql_mode=""
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASS}
