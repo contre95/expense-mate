@@ -5,6 +5,8 @@ My new excuse to keep on learning DDD and write some Go code.
 # Configurations
 All configurations are set in the `.env` file and passed as environment variables
 ```sh
+# Set the .env
+mv .env.example .env
 # Install the dependencies
 go mod tidy
 # Source the env variables
