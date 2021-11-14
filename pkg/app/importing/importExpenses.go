@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// ImportExpensesResp is the Response Model por the ImportExpenses use case
 type ImportExpensesResp struct {
 	ID                string
 	Msg               string
@@ -15,13 +16,14 @@ type ImportExpensesResp struct {
 	FailedImports     int
 }
 
+// ImportExpensesReq is the Request Model por the ImportExpenses use case
 type ImportExpensesReq struct {
 	BypassWrongExpenses bool
 	ReImport            bool
 	ImporterID          string
 }
 
-// IImportedExpense holds the values that should be imported by the Importer
+// ImportedExpense holds the values that should be imported by the Importer
 type ImportedExpense struct {
 	Amount   float64
 	Currency string
@@ -48,7 +50,7 @@ type ImportExpenses struct {
 	expenses  expense.Expenses
 }
 
-// Contructor for Import
+//  NewExpenseImporter returns a valid ExpenseImporter use case
 func NewExpenseImporter(l app.Logger, i map[string]Importer, e expense.Expenses) *ImportExpenses {
 	return &ImportExpenses{l, i, e}
 }
@@ -73,7 +75,6 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		u.logger.Err("Could not import expenses: %s", err)
 		return nil, errors.New("Could not import expenses from importer" + req.ImporterID)
 	}
-	expensesToAdd := []expense.Expense{}
 	failedExpenses := 0
 	for _, e := range importedExpenses {
 		newExp, err := parseExpense(e)
@@ -82,20 +83,16 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 			u.logger.Err("Could not import expense: %s of %f %s: %s", e.Product, e.Amount, e.Currency, err)
 			if !req.BypassWrongExpenses {
 				fmt.Println(req.BypassWrongExpenses)
-				return nil, errors.New(fmt.Sprintf("Failed to import expense: %s of %f %s", e.Product, e.Amount, e.Currency))
+				return nil, fmt.Errorf("Failed to import expense: %s of %f %s", e.Product, e.Amount, e.Currency)
 			}
-		} else {
-			expensesToAdd = append(expensesToAdd, *newExp)
 		}
-	}
-	for _, exp := range expensesToAdd {
-		err := u.expenses.Add(exp)
+		err = u.expenses.Add(*newExp)
 		if err != nil {
 			failedExpenses++
-			u.logger.Err("Failed to save expense %s : %s", exp.ID, err)
+			u.logger.Err("Failed to save expense %s : %s", newExp.ID, err)
 			if !req.BypassWrongExpenses {
 				fmt.Println(req.BypassWrongExpenses)
-				return nil, errors.New(fmt.Sprintf("Failed to save expense %s : %s", exp.ID, err))
+				return nil, fmt.Errorf("Failed to save expense %d : %s", newExp.ID, err)
 			}
 		}
 	}
