@@ -12,7 +12,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -21,9 +21,9 @@ func main() {
 	// Infrastructure / Gateways
 
 	// SQL Storage
-	db, _ := gorm.Open(sqlite.Open("db/ims.db"), &gorm.Config{})
+	dsn := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
+	db, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	storage := sql.NewStorage(db)
-	storage.Migrate()
 
 	// Importers
 	exampleImporter := importers.NewExampleImporter("example data")

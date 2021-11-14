@@ -12,10 +12,10 @@ func NewStorage(db *gorm.DB) *SQLStorage {
 	return &SQLStorage{db}
 }
 
-func (sql *SQLStorage) Migrate() {
-	sql.db.AutoMigrate(&Category{})
-	sql.db.AutoMigrate(&Expense{})
-}
+//func (sql *SQLStorage) Migrate() {
+//sql.db.AutoMigrate(&Category{})
+//sql.db.AutoMigrate(&Expense{})
+//}
 
 // Paginations for GORM: https://gorm.io/docs/scopes.html#Pagination
 func (sql *SQLStorage) paginate(pageSize, page uint) func(db *gorm.DB) *gorm.DB {

@@ -13,14 +13,15 @@ func hash(s string) uint32 {
 }
 
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
-func NewExpense(price Price, product string, place Place, date time.Time, category string) (*Expense, error) {
+func NewExpense(price Price, product, people string, place Place, date time.Time, category string) (*Expense, error) {
 	newExpense := Expense{
 		Price:   price,
 		Product: product,
+		People:  people,
 		Place:   place,
 		Date:    date,
 	}
-	newExpense.ID = ID(hash(place.Shop + place.Town + string(newExpense.Category.ID) + date.String()))
+	newExpense.ID = ID(hash(place.Shop + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
 	newExpense.Categorize(category)
 	err := newExpense.validate()
 	if err != nil {

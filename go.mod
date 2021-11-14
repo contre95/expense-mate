@@ -6,6 +6,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gofiber/fiber/v2 v2.21.0
 	google.golang.org/api v0.60.0
+	gorm.io/driver/mysql v1.1.3
 	gorm.io/driver/sqlite v1.2.3
 	gorm.io/gorm v1.22.3
 	gorm.io/plugin/soft_delete v1.0.4
@@ -16,6 +17,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect

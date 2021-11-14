@@ -26,6 +26,7 @@ func (sql *SQLStorage) Add(e expense.Expense) error {
 		Shop:     e.Place.Shop,
 		City:     e.Place.Town,
 		Date:     e.Date,
+		People:   e.People,
 		Category: category,
 	})
 	if result.Error != nil {
