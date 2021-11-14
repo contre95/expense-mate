@@ -17,6 +17,7 @@ type ImportExpensesResp struct {
 
 type ImportExpensesReq struct {
 	BypassWrongExpenses bool
+	ReImport            bool
 	ImporterID          string
 }
 
@@ -73,9 +74,11 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		return nil, errors.New("Could not import expenses from importer" + req.ImporterID)
 	}
 	expensesToAdd := []expense.Expense{}
+	failedExpenses := 0
 	for _, e := range importedExpenses {
 		newExp, err := parseExpense(e)
 		if err != nil {
+			failedExpenses++
 			u.logger.Err("Could not import expense: %s of %f %s: %s", e.Product, e.Amount, e.Currency, err)
 			if !req.BypassWrongExpenses {
 				fmt.Println(req.BypassWrongExpenses)
@@ -88,12 +91,16 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 	for _, exp := range expensesToAdd {
 		err := u.expenses.Add(exp)
 		if err != nil {
+			failedExpenses++
 			u.logger.Err("Failed to save expense %s : %s", exp.ID, err)
-			return nil, err
+			if !req.BypassWrongExpenses {
+				fmt.Println(req.BypassWrongExpenses)
+				return nil, errors.New(fmt.Sprintf("Failed to save expense %s : %s", exp.ID, err))
+			}
 		}
 	}
 	return &ImportExpensesResp{
-		SuccesfullImports: len(expensesToAdd),
-		FailedImports:     len(importedExpenses) - len(expensesToAdd),
+		SuccesfullImports: len(importedExpenses) - failedExpenses,
+		FailedImports:     failedExpenses,
 	}, nil
 }
