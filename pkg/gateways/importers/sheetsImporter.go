@@ -23,6 +23,7 @@ func NewSheetsImporter(srv *sheets.Service, sheetID, pageRange string) *SheetsIm
 
 func NewSheetService(credPath string) (*sheets.Service, error) {
 	ctx := context.Background()
+	fmt.Println(credPath)
 	srv, err := sheets.NewService(ctx, option.WithServiceAccountFile(credPath))
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
@@ -38,23 +39,24 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
-
+	importedExpenses := []importing.ImportedExpense{}
 	if len(resp.Values) == 0 {
 		log.Println("No data found")
 	} else {
+		//TODO: fix this values
 		for _, row := range resp.Values {
-			fmt.Println(row)
+			e := importing.ImportedExpense{
+				Amount:   10,
+				Currency: row[1].(string),
+				Product:  row[2].(string),
+				Shop:     row[4].(string),
+				Date:     time.Now(),
+				City:     row[5].(string),
+				Town:     row[6].(string),
+				Category: row[3].(string),
+			}
+			importedExpenses = append(importedExpenses, e)
 		}
 	}
-	return []importing.ImportedExpense{
-		{
-			Amount:   1.0,
-			Currency: "euro",
-			Product:  "Wine",
-			Shop:     "Mercadona",
-			Date:     time.Now(),
-			City:     "Barcelona",
-			Town:     "Spain",
-			Category: "Alimentos",
-		}}, nil
+	return importedExpenses, nil
 }

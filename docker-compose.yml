@@ -1,0 +1,23 @@
+version: '3.1'
+
+services:
+  db:
+    image: "mysql:latest"
+    ports:
+      - "3306:3306"
+    container_name: db
+    environment:
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_ROOT_PASSWORD: testroot
+
+  create-schema:
+    image: "mysql:8"
+    container_name: create-schema
+    #depends_on:
+      #- db
+    volumes:
+      - ./scripts:/app/scripts
+    command: ["sh", "-c", 'while true ; do sleep 10 ; mysql -h"db" -P"3306" -utestuser -p"testpassword" -Dtestdb </app/scripts/schema.sql 2>&1 |grep "already exists" && break; done']
+

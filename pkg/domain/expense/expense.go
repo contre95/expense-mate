@@ -26,7 +26,7 @@ type Expense struct {
 	ID      ID `validate:"required"`
 	Price   Price
 	Place   Place
-	Product string    `validate:"required,min=3,max=64"`
+	Product string    `validate:"required,min=3"`
 	Date    time.Time `validate:"required"`
 
 	Category Category
@@ -51,11 +51,9 @@ type Expenses interface {
 	// Delete is used to remove a Expense from the system
 	Delete(id ID) error
 	// Add is used to save a new category for future expenses
-	SaveCategory(c Category) error
-	// Add is used to save a new category for future expenses
 	DeleteCategory(id CategoryID) error
 	// Add is used to save a new category for future expenses
-	GetCategories() error
+	GetCategories() ([]Category, error)
 }
 
 func (c *Expense) validate() error {

@@ -1,7 +1,6 @@
 package expense
 
 import (
-	"fmt"
 	"hash/fnv"
 	"strings"
 	"time"
@@ -16,17 +15,13 @@ func hash(s string) uint32 {
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
 func NewExpense(price Price, product string, place Place, date time.Time, category string) (*Expense, error) {
 	newExpense := Expense{
-		Product: product,
 		Price:   price,
+		Product: product,
 		Place:   place,
 		Date:    date,
-		Category: Category{
-			ID:   CategoryID(strings.ReplaceAll(strings.ToLower(category), " ", "-")),
-			Name: CategoryName(category),
-		},
 	}
 	newExpense.ID = ID(hash(place.Shop + place.Town + string(newExpense.Category.ID) + date.String()))
-	fmt.Println(newExpense.ID)
+	newExpense.Categorize(category)
 	err := newExpense.validate()
 	if err != nil {
 		return nil, err
@@ -35,8 +30,8 @@ func NewExpense(price Price, product string, place Place, date time.Time, catego
 }
 
 // NewCategory creates a new category for expenses (Factory Method)
-func (e *Expense) NewCategory(name string) Category {
-	return Category{
+func (e *Expense) Categorize(name string) {
+	e.Category = Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
 		Name: CategoryName(name),
 	}

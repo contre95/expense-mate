@@ -1,20 +1,32 @@
 package sql
 
 import (
+	"errors"
 	"expenses-app/pkg/domain/expense"
+
+	"gorm.io/gorm"
 )
 
 // Add is used to add a new Expense to the system
 func (sql *SQLStorage) Add(e expense.Expense) error {
+	var category Category
+	res := sql.db.First(&category, e.Category.ID)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		category = Category{
+			ID:   string(e.Category.ID),
+			Name: string(e.Category.Name),
+		}
+		sql.db.Create(&category)
+	}
 	result := sql.db.Create(&Expense{
-		ID:         uint64(e.ID),
-		Price:      e.Price.Amount,
-		Currency:   e.Price.Currency,
-		Product:    e.Product,
-		Shop:       e.Place.Shop,
-		City:       e.Place.Town,
-		Date:       e.Date,
-		CategoryID: string(e.Category.ID),
+		ID:       uint64(e.ID),
+		Price:    e.Price.Amount,
+		Currency: e.Price.Currency,
+		Product:  e.Product,
+		Shop:     e.Place.Shop,
+		City:     e.Place.Town,
+		Date:     e.Date,
+		Category: category,
 	})
 	if result.Error != nil {
 		return result.Error
@@ -27,26 +39,34 @@ func (sql *SQLStorage) Delete(id expense.ID) error {
 	panic("not implemented") // TODO: Implement
 }
 
-// SaveCategory stores a category insto a sql database using Gorm ORM
-func (sql *SQLStorage) SaveCategory(c expense.Category) error {
-	var category Category
-	// Filter for "unscoped" rows (i.e already soft-deleted) due to unique constraints at DB level
-	result := sql.db.Unscoped().FirstOrCreate(&category, &Category{ID: string(c.ID), Name: string(c.Name)})
-	sql.db.Model(&category).Update("deleted_at", 0) // Updated deleted at, I'm I supposed to do this manually
-	if result.Error != nil {
-		return result.Error
+func parseCategories(categories []Category) []expense.Category {
+	domainCategories := []expense.Category{}
+	for _, c := range categories {
+		domainCat := expense.Category{
+			ID:   expense.CategoryID(c.ID),
+			Name: expense.CategoryName(c.Name),
+		}
+		domainCategories = append(domainCategories, domainCat)
 	}
-	return nil
+	return domainCategories
 }
 
 // GetCategories is used to save a new category for future expenses
-func (s *SQLStorage) GetCategories() error {
-	panic("not implemented") // TODO: Implement
+func (sql *SQLStorage) GetCategories() ([]expense.Category, error) {
+	var categories []Category
+	result := sql.db.Raw("select * from categories").Scan(&categories)
+	//result := sql.db.Delete(&Category{ID: string(id)})
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return parseCategories(categories), nil
+
 }
 
 // DeleteCategory deletes a category from the database using Gorm ORM
 func (sql *SQLStorage) DeleteCategory(id expense.CategoryID) error {
-	result := sql.db.Delete(&Category{ID: string(id)})
+	result := sql.db.Raw("delete from categories where id = ?", id)
+	//result := sql.db.Delete(&Category{ID: string(id)})
 	if result.Error != nil {
 		return result.Error
 	}
