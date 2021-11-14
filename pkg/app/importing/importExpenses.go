@@ -74,12 +74,9 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 	}
 	expensesToAdd := []expense.Expense{}
 	for _, e := range importedExpenses {
-		log.Println("Import(1)")
 		newExp, err := parseExpense(e)
-		log.Println("Import(2)")
 		if err != nil {
 			u.logger.Err("Could not import expense: %s of %f %s: %s", e.Product, e.Amount, e.Currency, err)
-			log.Println("Import(3a)")
 			if !req.BypassWrongExpenses {
 				fmt.Println(req.BypassWrongExpenses)
 				return nil, errors.New(fmt.Sprintf("Failed to import expense: %s of %f %s", e.Product, e.Amount, e.Currency))
@@ -89,6 +86,7 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		}
 	}
 	for _, exp := range expensesToAdd {
+		log.Println("pizza 1")
 		err := u.expenses.Add(exp)
 		if err != nil {
 			u.logger.Err("Failed to save expense %s : %s", exp.ID, err)
