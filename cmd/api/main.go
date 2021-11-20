@@ -43,8 +43,8 @@ func main() {
 
 	// Managing
 	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
-	createCategory := managing.NewCreateCategory(managerLogger, storage)
-	deleteCategory := managing.NewDeleteCategory(managerLogger, storage)
+	createCategory := managing.NewCategoryCreator(managerLogger, storage)
+	deleteCategory := managing.NewCategoryDeleter(managerLogger, storage)
 	manager := managing.NewService(*createCategory, *deleteCategory)
 
 	// Importing

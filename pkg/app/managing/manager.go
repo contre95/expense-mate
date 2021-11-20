@@ -2,11 +2,12 @@ package managing
 
 // Service just holds all the managing use cases
 type Service struct {
-	CreateCategory CreateCategory
-	DeleteCategory DeleteCategory
+	CategoryCreator CategoryCreator
+	CategoryDeleter CategoryDeleter
+	UserCreator     UserCreator
 }
 
-// NewService returns a new manging.Service
-func NewService(c CreateCategory, d DeleteCategory) Service {
-	return Service{c, d}
+// NewService is the interctor for all Managing Use cases
+func NewService(cc CategoryCreator, cd CategoryDeleter, uc UserCreator) Service {
+	return Service{cc, cd, uc}
 }

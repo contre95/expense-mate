@@ -14,18 +14,18 @@ type CreateCategoryReq struct {
 	Name string
 }
 
-// The createCategory use case creates a category for a expense
-type CreateCategory struct {
+// CategoryCreator use case creates a category for a expense
+type CategoryCreator struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewCreateCategory(l app.Logger, e expense.Expenses) *CreateCategory {
-	return &CreateCategory{l, e}
+func NewCategoryCreator(l app.Logger, e expense.Expenses) *CategoryCreator {
+	return &CategoryCreator{l, e}
 }
 
 // Create use cases function creates a new category
-func (u *CreateCategory) Create(req CreateCategoryReq) (*CreateCategoryResp, error) {
+func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, error) {
 	panic("Implement me ?")
 	//category := expense.NewCategory(req.Name)
 	//err := u.expenses.SaveCategory(category)

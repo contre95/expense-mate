@@ -15,16 +15,16 @@ type DeleteCategoryReq struct {
 	ID string
 }
 
-type DeleteCategory struct {
+type CategoryDeleter struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewDeleteCategory(l app.Logger, e expense.Expenses) *DeleteCategory {
-	return &DeleteCategory{l, e}
+func NewCategoryDeleter(l app.Logger, e expense.Expenses) *CategoryDeleter {
+	return &CategoryDeleter{l, e}
 }
 
-func (s *DeleteCategory) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
+func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
 	panic("Implement me ?")
 	//err := s.expenses.DeleteCategory(expense.CategoryID(req.ID))
 	//if err != nil {
