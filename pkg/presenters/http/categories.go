@@ -80,7 +80,7 @@ func createCategory(s managing.CreateCategory) func(*fiber.Ctx) error {
 	}
 }
 
-func deleteCategory(s managing.DeleteCategory) func(*fiber.Ctx) error {
+func deleteCategory(s managing.CategoryDeleter) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		req := &managing.DeleteCategoryReq{ID: id}

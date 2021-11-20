@@ -30,6 +30,7 @@ type Expense struct {
 	Date    time.Time `validate:"required"`
 	People  string    `validate:"required,min=3"`
 
+	User     string
 	Category Category
 }
 
