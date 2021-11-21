@@ -31,38 +31,52 @@ go run main.go
 
 # Endpoints
 
-## Google Sheets Importer
+### Login
 ```sh
-# /api/v1/importers/:importer_id
-curl -H "Content-Type: application/json" -X POST \
-    -d '{ "bypass_wrong_expenses": true }' \
-    -X POST http://localhost:3000/api/v1/importers/sheets  | jq
+# Request /login
+curl -d "user=admin&pass=secretpass" -X POST http://localhost:3000/login | jq
+# Response
+#   {
+#     "token": "<jwt>"
+#   }
 ```
-```json
-{
-  "err": null,
-  "msg": {
-    "Msg": "All the expenses where imported",
-    "SuccesfullImports": 206,
-    "FailedImports": 0
-  },
-  "success": true
-}
+### Google Sheets Importer
+```sh
+# Request /importers/:importer_id
+JWT=$(curl -d "user=admin&pass=secretpass" -X POST http://localhost:3000/login | jq ".token" | tr -d '"')
+curl -H "Authorization: Bearer $JWT" \
+     -d '{ "bypass_wrong_expenses": true }' \
+     -H "Content-Type: application/json" \
+     -X POST http://localhost:3000/importers/sheets | jq
+# Response
+#   {
+#     "err": null,
+#     "msg": {
+#       "Msg": "All the expenses where imported",
+#       "SuccesfullImports": 206,
+#       "FailedImports": 0
+#     },
+#     "success": true
+#   }
 ```
 
-## Healthcheck
+### Healthcheck
 ```sh
-# /ping
+# Request /ping
 curl -H "Content-Type: application/json" -X GET http://localhost:3000/ping | jq
+# Response
+#   {
+#     "ping": "pong"
+#   }
 ```
-```json
-{
-  "ping": "pong"
-}
-```
    
-   
-   
+# TODO   
+
+* Users
+    * Implement JSON Storage for users
+    * Validate user:password for users
+    * CreateUser use case
+       
    
    
    

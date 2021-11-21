@@ -28,7 +28,7 @@ func NewSheetService(credPath string) (*sheets.Service, error) {
 	fmt.Println(credPath)
 	srv, err := sheets.NewService(ctx, option.WithServiceAccountFile(credPath))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		log.Fatalf("Unable to retrieve Sheets client: %v\n", err)
 		return nil, err
 	}
 	return srv, nil
@@ -39,7 +39,7 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 	//readRange := "Expenses!A2:E"
 	resp, err := si.srv.Spreadsheets.Values.Get(si.spreadsheetId, si.pageRange).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		log.Fatalf("Unable to retrieve data from sheet: %v\n", err)
 	}
 	importedExpenses := []importing.ImportedExpense{}
 	if len(resp.Values) == 0 {
@@ -49,12 +49,12 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 		for _, row := range resp.Values[1:] {
 			date, dateErr := time.Parse("1/2/2006", row[7].(string))
 			if dateErr != nil {
-				fmt.Println("tiempo")
+				fmt.Printf("Couldn't parase date from product %s\n", row[2])
 				return nil, dateErr
 			}
 			price, priceErr := strconv.ParseFloat(row[0].(string), 32)
 			if priceErr != nil {
-				fmt.Println("tiempo")
+				fmt.Printf("Couldn't parase price from product %s\n", row[2])
 				return nil, priceErr
 			}
 			e := importing.ImportedExpense{

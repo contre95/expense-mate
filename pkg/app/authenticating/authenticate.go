@@ -9,6 +9,7 @@ import (
 type LoginResp struct {
 	Authenticated bool
 	UserID        string
+	Alias         string
 }
 
 type LoginReq struct {
@@ -16,16 +17,21 @@ type LoginReq struct {
 	Password string
 }
 
-type Authenticator struct {
+type UserAuthenticator struct {
 	logger app.Logger
 	users  user.Users
 }
 
-func NewAuthenticator(l app.Logger, u user.Users) *Authenticator {
-	return &Authenticator{l, u}
+func NewUserAuthenticator(l app.Logger, u user.Users) *UserAuthenticator {
+	return &UserAuthenticator{l, u}
 }
 
-func (auth *Authenticator) Authenticate(req LoginReq) (*LoginResp, error) {
+func (auth *UserAuthenticator) Authenticate(req LoginReq) (*LoginResp, error) {
+	return &LoginResp{
+		Authenticated: true,
+		UserID:        "test-user",
+		Alias:         "Mr. Test User",
+	}, nil
 	auth.logger.Info("Attampting to authenticate user %s", req.Username)
 	user, err := auth.users.Get(req.Username)
 	if err != nil {
@@ -34,6 +40,7 @@ func (auth *Authenticator) Authenticate(req LoginReq) (*LoginResp, error) {
 	resp := &LoginResp{
 		Authenticated: user.Password == req.Password,
 		UserID:        user.ID.String(),
+		Alias:         user.Alias,
 	}
 	return resp, nil
 

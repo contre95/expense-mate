@@ -12,6 +12,7 @@ type CreateUserResp struct {
 type CreateUserReq struct {
 	Username string
 	Password string
+	Alias    string
 }
 
 // CreateUser is the use case in charge of creating new users
@@ -25,7 +26,7 @@ func NewUserCreator(l app.Logger, u user.Users) *UserCreator {
 }
 
 func (s *UserCreator) Create(req CreateUserReq) (*CreateUserResp, error) {
-	user, _ := user.NewUser(req.Username, req.Password)
+	user, _ := user.NewUser(req.Username, req.Password, req.Alias)
 	s.users.Add(*user)
 	return nil, nil
 }
