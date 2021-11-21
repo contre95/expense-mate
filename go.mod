@@ -4,7 +4,8 @@ go 1.17
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/gofiber/fiber/v2 v2.21.0
+	github.com/gofiber/fiber/v2 v2.22.0
+	github.com/gofiber/jwt/v3 v3.2.1
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/google/uuid v1.3.0
 	google.golang.org/api v0.60.0
@@ -15,7 +16,7 @@ require (
 
 require (
 	cloud.google.com/go v0.97.0 // indirect
-	github.com/andybalholm/brotli v1.0.2 // indirect
+	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
@@ -24,7 +25,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
-	github.com/klauspost/compress v1.13.4 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -33,7 +34,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1 // indirect
-	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
+	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211021150943-2b146023228c // indirect

@@ -9,7 +9,7 @@ import (
 	fiber "github.com/gofiber/fiber/v2"
 )
 
-func createCategories(s managing.CreateCategory) func(*fiber.Ctx) error {
+func createCategories(s managing.CategoryCreator) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoriesJSON{}
 		err := c.BodyParser(&catJSON)
@@ -46,7 +46,7 @@ func createCategories(s managing.CreateCategory) func(*fiber.Ctx) error {
 	}
 }
 
-func createCategory(s managing.CreateCategory) func(*fiber.Ctx) error {
+func createCategory(s managing.CategoryCreator) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		catJSON := addCategoryJSON{}
 		err := c.BodyParser(&catJSON)

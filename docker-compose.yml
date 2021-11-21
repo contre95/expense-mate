@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   grafana:
-    image: grafana/grafana:latest
+    image: "grafana/grafana:8.2.0"
     container_name: grafana
     environment:
       MYSQL_USER: ${MYSQL_USER}
@@ -17,7 +17,7 @@ services:
       - expenses-net
 
   db:
-    image: "mysql:latest"
+    image: "mysql:8.0.26"
     ports:
       - "3306:3306"
     container_name: db

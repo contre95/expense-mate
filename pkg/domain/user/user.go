@@ -6,6 +6,7 @@ type User struct {
 	ID       uuid.UUID
 	Username string
 	Password string
+	Alias    string
 }
 
 // Users is the repository for users
