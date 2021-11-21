@@ -19,11 +19,12 @@ type LoginReq struct {
 
 type UserAuthenticator struct {
 	logger app.Logger
+	hasher app.Hasher
 	users  user.Users
 }
 
-func NewUserAuthenticator(l app.Logger, u user.Users) *UserAuthenticator {
-	return &UserAuthenticator{l, u}
+func NewUserAuthenticator(l app.Logger, h app.Hasher, u user.Users) *UserAuthenticator {
+	return &UserAuthenticator{l, h, u}
 }
 
 func (auth *UserAuthenticator) Authenticate(req LoginReq) (*LoginResp, error) {

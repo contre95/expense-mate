@@ -19,11 +19,14 @@ type SheetsImporter struct {
 	pageRange     string
 }
 
-func NewSheetsImporter(srv *sheets.Service, sheetID, pageRange string) *SheetsImporter {
+func NewSheetsImporter(srv *sheets.Service, sheetID, creadPath, pageRange string) *SheetsImporter {
+	if srv == nil {
+		srv, _ = newSheetService(creadPath)
+	}
 	return &SheetsImporter{srv, sheetID, pageRange}
 }
 
-func NewSheetService(credPath string) (*sheets.Service, error) {
+func newSheetService(credPath string) (*sheets.Service, error) {
 	ctx := context.Background()
 	fmt.Println(credPath)
 	srv, err := sheets.NewService(ctx, option.WithServiceAccountFile(credPath))

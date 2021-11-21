@@ -19,14 +19,20 @@ type CreateUserReq struct {
 type UserCreator struct {
 	logger app.Logger
 	users  user.Users
+	hashed app.Hasher
 }
 
-func NewUserCreator(l app.Logger, u user.Users) *UserCreator {
-	return &UserCreator{l, u}
+func NewUserCreator(l app.Logger, h app.Hasher, u user.Users) *UserCreator {
+	return &UserCreator{l, u, h}
 }
 
 func (s *UserCreator) Create(req CreateUserReq) (*CreateUserResp, error) {
-	user, _ := user.NewUser(req.Username, req.Password, req.Alias)
-	s.users.Add(*user)
+	encryptedPass := req.Password
+	user, _ := user.NewUser(req.Username, encryptedPass, req.Alias)
+	err := s.users.Add(*user)
+	if err != nil {
+		s.logger.Info("Could not create user %s", req.Username)
+		return nil, err
+	}
 	return nil, nil
 }
