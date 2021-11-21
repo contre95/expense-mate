@@ -70,13 +70,18 @@ curl -H "Content-Type: application/json" -X GET http://localhost:3000/ping | jq
 #   }
 ```
    
+# Dashboards example
+
+A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
+
+### Expenses dashboard
+![](./docs/assets/grafana-dashboard.png)
+
 # TODO   
 
 * Users
     * Implement JSON Storage for users
     * Validate user:password for users
-    * CreateUser use case
-       
-   
+    * CreateUser use case   
    
    
