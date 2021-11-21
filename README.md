@@ -3,6 +3,11 @@ My new excuse to keep on learning DDD and write some Go code. Don't expect much 
 
 It's just an API made with [Fiber](https://github.com/gofiber/fiber) and [Gorm](https://gorm.io/) (probably not the best decision) which aims the help you with tracking expenses and let's you interact with them on [Grafana](https://grafana.com/)
 
+
+### Expenses dashboard
+A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
+![](./docs/assets/grafana-dashboard.png)
+        
 ## Features
 * Import expenses from different source
     * Google sheets (you will need a [service account](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-gcloud) and share you spread sheet with it.
@@ -70,13 +75,6 @@ curl -H "Content-Type: application/json" -X GET http://localhost:3000/ping | jq
 #   }
 ```
    
-# Dashboards example
-
-A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
-
-### Expenses dashboard
-![](./docs/assets/grafana-dashboard.png)
-
 # TODO   
 
 * Users
