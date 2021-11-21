@@ -10,3 +10,10 @@ type Logger interface {
 	// Use for Debugging
 	Debug(format string, i ...interface{})
 }
+
+type Hasher interface {
+	// Hash hashes
+	Hash(password string) (string, error)
+	// CheckHash checks if a hash if string is equal a anotherone hashed
+	CheckHash(password, hash string) bool
+}
