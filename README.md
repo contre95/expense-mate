@@ -1,11 +1,12 @@
 # Expense App
-My new excuse to keep on learning DDD and write some Go code. Don't expect much doc.
+My new excuse to keep on coding. Don't expect much doc.
 
 It's just an API made with [Fiber](https://github.com/gofiber/fiber) and [Gorm](https://gorm.io/) (probably not the best decision) which aims the help you with tracking expenses and let's you interact with them on [Grafana](https://grafana.com/)
 
 
 ### Expenses dashboard
 A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
+
 ![](./docs/assets/grafana-dashboard.png)
         
 ## Features
