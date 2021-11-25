@@ -5,6 +5,7 @@ import (
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/importing"
 	"expenses-app/pkg/app/managing"
+	"net/http"
 	"os"
 	"time"
 
@@ -19,11 +20,10 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *import
 	// Unrestricted
 	fi.Get("/ping", ping(*he))
 	fi.Post("/login", login(*a))
-	fi.Get("/accessible", accessible)
+	fi.Get("/categories", accessible)
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 	// Restricted
 	fi.Get("/restricted", restricted)
-	fi.Get("/", accessible)
 	fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
 	fi.Delete("/categories/:id", deleteCategory(m.CategoryDeleter))
 	//fi.Get("/categories", listClients(*&c.))
@@ -68,7 +68,21 @@ func login(a authenticating.Service) func(c *fiber.Ctx) error {
 }
 
 func accessible(c *fiber.Ctx) error {
-	return c.SendString("Accessible")
+	return c.Status(http.StatusBadRequest).JSON([]fiber.Map{
+		{
+			"value": "1",
+			"text":  "Food",
+		},
+		{
+			"value": "2",
+			"text":  "Home",
+		},
+		{
+			"value": "3",
+			"text":  "Selivery",
+		},
+	})
+
 }
 
 func restricted(c *fiber.Ctx) error {
