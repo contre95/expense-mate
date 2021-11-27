@@ -5,6 +5,7 @@ import (
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/importing"
 	"expenses-app/pkg/app/managing"
+	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/gateways/hasher"
 	"expenses-app/pkg/gateways/importers"
 	"expenses-app/pkg/gateways/logger"
@@ -46,7 +47,8 @@ func main() {
 	//Loggers
 	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
 	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
-	importerLogger := logger.NewSTDLogger("Importing", logger.VIOLET)
+	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
+	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 
 	// Hashers
 	passHasher := hasher.NewPasswordHasher()
@@ -54,11 +56,13 @@ func main() {
 	// Healthching
 	healthChecker := health.NewService(healthLogger)
 
+	// Querying
+	getCategories := querying.NewCategoryGetter(querierLogger, sqlStorage)
+	querier := querying.NewService(*getCategories)
+
 	// Managing
-	createCategory := managing.NewCategoryCreator(managerLogger, sqlStorage)
-	deleteCategory := managing.NewCategoryDeleter(managerLogger, sqlStorage)
 	createUser := managing.NewUserCreator(managerLogger, passHasher, jsonStorage)
-	manager := managing.NewService(*createCategory, *deleteCategory, *createUser)
+	manager := managing.NewService(*createUser)
 
 	// Importing
 	importExpenses := importing.NewExpenseImporter(importerLogger, importers, sqlStorage)
@@ -71,6 +75,6 @@ func main() {
 
 	// API
 	fiberApp := fiber.New()
-	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator)
+	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator, &querier)
 	fiberApp.Listen(":3000")
 }

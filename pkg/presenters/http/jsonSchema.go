@@ -1,11 +1,8 @@
 package http
 
-type addCategoriesJSON struct {
-	Names []string `json:"categories"`
-}
-
-type addCategoryJSON struct {
+type categoriesJSON struct {
 	Name string `json:"name"`
+	ID   string `json:"id"`
 }
 
 type expenseImporterJSON struct {

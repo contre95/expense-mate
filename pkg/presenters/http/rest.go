@@ -5,7 +5,7 @@ import (
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/importing"
 	"expenses-app/pkg/app/managing"
-	"net/http"
+	"expenses-app/pkg/app/querying"
 	"os"
 	"time"
 
@@ -16,17 +16,15 @@ import (
 )
 
 // MapRoutes is where http REST routes are mapped to functions
-func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *importing.Service, a *authenticating.Service) {
+func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *importing.Service, a *authenticating.Service, q *querying.Service) {
 	// Unrestricted
 	fi.Get("/ping", ping(*he))
 	fi.Post("/login", login(*a))
-	fi.Get("/categories", accessible)
+	fi.Get("/expenses/categories", getCategories(q.CategoryGetter))
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 	// Restricted
 	fi.Get("/restricted", restricted)
 	fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
-	fi.Delete("/categories/:id", deleteCategory(m.CategoryDeleter))
-	//fi.Get("/categories", listClients(*&c.))
 }
 
 func ping(h health.Service) func(*fiber.Ctx) error {
@@ -65,24 +63,6 @@ func login(a authenticating.Service) func(c *fiber.Ctx) error {
 		}
 		return c.JSON(fiber.Map{"token": t})
 	}
-}
-
-func accessible(c *fiber.Ctx) error {
-	return c.Status(http.StatusBadRequest).JSON([]fiber.Map{
-		{
-			"value": "1",
-			"text":  "Food",
-		},
-		{
-			"value": "2",
-			"text":  "Home",
-		},
-		{
-			"value": "3",
-			"text":  "Selivery",
-		},
-	})
-
 }
 
 func restricted(c *fiber.Ctx) error {
