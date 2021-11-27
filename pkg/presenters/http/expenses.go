@@ -4,20 +4,22 @@ import (
 	"expenses-app/pkg/app/querying"
 	"fmt"
 	"net/http"
-	"strings"
 
 	fiber "github.com/gofiber/fiber/v2"
 )
 
+type QueryParams struct {
+	Ids []string `query:"ids"`
+}
+
+type Category struct {
+	ID   string
+	Name string
+}
+
 func getCategories(s querying.CategoryGetter) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		catIDs := strings.Split(c.Query("categories_id"), ",")
-		fmt.Println(catIDs)
-		var req querying.GetCategoriesReq
-		for _, val := range catIDs {
-			req.CategoriesIDs[val] = true
-		}
-		resp, err := s.Get(req)
+		resp, err := s.Get()
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(&fiber.Map{
 				"success":    false,
@@ -25,10 +27,14 @@ func getCategories(s querying.CategoryGetter) func(*fiber.Ctx) error {
 				"categories": "",
 			})
 		}
+		categories := []Category{}
+		for id, name := range resp.Categories {
+			categories = append(categories, Category{id, name})
+		}
 		return c.Status(http.StatusAccepted).JSON(&fiber.Map{
 			"success":    true,
 			"err":        nil,
-			"categories": resp.Categories,
+			"categories": categories,
 		})
 	}
 }
