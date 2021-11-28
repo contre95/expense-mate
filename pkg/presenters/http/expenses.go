@@ -8,10 +8,6 @@ import (
 	fiber "github.com/gofiber/fiber/v2"
 )
 
-type QueryParams struct {
-	Ids []string `query:"ids"`
-}
-
 type Category struct {
 	ID   string
 	Name string
@@ -22,9 +18,9 @@ func getCategories(s querying.CategoryGetter) func(*fiber.Ctx) error {
 		resp, err := s.Get()
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-				"success":    false,
-				"err":        fmt.Sprintf("%v", err),
-				"categories": "",
+				"success": false,
+				"err":     fmt.Sprintf("%v", err),
+				"dat":     nil,
 			})
 		}
 		categories := []Category{}
@@ -32,9 +28,9 @@ func getCategories(s querying.CategoryGetter) func(*fiber.Ctx) error {
 			categories = append(categories, Category{id, name})
 		}
 		return c.Status(http.StatusAccepted).JSON(&fiber.Map{
-			"success":    true,
-			"err":        nil,
-			"categories": categories,
+			"success": true,
+			"err":     nil,
+			"data":    categories,
 		})
 	}
 }
