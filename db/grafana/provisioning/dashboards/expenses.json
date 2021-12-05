@@ -109,9 +109,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -138,9 +136,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -233,9 +229,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -262,9 +256,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -291,9 +283,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -320,9 +310,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -374,9 +362,7 @@
         "mode": "series",
         "name": null,
         "show": true,
-        "values": [
-          "total"
-        ]
+        "values": ["total"]
       },
       "yaxes": [
         {
@@ -492,9 +478,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -548,9 +532,7 @@
         },
         "pieType": "pie",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -569,9 +551,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
@@ -625,9 +605,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -646,9 +624,7 @@
           "select": [
             [
               {
-                "params": [
-                  "id"
-                ],
+                "params": ["id"],
                 "type": "column"
               }
             ]
