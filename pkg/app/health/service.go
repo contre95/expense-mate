@@ -10,14 +10,14 @@ type Service struct {
 
 // NewService returns a new HealthHandler
 func NewService(l ...app.Logger) Service {
-	if l!=nil{
+	if l != nil {
 		return Service{logger: l}
 	}
 	return Service{}
 }
 
 func (s *Service) Ping() string {
-	for _,log := range s.logger {
+	for _, log := range s.logger {
 		log.Info("Healcheck ok")
 	}
 	return "pong"

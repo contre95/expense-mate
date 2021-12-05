@@ -24,7 +24,7 @@ func NewCategoryCreator(l app.Logger, e expense.Expenses) *CategoryCreator {
 	return &CategoryCreator{l, e}
 }
 
-// Create use cases function creates a new category
+//Create use cases function creates a new category
 func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, error) {
 	panic("Implement me ?")
 	//category := expense.NewCategory(req.Name)
