@@ -23,7 +23,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1636897315983,
+  "iteration": 1639437762377,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -109,7 +109,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -136,7 +138,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -202,7 +206,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "8.2.3",
+      "pluginVersion": "8.2.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -229,7 +233,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -256,7 +262,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -283,7 +291,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -310,7 +320,38 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=12 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -362,7 +403,9 @@
         "mode": "series",
         "name": null,
         "show": true,
-        "values": ["total"]
+        "values": [
+          "total"
+        ]
       },
       "yaxes": [
         {
@@ -478,7 +521,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -532,7 +577,9 @@
         },
         "pieType": "pie",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -551,7 +598,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -605,14 +654,16 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.2.3",
+      "pluginVersion": "8.2.0",
       "targets": [
         {
           "format": "table",
@@ -624,7 +675,9 @@
           "select": [
             [
               {
-                "params": ["id"],
+                "params": [
+                  "id"
+                ],
                 "type": "column"
               }
             ]
@@ -679,8 +732,8 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "November",
-          "value": "11"
+          "text": "December",
+          "value": "12"
         },
         "datasource": "Exp Spain",
         "definition": "select month(expenses.date) as __value, monthname(expenses.date) as __text   from expenses order by 1 asc",
@@ -704,28 +757,10 @@
         "current": {
           "selected": true,
           "text": [
-            "Cleaning",
-            "Clothing",
-            "Food",
-            "Gifts",
-            "Health",
-            "Home",
-            "Perfume & Hygiene",
-            "Salivery",
-            "Services",
-            "Transport"
+            "Services"
           ],
           "value": [
-            "cleaning",
-            "clothing",
-            "food",
-            "gifts",
-            "health",
-            "home",
-            "perfume-&-hygiene",
-            "salivery",
-            "services",
-            "transport"
+            "services"
           ]
         },
         "datasource": "Exp Spain",
