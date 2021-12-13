@@ -1,6 +1,7 @@
 package expense
 
 import (
+	"fmt"
 	"hash/fnv"
 	"strings"
 	"time"
@@ -21,7 +22,8 @@ func NewExpense(price Price, product, people string, place Place, date time.Time
 		Place:   place,
 		Date:    date,
 	}
-	newExpense.ID = ID(hash(place.Shop + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
+
+	newExpense.ID = ID(hash(place.Shop + fmt.Sprintf("%f", price.Amount) + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
 	newExpense.Categorize(category)
 	err := newExpense.validate()
 	if err != nil {
