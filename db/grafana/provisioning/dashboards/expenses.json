@@ -23,10 +23,163 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1639437762377,
+  "iteration": 1640617733842,
   "links": [],
   "liveNow": false,
   "panels": [
+    {
+      "datasource": "Exp Spain",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "€",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 11,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 3,
+            "pointSize": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Acumulation for 'services'"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "text",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Acumulation for 'cleaning','clothing','entertainments','food','gifts','health','home','others','perfume-&-hygiene','rent','salivery','services','subscriptions','transport'"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Acumulation select categories"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date,\n  (\n    SELECT\n      SUM(b.price)\n    FROM\n      expenses AS b\n    WHERE\n      b.date <= a.date\n      AND category_id  in ($categories)\n  ) AS \"Acumulation select categories\"\nFROM\n  expenses AS a\nWHERE\n  category_id  in ($categories)\nGROUP BY\n  2\nORDER BY\n  date\nASC;\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Acumulated spendings",
+      "transparent": true,
+      "type": "timeseries"
+    },
     {
       "datasource": "Exp Spain",
       "fieldConfig": {
@@ -82,11 +235,11 @@
       },
       "gridPos": {
         "h": 11,
-        "w": 14,
+        "w": 12,
         "x": 0,
-        "y": 0
+        "y": 9
       },
-      "id": 2,
+      "id": 14,
       "options": {
         "legend": {
           "calcs": [],
@@ -179,9 +332,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 11,
-        "w": 10,
-        "x": 14,
-        "y": 0
+        "w": 12,
+        "x": 12,
+        "y": 9
       },
       "hiddenSeries": false,
       "id": 13,
@@ -490,7 +643,7 @@
         "h": 12,
         "w": 11,
         "x": 0,
-        "y": 11
+        "y": 20
       },
       "id": 12,
       "options": {
@@ -567,7 +720,7 @@
         "h": 12,
         "w": 7,
         "x": 11,
-        "y": 11
+        "y": 20
       },
       "id": 7,
       "options": {
@@ -645,7 +798,7 @@
         "h": 12,
         "w": 6,
         "x": 18,
-        "y": 11
+        "y": 20
       },
       "id": 9,
       "options": {
@@ -732,8 +885,8 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "December",
-          "value": "12"
+          "text": "October",
+          "value": "10"
         },
         "datasource": "Exp Spain",
         "definition": "select month(expenses.date) as __value, monthname(expenses.date) as __text   from expenses order by 1 asc",
@@ -757,10 +910,36 @@
         "current": {
           "selected": true,
           "text": [
-            "Services"
+            "Cleaning",
+            "Clothing",
+            "Entertainments",
+            "Food",
+            "Gifts",
+            "Health",
+            "Home",
+            "Others",
+            "Perfume & Hygiene",
+            "Rent",
+            "Salivery",
+            "Services",
+            "Subscriptions",
+            "Transport"
           ],
           "value": [
-            "services"
+            "cleaning",
+            "clothing",
+            "entertainments",
+            "food",
+            "gifts",
+            "health",
+            "home",
+            "others",
+            "perfume-&-hygiene",
+            "rent",
+            "salivery",
+            "services",
+            "subscriptions",
+            "transport"
           ]
         },
         "datasource": "Exp Spain",
@@ -783,8 +962,8 @@
     ]
   },
   "time": {
-    "from": "now-6M",
-    "to": "now"
+    "from": "2021-08-28T01:15:00.291Z",
+    "to": "2021-12-28T18:40:53.897Z"
   },
   "timepicker": {},
   "timezone": "",
