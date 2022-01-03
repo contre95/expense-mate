@@ -23,7 +23,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1640617733842,
+  "iteration": 1641199038346,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -519,6 +519,35 @@
               "type": "macro"
             }
           ]
+        },
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=1 and year(expenses.date)=2022 group by month(expenses.date) order by time asc",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
         }
       ],
       "thresholds": [
@@ -860,7 +889,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "2021",
           "value": "2021"
         },
@@ -884,7 +913,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "October",
           "value": "10"
         },
@@ -910,36 +939,12 @@
         "current": {
           "selected": true,
           "text": [
-            "Cleaning",
-            "Clothing",
-            "Entertainments",
             "Food",
-            "Gifts",
-            "Health",
-            "Home",
-            "Others",
-            "Perfume & Hygiene",
-            "Rent",
-            "Salivery",
-            "Services",
-            "Subscriptions",
-            "Transport"
+            "Salivery"
           ],
           "value": [
-            "cleaning",
-            "clothing",
-            "entertainments",
             "food",
-            "gifts",
-            "health",
-            "home",
-            "others",
-            "perfume-&-hygiene",
-            "rent",
-            "salivery",
-            "services",
-            "subscriptions",
-            "transport"
+            "salivery"
           ]
         },
         "datasource": "Exp Spain",
@@ -962,8 +967,8 @@
     ]
   },
   "time": {
-    "from": "2021-08-28T01:15:00.291Z",
-    "to": "2021-12-28T18:40:53.897Z"
+    "from": "2021-08-20T13:56:40.850Z",
+    "to": "2022-01-22T19:58:38.835Z"
   },
   "timepicker": {},
   "timezone": "",
