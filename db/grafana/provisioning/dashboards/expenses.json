@@ -23,7 +23,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1643563914443,
+  "iteration": 1643565729587,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -275,13 +275,13 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
+        "h": 12,
         "w": 18,
         "x": 0,
         "y": 9
       },
       "hiddenSeries": false,
-      "id": 13,
+      "id": 19,
       "legend": {
         "alignAsTable": true,
         "avg": false,
@@ -291,7 +291,7 @@
         "max": false,
         "min": false,
         "rightSide": true,
-        "show": true,
+        "show": false,
         "sideWidth": null,
         "total": true,
         "values": true
@@ -325,7 +325,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=1 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=1 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "B",
           "select": [
             [
@@ -354,7 +354,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=2 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=2 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "C",
           "select": [
             [
@@ -383,7 +383,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=3 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=3 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "D",
           "select": [
             [
@@ -412,7 +412,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=4 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=4 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "August",
           "select": [
             [
@@ -441,7 +441,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=5 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=5 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "September",
           "select": [
             [
@@ -470,7 +470,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=6 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=6 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "October",
           "select": [
             [
@@ -499,7 +499,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=7 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=7 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "November",
           "select": [
             [
@@ -528,7 +528,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=8 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=8 and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "A",
           "select": [
             [
@@ -557,7 +557,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=9  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=9  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "E",
           "select": [
             [
@@ -586,7 +586,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=10  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=10  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "F",
           "select": [
             [
@@ -615,7 +615,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=11  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=11  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "G",
           "select": [
             [
@@ -644,7 +644,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where $__timeFilter(expenses.date) and category_id in ($categories) and month(expenses.date)=12  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
+          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=12  and year(expenses.date)=$year group by month(expenses.date) order by time asc",
           "refId": "H",
           "select": [
             [
@@ -866,7 +866,7 @@
         "h": 12,
         "w": 9,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 12,
       "options": {
@@ -977,7 +977,7 @@
         "h": 12,
         "w": 9,
         "x": 9,
-        "y": 18
+        "y": 21
       },
       "id": 14,
       "options": {
@@ -1113,10 +1113,12 @@
         "current": {
           "selected": true,
           "text": [
-            "Home"
+            "Food",
+            "Salivery"
           ],
           "value": [
-            "home"
+            "food",
+            "salivery"
           ]
         },
         "datasource": "Exp Spain",
