@@ -23,7 +23,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1643571755710,
+  "iteration": 1647295503329,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -691,7 +691,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Monthly expenses for $year",
+      "title": "Monthly expenses for $year in $categories",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -892,7 +892,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.date)=$month and year(expenses.date)=$year group by category_id order by 2 desc;",
+          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.date)=$month and year(expenses.date) in ($year) group by category_id order by 2 desc;",
           "refId": "A",
           "select": [
             [
@@ -1119,38 +1119,12 @@
         "current": {
           "selected": true,
           "text": [
-            "Cleaning",
-            "Clothing",
-            "Entertainments",
-            "Food",
-            "Gifts",
-            "Health",
-            "Home",
-            "Others",
-            "Perfume & Hygiene",
-            "Rent",
-            "Salivery",
             "Services",
-            "Subscriptions",
-            "Transport",
-            "Travel"
+            "Gifts"
           ],
           "value": [
-            "cleaning",
-            "clothing",
-            "entertainments",
-            "food",
-            "gifts",
-            "health",
-            "home",
-            "others",
-            "perfume-&-hygiene",
-            "rent",
-            "salivery",
             "services",
-            "subscriptions",
-            "transport",
-            "travel"
+            "gifts"
           ]
         },
         "datasource": "Exp Spain",
@@ -1180,5 +1154,5 @@
   "timezone": "",
   "title": "Expenses",
   "uid": "VL3Zt1cnz",
-  "version": 2
+  "version": 1
 }
