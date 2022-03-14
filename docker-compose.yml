@@ -1,5 +1,5 @@
+---
 version: '3.1'
-
 services:
   grafana:
     image: "grafana/grafana:8.2.0"
