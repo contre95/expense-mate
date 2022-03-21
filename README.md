@@ -36,7 +36,7 @@ go mod tidy
 # Development environment
 docker-compose up -d
 # The app
-go run main.go
+go1.17.8 run cmd/api/main.go
 ```
 
 # Endpoints
