@@ -8,5 +8,5 @@ datasources:
   user: $MYSQL_USER
   secureJsonData:
     password: $MYSQL_PASS
-  database: expensesdb
+  database: $MYSQL_DB
 
