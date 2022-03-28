@@ -19,5 +19,5 @@ CREATE TABLE `expenses` (
 `updated_at` datetime,
 `category_id` varchar(255),
   PRIMARY KEY (`id`),
-  CONSTRAINT`fk_expenses_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+  CONSTRAINT `fk_expenses_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
 );
