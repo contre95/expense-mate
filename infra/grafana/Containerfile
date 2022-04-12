@@ -1,0 +1,2 @@
+FROM docker.io/grafana/grafana:8.2.0
+ADD ./provisioning /etc/grafana/provisioning

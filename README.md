@@ -30,13 +30,10 @@ go mod tidy
 . <(cat .env | grep -v -e '^$' | grep -v "#" | awk '{print "export " $1}')
 ```
 
-# Run
-
-```sh
-# Development environment
-docker-compose up -d
-# The app
-go1.17.8 run cmd/api/main.go
+# Run with podman
+```shell
+cd infra
+podman play kube infra.yml --replace --build 
 ```
 
 # Endpoints

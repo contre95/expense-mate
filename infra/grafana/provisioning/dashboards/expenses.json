@@ -28,7 +28,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -181,7 +181,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -264,7 +264,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "decimals": 2,
       "fieldConfig": {
         "defaults": {
@@ -734,7 +734,7 @@
       }
     },
     {
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -810,7 +810,7 @@
       "type": "piechart"
     },
     {
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -921,7 +921,7 @@
       "type": "barchart"
     },
     {
-      "datasource": "Exp Spain",
+      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1073,7 +1073,7 @@
             "2022"
           ]
         },
-        "datasource": "Exp Spain",
+        "datasource": "Expenses",
         "definition": "select year(expenses.date) as year from expenses",
         "description": null,
         "error": null,
@@ -1097,7 +1097,7 @@
           "text": "October",
           "value": "10"
         },
-        "datasource": "Exp Spain",
+        "datasource": "Expenses",
         "definition": "select month(expenses.date) as __value, monthname(expenses.date) as __text   from expenses order by 1 asc",
         "description": null,
         "error": null,
@@ -1127,7 +1127,7 @@
             "gifts"
           ]
         },
-        "datasource": "Exp Spain",
+        "datasource": "Expenses",
         "definition": "select id as __value, name as __text from categories",
         "description": null,
         "error": null,
