@@ -1,0 +1,14 @@
+---
+apiVersion: 1
+
+datasources:
+
+  - name: Expenses
+    type: mysql
+    access: proxy
+    url: localhost:3306
+    user: $EXPENSES_USER
+    secureJsonData:
+      password: $EXPENSES_PASS
+    database: $EXPENSES_DB
+    editable: false
