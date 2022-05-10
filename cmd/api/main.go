@@ -78,5 +78,5 @@ func main() {
 	// API
 	fiberApp := fiber.New()
 	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator, &querier)
-	fiberApp.Listen(":8080")
+	fiberApp.Listen(":3000")
 }

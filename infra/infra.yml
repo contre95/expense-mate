@@ -11,8 +11,8 @@ spec:
       image: grafana
       ports:
         - name: front
-          containerPort: 3000
-          hostPort: 3000
+          containerPort: 8080
+          hostPort: 8080
           protocol: TCP
       env:
         - name: GF_INSTALL_PLUGINS
