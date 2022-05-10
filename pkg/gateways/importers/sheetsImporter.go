@@ -17,13 +17,14 @@ type SheetsImporter struct {
 	srv           *sheets.Service // DIP for better testeability. I'm not testing this though
 	spreadsheetId string
 	pageRange     string
+	rangeLenght   int
 }
 
-func NewSheetsImporter(srv *sheets.Service, sheetID, creadPath, pageRange string) *SheetsImporter {
+func NewSheetsImporter(srv *sheets.Service, sheetID, creadPath, pageRange string, rangeLenght int) *SheetsImporter {
 	if srv == nil {
 		srv, _ = newSheetService(creadPath)
 	}
-	return &SheetsImporter{srv, sheetID, pageRange}
+	return &SheetsImporter{srv, sheetID, pageRange, rangeLenght}
 }
 
 func newSheetService(credPath string) (*sheets.Service, error) {
@@ -50,6 +51,10 @@ func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, er
 	} else {
 		//TODO: fix this values
 		for _, row := range resp.Values[1:] {
+			if len(row) < si.rangeLenght {
+				log.Printf("Skipping row %v of lenthg %d", row, len(row))
+				continue
+			}
 			date, dateErr := time.Parse("1/2/2006", row[7].(string))
 			if dateErr != nil {
 				fmt.Printf("Couldn't parase date from product %s\n", row[2])

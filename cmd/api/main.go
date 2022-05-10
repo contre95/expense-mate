@@ -14,6 +14,7 @@ import (
 	"expenses-app/pkg/presenters/http"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
@@ -21,7 +22,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting")
+	fmt.Println("Starting..")
 	// Infrastructure / Gateways
 
 	// JSON Storage
@@ -37,7 +38,8 @@ func main() {
 
 	// Importers
 	exampleImporter := importers.NewExampleImporter("example data")
-	sheetsImporter := importers.NewSheetsImporter(nil, os.Getenv("SHEETS_IMPORTER_ID"), os.Getenv("SHEETS_IMPORTER_SA_PATH"), os.Getenv("SHEETS_IMPORTER_PAGERANGE"))
+	rangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RAGENLEN"))
+	sheetsImporter := importers.NewSheetsImporter(nil, os.Getenv("SHEETS_IMPORTER_ID"), os.Getenv("SHEETS_IMPORTER_SA_PATH"), os.Getenv("SHEETS_IMPORTER_PAGERANGE"), rangeLength)
 
 	importers := map[string]importing.Importer{
 		"example": exampleImporter,
@@ -76,5 +78,5 @@ func main() {
 	// API
 	fiberApp := fiber.New()
 	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator, &querier)
-	fiberApp.Listen(":3000")
+	fiberApp.Listen(":8080")
 }
