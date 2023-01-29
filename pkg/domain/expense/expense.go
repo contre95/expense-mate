@@ -34,6 +34,9 @@ type Expense struct {
 	Category Category
 }
 
+const CategoryNotFoundErr = "Category not found"
+const CategoryAlreadyExists = "Category already exists"
+
 // CategoryID is the unique identifier for the domain object of type Category
 type CategoryID string
 
@@ -42,8 +45,8 @@ type CategoryName string
 
 // Category is an entity that is supposed to be accessed only from the Expense aggregate
 type Category struct {
-	ID   CategoryID
-	Name CategoryName
+	ID   CategoryID   `validate:"required,min=3"`
+	Name CategoryName `validate:"required,min=3,containsany=!-@#"`
 }
 
 // Expenses is the repository for all the command actions for Expense
@@ -53,11 +56,11 @@ type Expenses interface {
 	// Delete is used to remove a Expense from the system
 	Delete(id ID) error
 	// Add is used to save a new category for future expenses
-	DeleteCategory(id CategoryID) error
-	// Add is used to save a new category for future expenses
 	GetCategories() ([]Category, error)
-	// Checks if category exists, returns false on error
-	CategoryExist() (bool, error)
+	// Creates a new category returns expense.CategoryAlreadyExistsErr if category is duplicated.
+	AddCategory(c Category) error
+	// Validates if a category exists
+	CategoryExists(cname string) (bool, error)
 }
 
 func (c *Expense) validate() error {
@@ -70,5 +73,16 @@ func (c *Expense) validate() error {
 		return errors.New(fmt.Sprintf("Invalid category data: %v", err))
 	}
 	return nil
+}
 
+func (c *Category) validate() error {
+	validate := validator.New()
+	err := validate.Struct(c)
+	if err != nil {
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			fmt.Println(err)
+		}
+		return errors.New(fmt.Sprintf("Invalid category data: %v", err))
+	}
+	return nil
 }

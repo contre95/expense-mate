@@ -2,6 +2,7 @@ package json
 
 import (
 	"encoding/json"
+	"errors"
 	"expenses-app/pkg/domain/user"
 	"io/ioutil"
 	"log"
@@ -58,14 +59,6 @@ func (js *JSONStorage) Add(u user.User) error {
 	return nil
 }
 
-func (js *JSONStorage) Exists(uname string) (bool, error) {
-	user, err := js.Get(uname)
-	if err != nil {
-		return false, err
-	}
-	return user != nil, nil
-}
-
 func (js *JSONStorage) Get(uname string) (*user.User, error) {
 	jsonUsers, err := js.getAllUsers()
 	if err != nil {
@@ -85,5 +78,5 @@ func (js *JSONStorage) Get(uname string) (*user.User, error) {
 			}, nil
 		}
 	}
-	return nil, nil
+	return nil, errors.New(user.UserNotFoundErr)
 }

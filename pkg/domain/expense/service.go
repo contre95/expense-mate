@@ -24,7 +24,6 @@ func NewExpense(price Price, product, people string, place Place, date time.Time
 	}
 
 	newExpense.ID = ID(hash(place.Shop + fmt.Sprintf("%f", price.Amount) + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
-	newExpense.Categorize(category)
 	err := newExpense.validate()
 	if err != nil {
 		return nil, err
@@ -32,10 +31,17 @@ func NewExpense(price Price, product, people string, place Place, date time.Time
 	return &newExpense, nil
 }
 
-// NewCategory creates a new category for an expense (Factory Method)
-func (e *Expense) Categorize(name string) {
-	e.Category = Category{
+func NewCategory(name string) (*Category, error) {
+	newCategory := Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
 		Name: CategoryName(name),
 	}
+	if err := newCategory.validate(); err != nil {
+		return nil, newCategory.validate()
+	}
+	return &newCategory, nil
+}
+
+// NewCategory creates a new category for an expense (Factory Method)
+func (e *Expense) Categorize(name string) {
 }

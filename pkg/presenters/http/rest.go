@@ -44,16 +44,16 @@ func login(a authenticating.Service) func(c *fiber.Ctx) error {
 			Password: c.FormValue("pass"),
 		}
 		resp, err := a.UserAuthenticator.Authenticate(req)
-		if err != nil || !resp.Authenticated {
+		if err != nil {
 			return c.JSON(&fiber.Map{
 				"err": c.SendStatus(fiber.StatusUnauthorized),
+				"msg": "Unexistent username or wrong password.",
 			})
 		}
 		// Create the Claims
 		claims := jwt.MapClaims{
-			"name":  "John Doe",
-			"admin": true,
-			"exp":   time.Now().Add(time.Hour * 72).Unix(),
+			"name": resp.UserID,
+			"exp":  time.Now().Add(time.Hour * 72).Unix(),
 		}
 		// Create token
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
