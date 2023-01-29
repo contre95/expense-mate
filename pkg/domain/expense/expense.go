@@ -56,6 +56,8 @@ type Expenses interface {
 	DeleteCategory(id CategoryID) error
 	// Add is used to save a new category for future expenses
 	GetCategories() ([]Category, error)
+	// Checks if category exists, returns false on error
+	CategoryExist() (bool, error)
 }
 
 func (c *Expense) validate() error {

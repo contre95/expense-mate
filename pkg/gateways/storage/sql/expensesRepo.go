@@ -52,7 +52,12 @@ func parseCategories(categories []Category) []expense.Category {
 	return domainCategories
 }
 
-// GetCategories is used to save a new category for future expenses
+// GetCategories is used to retrieve all categories
+func (sql *SQLStorage) CategoryExist() (bool, error) {
+	return false, nil
+}
+
+// GetCategories is used to retrieve all categories
 func (sql *SQLStorage) GetCategories() ([]expense.Category, error) {
 	var categories []Category
 	result := sql.db.Raw("select * from categories").Scan(&categories)
@@ -61,7 +66,6 @@ func (sql *SQLStorage) GetCategories() ([]expense.Category, error) {
 		return nil, result.Error
 	}
 	return parseCategories(categories), nil
-
 }
 
 // DeleteCategory deletes a category from the database using Gorm ORM
