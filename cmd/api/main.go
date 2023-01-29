@@ -27,30 +27,38 @@ func main() {
 
 	// JSON Storage
 	jsonStorage := json.NewStorage(os.Getenv("JSON_STORAGE_PATH"))
+
+	//Loggers
+	initLogger := logger.NewSTDLogger("INIT", logger.RED2)
+	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
+	authLogger := logger.NewSTDLogger("Authenticator", logger.RED2)
+	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
+	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
+	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
+
 	// SQL Storage
 	dsn := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		initLogger.Err("%v", err)
+		return
 	}
-
 	sqlStorage := sql.NewStorage(db)
 
-	// Importers
+	// Example importer
 	exampleImporter := importers.NewExampleImporter("example data")
-	rangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RAGENLEN"))
-	sheetsImporter := importers.NewSheetsImporter(nil, os.Getenv("SHEETS_IMPORTER_ID"), os.Getenv("SHEETS_IMPORTER_SA_PATH"), os.Getenv("SHEETS_IMPORTER_PAGERANGE"), rangeLength)
+	// Sheets importer
+	sheetsRangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RAGENLEN"))
+	sheetsID := os.Getenv("SHEETS_IMPORTER_ID")
+	sheetsPageRange := os.Getenv("SHEETS_IMPORTER_PAGERANGE")
+	sheetsPath := os.Getenv("SHEETS_IMPORTER_SA_PATH")
+	sheetsImporter := importers.NewSheetsImporter(nil, sheetsID, sheetsPath, sheetsPageRange, sheetsRangeLength)
 
+	// Importers
 	importers := map[string]importing.Importer{
 		"example": exampleImporter,
 		"sheets":  sheetsImporter,
 	}
-
-	//Loggers
-	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
-	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
-	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 
 	// Hashers
 	passHasher := hasher.NewPasswordHasher()
@@ -71,7 +79,6 @@ func main() {
 	importer := importing.NewService(*importExpenses)
 
 	// Authenticating
-	authLogger := logger.NewSTDLogger("Authenticator", logger.RED2)
 	authenticateUser := authenticating.NewUserAuthenticator(authLogger, passHasher, jsonStorage)
 	authenticator := authenticating.NewAuthenticator(*authenticateUser)
 
