@@ -12,9 +12,9 @@ import (
 type ID uint64
 
 type Place struct {
-	City string `validate:"min=3,max=64"`
-	Town string `validate:"min=3,max=64"`
-	Shop string `validate:"min=3,max=64"`
+	City string `validate:"min=2,max=64"`
+	Town string `validate:"min=2,max=64"`
+	Shop string `validate:"min=2,max=64"`
 }
 type Price struct {
 	Currency string  `validate:"required"`

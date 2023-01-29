@@ -28,11 +28,6 @@ func NewUserAuthenticator(l app.Logger, h app.Hasher, u user.Users) *UserAuthent
 }
 
 func (auth *UserAuthenticator) Authenticate(req LoginReq) (*LoginResp, error) {
-	return &LoginResp{
-		Authenticated: true,
-		UserID:        "test-user",
-		Alias:         "Mr. Test User",
-	}, nil
 	auth.logger.Info("Attampting to authenticate user %s", req.Username)
 	user, err := auth.users.Get(req.Username)
 	if err != nil {
