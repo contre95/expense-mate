@@ -35,6 +35,7 @@ func main() {
 	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
 	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
+	//trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 
 	// SQL Storage
 	dsn := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
@@ -69,6 +70,10 @@ func main() {
 	// Querying
 	getCategories := querying.NewCategoryGetter(querierLogger, sqlStorage)
 	querier := querying.NewService(*getCategories)
+
+	// Tracking
+	//createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
+	//tracker := tracking.NewService(*createExpense)
 
 	// Managing
 	createUser := managing.NewUserCreator(managerLogger, passHasher, jsonStorage)

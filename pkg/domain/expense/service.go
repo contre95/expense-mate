@@ -32,7 +32,7 @@ func NewExpense(price Price, product, people string, place Place, date time.Time
 	return &newExpense, nil
 }
 
-// NewCategory creates a new category for expenses (Factory Method)
+// NewCategory creates a new category for an expense (Factory Method)
 func (e *Expense) Categorize(name string) {
 	e.Category = Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
