@@ -4,7 +4,6 @@ import (
 	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/user"
-	"fmt"
 )
 
 type CreateUserResp struct {
@@ -30,36 +29,25 @@ func NewUserCreator(l app.Logger, h app.Hasher, u user.Users) *UsersCreator {
 
 // Create tries to create an new user, if it exist it returs an error with the UUID of the existing user in the response
 func (s *UsersCreator) Create(req CreateUserReq) (*CreateUserResp, error) {
-	var err error
-	var exists bool
-	exists, err = s.users.Exists(req.Username)
-	if err != nil {
-		s.logger.Err("Could not check if user %s exists: %v", req.Username, err)
-		return nil, err
+	s.logger.Info("Attempting to create user %s", req.Username)
+	newUser, createErr := user.NewUser(req.Username, req.Password, req.Alias)
+	if createErr != nil {
+		return nil, createErr
 	}
-	s.logger.Info("Attemp to create user %s", req.Username)
-	if !exists {
-		newUser, _ := user.NewUser(req.Username, req.Password, req.Alias)
-		s.logger.Info("Creating user %s uuid %s", newUser.Username, newUser.ID)
-		err := s.users.Add(*newUser)
-		if err != nil {
+	_, err := s.users.Get(req.Username)
+	if err != nil && err.Error() == user.UserNotFoundErr {
+		if s.users.Add(*newUser) != nil {
 			s.logger.Err("Could not create user %s: %v", req.Username, err)
 			return nil, err
 		}
 		s.logger.Info("User %s with ID: %s created succesfully.", newUser.Username, newUser.ID.String())
-		return &CreateUserResp{
-			UUID: newUser.ID.String(),
-		}, nil
-	} else {
-		existingUser, err := s.users.Get(req.Username)
-		if err != nil {
-			s.logger.Err("Could not retrieve existing user %s: %v", req.Username, err)
-			return nil, err
-		}
-		s.logger.Warn("User %s already exist with uuid %s", existingUser.Username, existingUser.ID)
-		return &CreateUserResp{
-			UUID: existingUser.ID.String(),
-		}, errors.New(fmt.Sprintf("User with name %s already exists with uuid %s", req.Username, existingUser.ID.String()))
-
+		return &CreateUserResp{UUID: newUser.ID.String()}, nil
 	}
+	if err != nil && err.Error() != user.UserNotFoundErr {
+		s.logger.Err("Coldn't validate if user %s exists: %v", req.Username, err)
+		return nil, err
+	}
+	// err is nil
+	s.logger.Err("Could not create user %s, already exists", req.Username)
+	return nil, errors.New(user.UserAlreadyExists)
 }

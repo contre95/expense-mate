@@ -7,9 +7,8 @@ import (
 )
 
 type LoginResp struct {
-	Authenticated bool
-	UserID        string
-	Alias         string
+	UserID string
+	Alias  string
 }
 
 type LoginReq struct {
@@ -27,17 +26,22 @@ func NewUserAuthenticator(l app.Logger, h app.Hasher, u user.Users) *UserAuthent
 	return &UserAuthenticator{l, h, u}
 }
 
-func (auth *UserAuthenticator) Authenticate(req LoginReq) (*LoginResp, error) {
-	auth.logger.Info("Attampting to authenticate user %s", req.Username)
-	user, err := auth.users.Get(req.Username)
+func (a *UserAuthenticator) Authenticate(req LoginReq) (*LoginResp, error) {
+	a.logger.Info("Attampting to authenticate user %s", req.Username)
+	u, err := a.users.Get(req.Username)
 	if err != nil {
-		return nil, errors.New("Failed retrieving users data")
+		if err.Error() == user.UserNotFoundErr {
+			a.logger.Warn("There was an attempt to authenticate with unexistent user %s", req.Username)
+		}
+		return nil, errors.New("Error trying to retrieve user.")
 	}
-	resp := &LoginResp{
-		Authenticated: user.Password == req.Password,
-		UserID:        user.ID.String(),
-		Alias:         user.Alias,
+	if u.Password == req.Password {
+		a.logger.Info("User %s has been authenticated", req.Username)
+		return &LoginResp{
+			UserID: u.ID.String(),
+			Alias:  u.Alias,
+		}, nil
 	}
-	return resp, nil
-
+	a.logger.Warn("User %s not authorized to login.", req.Username)
+	return nil, errors.New("Authentication error")
 }

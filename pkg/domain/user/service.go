@@ -1,6 +1,8 @@
 package user
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 func NewUser(username, pass, alias string) (*User, error) {
 	newUser := User{
@@ -9,5 +11,5 @@ func NewUser(username, pass, alias string) (*User, error) {
 		Password: pass,
 		Alias:    alias,
 	}
-	return &newUser, nil
+	return &newUser, newUser.validate()
 }
