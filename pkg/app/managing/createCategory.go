@@ -1,6 +1,7 @@
 package managing
 
 import (
+	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 )
@@ -14,7 +15,7 @@ type CreateCategoryReq struct {
 	Name string
 }
 
-// CategoryCreator use case creates a category for a expense
+// CategoryCreator use case creates a category for an expense
 type CategoryCreator struct {
 	logger   app.Logger
 	expenses expense.Expenses
@@ -24,16 +25,28 @@ func NewCategoryCreator(l app.Logger, e expense.Expenses) *CategoryCreator {
 	return &CategoryCreator{l, e}
 }
 
-//Create use cases function creates a new category
+// Create use cases function creates a new category
 func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, error) {
-	panic("Implement me ?")
-	//category := expense.NewCategory(req.Name)
-	//err := u.expenses.SaveCategory(category)
-	//if err != nil {
-	//u.logger.Err("Could not create category: %v", err)
-	//return nil, err
-	//}
-	//resp := &CreateCategoryResp{ID: string(category.ID), Msg: "Category created"}
-	//u.logger.Info("Category %s, created", category.Name)
-	//return resp, nil
+	newCategory, createErr := expense.NewCategory(req.Name)
+	if createErr != nil {
+		s.logger.Debug("Invalid category %s: %v", req, createErr)
+		return nil, createErr
+	}
+	exist, err := s.expenses.CategoryExists(newCategory.ID)
+	if err != nil {
+		s.logger.Err("Could not check category existance", req, createErr)
+		return nil, err
+	}
+	if !exist {
+		err := s.expenses.AddCategory(*newCategory)
+		if err != nil && err.Error() != expense.CategoryAlreadyExists {
+			s.logger.Err("Could not save category: %v", err)
+			return nil, err
+		}
+		resp := &CreateCategoryResp{ID: string(newCategory.ID), Msg: "Category created"}
+		s.logger.Info("Category %s, created", newCategory.Name)
+		return resp, nil
+	}
+	s.logger.Warn("Tried to add existing category", req, createErr)
+	return nil, errors.New(expense.CategoryAlreadyExists)
 }
