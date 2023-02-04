@@ -1,17 +1,11 @@
 package expense
 
 import (
-	"fmt"
-	"hash/fnv"
 	"strings"
 	"time"
-)
 
-func hash(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
-}
+	"github.com/google/uuid"
+)
 
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
 func NewExpense(price Price, product, people string, place Place, date time.Time, cname string) (*Expense, error) {
@@ -28,7 +22,7 @@ func NewExpense(price Price, product, people string, place Place, date time.Time
 		Category: *newCat,
 	}
 
-	newExpense.ID = ID(hash(place.Shop + fmt.Sprintf("%f", price.Amount) + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
+	newExpense.ID = ID(uuid.New().String())
 	return newExpense.Validate()
 }
 

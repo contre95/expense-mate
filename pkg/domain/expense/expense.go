@@ -9,7 +9,7 @@ import (
 )
 
 // ID is the unique identifier for the domain objects of type Expense
-type ID uint64
+type ID string
 
 type Place struct {
 	City string `validate:"min=2,max=64"`
@@ -60,7 +60,7 @@ type Expenses interface {
 	// Creates a new category returns expense.CategoryAlreadyExistsErr if category is duplicated.
 	AddCategory(c Category) error
 	// Validates if a category exists
-	CategoryExists(cname string) (bool, error)
+	CategoryExists(id CategoryID) (bool, error)
 }
 
 // Validate
