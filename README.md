@@ -2,7 +2,7 @@
 
 My new excuse to keep on coding. Don't expect much doc.
 
-It's just an API made with [Fiber](https://github.com/gofiber/fiber) and [Gorm](https://gorm.io/) (probably not the best decision) which aims the help you with tracking expenses and let's you interact with them on [Grafana](https://grafana.com/)
+It's just an API made with [Fiber](https://github.com/gofiber/fiber) and no ORM which aims the help you with tracking expenses and let's you interact with them on [Grafana](https://grafana.com/)
 
 ### Expenses dashboard
 
@@ -15,7 +15,6 @@ A Grafana dashboard is automatically created and can be accesses from [localhost
 - Import expenses from different source
   - Google sheets (you will need a [service account](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-gcloud) and share you spread sheet with it.
   - Sample Data ([exampleImporter.go](https://github.com/contre95/expenses-app/blob/main/pkg/gateways/importers/exampleImporter.go))
-- Add / Delete individual expenses (TODO)
 
 # Configurations
 
