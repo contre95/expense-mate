@@ -46,7 +46,7 @@ type CategoryName string
 // Category is an entity that is supposed to be accessed only from the Expense aggregate
 type Category struct {
 	ID   CategoryID   `validate:"required,min=3"`
-	Name CategoryName `validate:"required,min=3,containsany=!-@#"`
+	Name CategoryName `validate:"required,min=3,excludesall=!-@#"`
 }
 
 // Expenses is the repository for all the command actions for Expense
@@ -71,7 +71,7 @@ func (c *Expense) Validate() (*Expense, error) {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return nil, errors.New(fmt.Sprintf("Invalid category data: %v", err))
+		return nil, errors.New(fmt.Sprintf("Invalid expense data: %v", err))
 	}
 	return c, nil
 }

@@ -79,19 +79,20 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 		newExp, err := parseExpense(e)
 		if err != nil {
 			failedExpenses++
-			u.logger.Err("Could not import expense: %s of %f %s: %s", e.Product, e.Amount, e.Currency, err)
+			u.logger.Err("Could not import expense: %s of %f %s from %s: %s", e.Product, e.Amount, e.Currency, e.Category, err)
 			if !req.BypassWrongExpenses {
 				fmt.Println(req.BypassWrongExpenses)
 				return nil, fmt.Errorf("Failed to import expense: %s of %f %s", e.Product, e.Amount, e.Currency)
 			}
-		}
-		err = u.expenses.Add(*newExp)
-		if err != nil {
-			failedExpenses++
-			u.logger.Err("Failed to save expense %s : %s", newExp.ID, err)
-			if !req.BypassWrongExpenses {
-				fmt.Println(req.BypassWrongExpenses)
-				return nil, fmt.Errorf("Failed to save expense %d : %s", newExp.ID, err)
+		} else {
+			err = u.expenses.Add(*newExp)
+			if err != nil {
+				failedExpenses++
+				u.logger.Err("Failed to save expense %s : %s", newExp.ID, err)
+				if !req.BypassWrongExpenses {
+					fmt.Println(req.BypassWrongExpenses)
+					return nil, fmt.Errorf("Failed to save expense %d : %s", newExp.ID, err)
+				}
 			}
 		}
 	}

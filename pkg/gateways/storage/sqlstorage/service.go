@@ -9,7 +9,6 @@ type SQLStorage struct {
 }
 
 func NewStorage(db *sql.DB) *SQLStorage {
-	defer db.Close()
 	return &SQLStorage{db}
 }
 
