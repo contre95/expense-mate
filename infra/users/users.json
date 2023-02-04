@@ -1,0 +1,14 @@
+[
+ {
+  "username": "admin",
+  "alias": "contre",
+  "password": "secretpass",
+  "uuid": "5da89fcf-7622-4613-8d68-9fa47a06c516"
+ },
+ {
+  "username": "anouxis",
+  "alias": "anouxis",
+  "password": "test123",
+  "uuid": "25aa6565-a10d-4f78-8ee0-0c0052290bd2"
+ }
+]

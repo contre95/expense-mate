@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"expenses-app/pkg/app/authenticating"
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/importing"
@@ -10,49 +12,62 @@ import (
 	"expenses-app/pkg/gateways/importers"
 	"expenses-app/pkg/gateways/logger"
 	"expenses-app/pkg/gateways/storage/json"
-	"expenses-app/pkg/gateways/storage/sql"
+	"expenses-app/pkg/gateways/storage/sqlstorage"
 	"expenses-app/pkg/presenters/http"
-	"fmt"
 	"os"
 	"strconv"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 func main() {
-	fmt.Println("Starting..")
 	// Infrastructure / Gateways
+
+	//Loggers
+	initLogger := logger.NewSTDLogger("INIT", logger.VIOLET)
+	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
+	authLogger := logger.NewSTDLogger("Authenticator", logger.YELLOW)
+	managerLogger := logger.NewSTDLogger("Managing", logger.CYAN)
+	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
+	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
+	//trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 
 	// JSON Storage
 	jsonStorage := json.NewStorage(os.Getenv("JSON_STORAGE_PATH"))
-
-	//Loggers
-	initLogger := logger.NewSTDLogger("INIT", logger.RED2)
-	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	authLogger := logger.NewSTDLogger("Authenticator", logger.RED2)
-	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
-	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
-	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
+	initLogger.Info("Json storage initializer on %s", os.Getenv("JSON_STORAGE_PATH"))
 
 	// SQL Storage
-	dsn := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
+	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
+	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("mysql", mysqlUser+mysqlUrl)
+	defer db.Close()
 	if err != nil {
 		initLogger.Err("%v", err)
 		return
 	}
-	sqlStorage := sql.NewStorage(db)
+	sqlStorage := sqlstorage.NewStorage(db)
+	initLogger.Info("SQL storage initializer on %s", mysqlUrl)
 
 	// Example importer
 	exampleImporter := importers.NewExampleImporter("example data")
+	initLogger.Info("Example importer initialized")
 	// Sheets importer
 	sheetsRangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RAGENLEN"))
 	sheetsID := os.Getenv("SHEETS_IMPORTER_ID")
 	sheetsPageRange := os.Getenv("SHEETS_IMPORTER_PAGERANGE")
 	sheetsPath := os.Getenv("SHEETS_IMPORTER_SA_PATH")
-	sheetsImporter := importers.NewSheetsImporter(nil, sheetsID, sheetsPath, sheetsPageRange, sheetsRangeLength)
+	ctx := context.Background()
+	srv, err := sheets.NewService(ctx, option.WithServiceAccountFile(sheetsPath))
+	if err != nil {
+		initLogger.Err("Error intilizing Google sheets: %v", err)
+		return
+	}
+	sheetsImporter := importers.NewSheetsImporter(srv, sheetsID, sheetsPageRange, sheetsRangeLength)
+	initLogger.Info("Sheets importer importer initialized for page range %s and range length %s", sheetsPageRange, sheetsRangeLength)
 
 	// Importers
 	importers := map[string]importing.Importer{
@@ -69,6 +84,10 @@ func main() {
 	// Querying
 	getCategories := querying.NewCategoryGetter(querierLogger, sqlStorage)
 	querier := querying.NewService(*getCategories)
+
+	// Tracking
+	//createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
+	//tracker := tracking.NewService(*createExpense)
 
 	// Managing
 	createUser := managing.NewUserCreator(managerLogger, passHasher, jsonStorage)

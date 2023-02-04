@@ -1,41 +1,36 @@
 package expense
 
 import (
-	"fmt"
-	"hash/fnv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-func hash(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
-}
-
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
-func NewExpense(price Price, product, people string, place Place, date time.Time, category string) (*Expense, error) {
-	newExpense := Expense{
-		Price:   price,
-		Product: product,
-		People:  people,
-		Place:   place,
-		Date:    date,
-	}
-
-	newExpense.ID = ID(hash(place.Shop + fmt.Sprintf("%f", price.Amount) + newExpense.People + newExpense.Product + string(newExpense.Category.ID) + date.String()))
-	newExpense.Categorize(category)
-	err := newExpense.validate()
+func NewExpense(price Price, product, people string, place Place, date time.Time, cname string) (*Expense, error) {
+	newCat, err := NewCategory(cname)
 	if err != nil {
 		return nil, err
 	}
-	return &newExpense, nil
+	newExpense := Expense{
+		Price:    price,
+		Product:  product,
+		People:   people,
+		Place:    place,
+		Date:     date,
+		Category: *newCat,
+	}
+
+	newExpense.ID = ID(uuid.New().String())
+	return newExpense.Validate()
 }
 
-// NewCategory creates a new category for expenses (Factory Method)
-func (e *Expense) Categorize(name string) {
-	e.Category = Category{
+// NewCategory creats a new category and validates the field. Still don't know if this can be created separately or always under an Expense ?
+func NewCategory(name string) (*Category, error) {
+	newCategory := Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),
 		Name: CategoryName(name),
 	}
+	return newCategory.Validate()
 }

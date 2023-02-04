@@ -20,10 +20,11 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *import
 	// Unrestricted
 	fi.Get("/ping", ping(*he))
 	fi.Post("/login", login(*a))
-	fi.Get("/expenses/categories", getCategories(q.CategoryGetter))
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 	// Restricted
 	fi.Get("/restricted", restricted)
+	fi.Post("/users", createUsers(m.UserCreator))
+	fi.Get("/expenses/categories", getCategories(q.CategoryGetter))
 	fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
 }
 
@@ -43,16 +44,16 @@ func login(a authenticating.Service) func(c *fiber.Ctx) error {
 			Password: c.FormValue("pass"),
 		}
 		resp, err := a.UserAuthenticator.Authenticate(req)
-		if err != nil || !resp.Authenticated {
+		if err != nil {
 			return c.JSON(&fiber.Map{
 				"err": c.SendStatus(fiber.StatusUnauthorized),
+				"msg": "Unexistent username or wrong password.",
 			})
 		}
 		// Create the Claims
 		claims := jwt.MapClaims{
-			"name":  "John Doe",
-			"admin": true,
-			"exp":   time.Now().Add(time.Hour * 72).Unix(),
+			"name": resp.UserID,
+			"exp":  time.Now().Add(time.Hour * 72).Unix(),
 		}
 		// Create token
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
