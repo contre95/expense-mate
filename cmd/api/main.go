@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"expenses-app/pkg/app/authenticating"
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/importing"
@@ -10,15 +11,12 @@ import (
 	"expenses-app/pkg/gateways/importers"
 	"expenses-app/pkg/gateways/logger"
 	"expenses-app/pkg/gateways/storage/json"
-	"expenses-app/pkg/gateways/storage/sql"
 	"expenses-app/pkg/presenters/http"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -38,8 +36,9 @@ func main() {
 	//trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 
 	// SQL Storage
-	dsn := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	_ := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS") + "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
+	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("mysql", "USERNAME:PASSSWORD@unix(/var/run/mysqld/mysqld.sock)/martini_blog")
 	if err != nil {
 		initLogger.Err("%v", err)
 		return

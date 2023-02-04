@@ -49,7 +49,7 @@ type ImportExpenses struct {
 	expenses  expense.Expenses
 }
 
-//  NewExpenseImporter returns a valid ExpenseImporter use case
+// NewExpenseImporter returns a valid ExpenseImporter use case
 func NewExpenseImporter(l app.Logger, i map[string]Importer, e expense.Expenses) *ImportExpenses {
 	return &ImportExpenses{l, i, e}
 }

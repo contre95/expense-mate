@@ -63,26 +63,27 @@ type Expenses interface {
 	CategoryExists(cname string) (bool, error)
 }
 
-func (c *Expense) validate() error {
+// Validate
+func (c *Expense) Validate() (*Expense, error) {
 	validate := validator.New()
 	err := validate.Struct(c)
 	if err != nil {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return errors.New(fmt.Sprintf("Invalid category data: %v", err))
+		return nil, errors.New(fmt.Sprintf("Invalid category data: %v", err))
 	}
-	return nil
+	return c, nil
 }
 
-func (c *Category) validate() error {
+func (c *Category) Validate() (*Category, error) {
 	validate := validator.New()
 	err := validate.Struct(c)
 	if err != nil {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return errors.New(fmt.Sprintf("Invalid category data: %v", err))
+		return nil, errors.New(fmt.Sprintf("Invalid category data: %v", err))
 	}
-	return nil
+	return c, nil
 }
