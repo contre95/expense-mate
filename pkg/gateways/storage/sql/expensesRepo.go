@@ -1,55 +1,45 @@
-package sql
+package sqlstorage
 
 import (
-	"errors"
 	"expenses-app/pkg/domain/expense"
-
-	"gorm.io/gorm"
+	"fmt"
+	"log"
 )
 
 // Add is used to add a new Expense to the system
 func (sql *SQLStorage) Add(e expense.Expense) error {
-	var category Category
-	res := sql.db.First(&category, e.Category.ID)
-	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		category = Category{
-			ID:   string(e.Category.ID),
-			Name: string(e.Category.Name),
-		}
-		sql.db.Create(&category)
+	stmt, err := sql.db.Prepare("INSTER INTO expenses VALUES(?,?,?,?,?,?,?,?,?,?,?)")
+	if err != nil {
+		return err
 	}
-	result := sql.db.Create(&Expense{
-		ID:       uint64(e.ID),
-		Price:    e.Price.Amount,
-		Currency: e.Price.Currency,
-		Product:  e.Product,
-		Shop:     e.Place.Shop,
-		City:     e.Place.Town,
-		Date:     e.Date,
-		People:   e.People,
-		Category: category,
-	})
-	if result.Error != nil {
-		return result.Error
+	_, err = stmt.Exec(e.ID, e.Price.Amount, e.Product, e.Price.Currency, e.Place.Shop, e.Place.City, e.People, e.Date, e.Category, nil, nil, e.Category.ID)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 // Delete is used to remove a Expense from the system
 func (sql *SQLStorage) Delete(id expense.ID) error {
-	panic("not implemented") // TODO: Implement
+	//result := sql.db.Raw("delete from expenses where id = ?", id)
+	_, err := sql.db.Exec(fmt.Sprintf("delete from expenses where id = %d", id))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func parseCategories(categories []Category) []expense.Category {
-	domainCategories := []expense.Category{}
-	for _, c := range categories {
-		domainCat := expense.Category{
-			ID:   expense.CategoryID(c.ID),
-			Name: expense.CategoryName(c.Name),
-		}
-		domainCategories = append(domainCategories, domainCat)
+func (sql *SQLStorage) AddCategory(c expense.Category) error {
+	stmt, err := sql.db.Prepare("INSTER INTO expenses VALUES(?,?)")
+	if err != nil {
+		return err
 	}
-	return domainCategories
+	_, err = stmt.Exec(c.ID, c.Name)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 // GetCategories is used to retrieve all categories
@@ -59,21 +49,32 @@ func (sql *SQLStorage) CategoryExist() (bool, error) {
 
 // GetCategories is used to retrieve all categories
 func (sql *SQLStorage) GetCategories() ([]expense.Category, error) {
-	var categories []Category
-	result := sql.db.Raw("select * from categories").Scan(&categories)
-	//result := sql.db.Delete(&Category{ID: string(id)})
-	if result.Error != nil {
-		return nil, result.Error
+	rows, err := sql.db.Query("select * from categories")
+	if err != nil {
+		return nil, err
 	}
-	return parseCategories(categories), nil
+	defer rows.Close()
+	var categories []expense.Category
+	for rows.Next() {
+		var category expense.Category
+		err := rows.Scan(&category.ID, &category.Name)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := category.Validate(); err != nil {
+			log.Printf("Error retrieving category: %v", err)
+			continue
+		}
+		categories = append(categories, category)
+	}
+	return categories, nil
 }
 
 // DeleteCategory deletes a category from the database using Gorm ORM
 func (sql *SQLStorage) DeleteCategory(id expense.CategoryID) error {
-	result := sql.db.Raw("delete from categories where id = ?", id)
-	//result := sql.db.Delete(&Category{ID: string(id)})
-	if result.Error != nil {
-		return result.Error
+	_, err := sql.db.Exec(fmt.Sprintf("delete from categories where id = %s", id))
+	if err != nil {
+		return err
 	}
 	return nil
 }

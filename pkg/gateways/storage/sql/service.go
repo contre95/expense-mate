@@ -1,14 +1,15 @@
-package sql
+package sqlstorage
 
 import (
-	"gorm.io/gorm"
+	"database/sql"
 )
 
 type SQLStorage struct {
-	db *gorm.DB
+	db *sql.DB
 }
 
-func NewStorage(db *gorm.DB) *SQLStorage {
+func NewStorage(db *sql.DB) *SQLStorage {
+	defer db.Close()
 	return &SQLStorage{db}
 }
 
@@ -18,12 +19,12 @@ func NewStorage(db *gorm.DB) *SQLStorage {
 //}
 
 // Paginations for GORM: https://gorm.io/docs/scopes.html#Pagination
-func (sql *SQLStorage) paginate(pageSize, page uint) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if page == 0 {
-			page = 1
-		}
-		offset := (page - 1) * pageSize
-		return db.Offset(int(offset)).Limit(int(pageSize))
-	}
-}
+//func (sql *SQLStorage) paginate(pageSize, page uint) func(db *gorm.DB) *gorm.DB {
+//return func(db *gorm.DB) *gorm.DB {
+//if page == 0 {
+//page = 1
+//}
+//offset := (page - 1) * pageSize
+//return db.Offset(int(offset)).Limit(int(pageSize))
+//}
+//}
