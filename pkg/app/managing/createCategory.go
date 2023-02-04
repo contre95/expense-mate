@@ -32,7 +32,7 @@ func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, er
 		s.logger.Debug("Invalid category %s: %v", req, createErr)
 		return nil, createErr
 	}
-	exist, err := s.expenses.CategoryExists(req.Name)
+	exist, err := s.expenses.CategoryExists(newCategory.ID)
 	if err != nil {
 		s.logger.Err("Could not check category existance", req, createErr)
 		return nil, err
