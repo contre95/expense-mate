@@ -8,7 +8,8 @@ It's just an API made with [Fiber](https://github.com/gofiber/fiber) and no ORM 
 
 A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
 
-![](./docs/assets/grafana-dashboard.png)
+![image](https://user-images.githubusercontent.com/15664513/216789116-86d3cf33-5535-4bb9-b30c-8196c5ef1696.png)
+
 
 ## Features
 
