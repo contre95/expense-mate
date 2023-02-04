@@ -27,10 +27,10 @@ func main() {
 	// Infrastructure / Gateways
 
 	//Loggers
-	initLogger := logger.NewSTDLogger("INIT", logger.RED2)
+	initLogger := logger.NewSTDLogger("INIT", logger.VIOLET)
 	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	authLogger := logger.NewSTDLogger("Authenticator", logger.RED2)
-	managerLogger := logger.NewSTDLogger("Managing", logger.VIOLET)
+	authLogger := logger.NewSTDLogger("Authenticator", logger.YELLOW)
+	managerLogger := logger.NewSTDLogger("Managing", logger.CYAN)
 	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 	//trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
@@ -44,6 +44,7 @@ func main() {
 	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
 	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db, err := sql.Open("mysql", mysqlUser+mysqlUrl)
+	defer db.Close()
 	if err != nil {
 		initLogger.Err("%v", err)
 		return

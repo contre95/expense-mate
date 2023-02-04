@@ -33,7 +33,7 @@ func (u *User) validate() error {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return errors.New(fmt.Sprintf("Invalid category data: %v", err))
+		return errors.New(fmt.Sprintf("Invalid user data: %v", err))
 	}
 	return nil
 }
