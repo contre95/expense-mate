@@ -1,7 +1,6 @@
 package importers
 
 import (
-	"context"
 	"expenses-app/pkg/app/importing"
 	"fmt"
 	"log"
@@ -9,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -20,30 +18,16 @@ type SheetsImporter struct {
 	rangeLenght   int
 }
 
-func NewSheetsImporter(srv *sheets.Service, sheetID, creadPath, pageRange string, rangeLenght int) *SheetsImporter {
-	if srv == nil {
-		srv, _ = newSheetService(creadPath)
-	}
+func NewSheetsImporter(srv *sheets.Service, sheetID, pageRange string, rangeLenght int) *SheetsImporter {
 	return &SheetsImporter{srv, sheetID, pageRange, rangeLenght}
 }
 
-func newSheetService(credPath string) (*sheets.Service, error) {
-	ctx := context.Background()
-	fmt.Println(credPath)
-	srv, err := sheets.NewService(ctx, option.WithServiceAccountFile(credPath))
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v\n", err)
-		return nil, err
-	}
-	return srv, nil
-}
-
-//GetAllCategories() ([]string, error)
+// GetAllCategories() ([]string, error)
 func (si *SheetsImporter) GetImportedExpenses() ([]importing.ImportedExpense, error) {
 	//readRange := "Expenses!A2:E"
 	resp, err := si.srv.Spreadsheets.Values.Get(si.spreadsheetId, si.pageRange).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v\n", err)
+		return nil, err
 	}
 	importedExpenses := []importing.ImportedExpense{}
 	if len(resp.Values) == 0 {

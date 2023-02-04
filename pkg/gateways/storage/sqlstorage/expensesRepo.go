@@ -43,7 +43,7 @@ func (sql *SQLStorage) AddCategory(c expense.Category) error {
 }
 
 // GetCategories is used to retrieve all categories
-func (sql *SQLStorage) CategoryExist() (bool, error) {
+func (sql *SQLStorage) CategoryExists(name string) (bool, error) {
 	return false, nil
 }
 
