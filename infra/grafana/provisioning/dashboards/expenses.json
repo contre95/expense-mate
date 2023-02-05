@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -21,20 +24,859 @@
   "description": "",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1647295503329,
   "links": [],
   "liveNow": false,
   "panels": [
     {
-      "datasource": "Expenses",
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "services-gas": {
+                  "index": 1,
+                  "text": "Gas"
+                },
+                "services-internet": {
+                  "index": 3,
+                  "text": "Internet"
+                },
+                "services-luz": {
+                  "index": 0,
+                  "text": "Electricidad"
+                },
+                "services-phone": {
+                  "index": 2,
+                  "text": "Phone"
+                },
+                "services-water": {
+                  "index": 4,
+                  "text": "Agua"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "text": {
+          "valueSize": 100
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.1.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select AVG(price), category_id\nfrom expenses\nwhere category_id like \"%Service%\"\ngroup by 2\norder by 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Average prices on Services",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#979797",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.1.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select sum(price) from expenses where category_id in ($categories)",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Total spend since arrival",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 1,
+            "axisWidth": 98,
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "mappings": [],
+          "max": 1000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "€"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 9,
+        "x": 0,
+        "y": 7
+      },
+      "id": 12,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.96,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "none",
+        "text": {},
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "8.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.expend_date)=$month and year(expenses.expend_date) in ($year) group by category_id order by 2 desc;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "$month expenses",
+      "transformations": [],
+      "type": "barchart"
+    },
+    {
+      "aliasColors": {
+        "€ September": "#A352CC"
+      },
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "decimals": 2,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 15,
+        "w": 9,
+        "x": 9,
+        "y": 7
+      },
+      "hiddenSeries": false,
+      "id": 19,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": false,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": false,
+        "total": true,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 3,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": false
+      },
+      "percentage": false,
+      "pluginVersion": "9.1.6",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeatDirection": "h",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:1624",
+          "alias": "€ September",
+          "yaxis": 1
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expend_date as time, monthname(expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expend_date)=1 and year(expend_date) in ($year) group by month(expend_date) order by time asc",
+          "refId": "B",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=2 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "C",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=3 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "D",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=4 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "August",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=5 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "September",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=6 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "October",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=7 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "November",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=8 and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=9  and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "E",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=10  and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "F",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=11  and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "G",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select expenses.expend_date as time, monthname(expenses.expend_date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.expend_date)=12  and year(expenses.expend_date) in ($year) group by month(expenses.expend_date) order by time asc",
+          "refId": "H",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [
+        {
+          "$$hashKey": "object:487",
+          "colorMode": "warning",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 380,
+          "yaxis": "right"
+        },
+        {
+          "$$hashKey": "object:501",
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "gt",
+          "value": 467,
+          "yaxis": "right"
+        }
+      ],
+      "timeRegions": [],
+      "title": "Monthly expenses for $year in $categories",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "series",
+        "show": true,
+        "values": [
+          "total"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:165",
+          "format": "currencyEUR",
+          "label": "",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:166",
+          "format": "currencyEUR",
+          "label": "",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": true
+      }
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "€",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -130,29 +972,35 @@
         ]
       },
       "gridPos": {
-        "h": 9,
-        "w": 18,
-        "x": 0,
-        "y": 0
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 9
       },
       "id": 16,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "none"
         }
       },
       "targets": [
         {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  date,\n  (\n    SELECT\n      SUM(b.price)\n    FROM\n      expenses AS b\n    WHERE\n      b.date <= a.date\n      AND category_id  in ($categories)\n  ) AS \"Acumulation select categories\"\nFROM\n  expenses AS a\nWHERE\n  category_id  in ($categories)\nGROUP BY\n  2\nORDER BY\n  date\nASC;\n",
+          "rawSql": "SELECT\n  expend_date,\n  (\n    SELECT\n      SUM(b.price)\n    FROM\n      expenses AS b\n    WHERE\n      b.expend_date <= a.expend_date\n      AND category_id  in ($categories)\n  ) AS \"Acumulation select categories\"\nFROM\n  expenses AS a\nWHERE\n  category_id  in ($categories)\nGROUP BY\n  2\nORDER BY\n  expend_date\nASC;\n",
           "refId": "A",
           "select": [
             [
@@ -165,7 +1013,7 @@
             ]
           ],
           "table": "expenses",
-          "timeColumn": "date",
+          "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
           "where": [
             {
@@ -181,560 +1029,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Expenses",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#979797",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
       },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "8.2.0",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select sum(price) from expenses",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Total spend since arrival",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {
-        "€ September": "#A352CC"
-      },
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Expenses",
-      "decimals": 2,
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 12,
-        "w": 18,
-        "x": 0,
-        "y": 9
-      },
-      "hiddenSeries": false,
-      "id": 19,
-      "legend": {
-        "alignAsTable": true,
-        "avg": false,
-        "current": false,
-        "hideEmpty": false,
-        "hideZero": false,
-        "max": false,
-        "min": false,
-        "rightSide": true,
-        "show": false,
-        "sideWidth": null,
-        "total": true,
-        "values": true
-      },
-      "lines": false,
-      "linewidth": 3,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": false
-      },
-      "percentage": false,
-      "pluginVersion": "8.2.0",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "repeatDirection": "h",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:1624",
-          "alias": "€ September",
-          "yaxis": 1
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=1 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "B",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=2 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "C",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=3 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "D",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=4 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "August",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=5 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "September",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=6 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "October",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=7 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "November",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=8 and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=9  and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "E",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=10  and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "F",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=11  and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "G",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select expenses.date as time, monthname(expenses.date) as 'metrics', sum(price) as \"€\" from expenses where category_id in ($categories) and month(expenses.date)=12  and year(expenses.date) in ($year) group by month(expenses.date) order by time asc",
-          "refId": "H",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "thresholds": [
-        {
-          "$$hashKey": "object:487",
-          "colorMode": "warning",
-          "fill": true,
-          "line": true,
-          "op": "gt",
-          "value": 380,
-          "yaxis": "right"
-        },
-        {
-          "$$hashKey": "object:501",
-          "colorMode": "critical",
-          "fill": true,
-          "line": true,
-          "op": "gt",
-          "value": 467,
-          "yaxis": "right"
-        }
-      ],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Monthly expenses for $year in $categories",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "series",
-        "name": null,
-        "show": true,
-        "values": [
-          "total"
-        ]
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:165",
-          "decimals": null,
-          "format": "currencyEUR",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:166",
-          "format": "currencyEUR",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": true,
-        "alignLevel": null
-      }
-    },
-    {
-      "datasource": "Expenses",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -753,16 +1051,21 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 21,
+        "h": 23,
         "w": 6,
         "x": 18,
-        "y": 9
+        "y": 14
       },
       "id": 7,
       "options": {
+        "displayLabels": [
+          "percent"
+        ],
         "legend": {
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true,
+          "values": []
         },
         "pieType": "pie",
         "reduceOptions": {
@@ -770,19 +1073,24 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
         {
-          "format": "time_series",
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select now() as time, sum(price) as \"Spended in\", name from expenses left join categories on categories.id=expenses.category_id where category_id!=\"rent\" group by category_id",
+          "rawSql": "SELECT sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE category_id in ($categories)\nGROUP BY category_id",
           "refId": "A",
           "select": [
             [
@@ -795,7 +1103,7 @@
             ]
           ],
           "table": "expenses",
-          "timeColumn": "date",
+          "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
           "where": [
             {
@@ -810,124 +1118,18 @@
       "type": "piechart"
     },
     {
-      "datasource": "Expenses",
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 1,
-            "axisWidth": 98,
-            "fillOpacity": 100,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 0
-          },
-          "mappings": [],
-          "max": 1000,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "€"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 9,
-        "x": 0,
-        "y": 21
-      },
-      "id": 12,
-      "options": {
-        "barWidth": 0.96,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "orientation": "vertical",
-        "showValue": "always",
-        "stacking": "none",
-        "text": {},
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "8.2.3",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.date)=$month and year(expenses.date) in ($year) group by category_id order by 2 desc;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "$month expenses",
-      "transformations": [],
-      "type": "barchart"
-    },
-    {
-      "datasource": "Expenses",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -974,30 +1176,36 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
+        "h": 15,
         "w": 9,
         "x": 9,
-        "y": 21
+        "y": 22
       },
       "id": 14,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
         {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
           "format": "time_series",
           "group": [],
           "hide": true,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM (SELECT * from expenses) as expenses\nWHERE\n  $__timeFilter(date) and category_id in ($categories)\ngroup by  $__timeGroup(date, \"30d\")  ,category_id\nORDER BY date",
+          "rawSql": "SELECT $__timeGroup(expend_date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM (SELECT * from expenses) as expenses\nWHERE\n  $__timeFilter(expend_date) and category_id in ($categories)\ngroup by  $__timeGroup(expend_date, \"30d\")  ,category_id\nORDER BY expend_date",
           "refId": "A",
           "select": [
             [
@@ -1010,7 +1218,7 @@
             ]
           ],
           "table": "expenses",
-          "timeColumn": "date",
+          "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
           "where": [
             {
@@ -1021,12 +1229,16 @@
           ]
         },
         {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE\n  $__timeFilter(date) and category_id in ($categories)\ngroup by 1 ,category_id\nORDER BY date",
+          "rawSql": "SELECT $__timeGroup(expend_date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE\n  $__timeFilter(expend_date) and category_id in ($categories)\ngroup by 1 ,category_id\nORDER BY expend_date",
           "refId": "B",
           "select": [
             [
@@ -1039,7 +1251,7 @@
             ]
           ],
           "table": "expenses",
-          "timeColumn": "date",
+          "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
           "where": [
             {
@@ -1052,38 +1264,128 @@
       ],
       "title": "Spending per category",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1
+          },
+          "mappings": [],
+          "max": 3,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 9,
+        "x": 0,
+        "y": 23
+      },
+      "id": 23,
+      "options": {
+        "bucketOffset": 0,
+        "bucketSize": 0.5,
+        "combine": true,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "pluginVersion": "9.1.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select price from expenses where category_id in ($categories) group by price order by 1 desc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "price"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Normal price distribution 0€‎ - 200€‎",
+      "type": "histogram"
     }
   ],
   "refresh": false,
-  "schemaVersion": 31,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
-        "allValue": null,
         "current": {
           "selected": true,
           "text": [
-            "2021",
             "2022"
           ],
           "value": [
-            "2021",
             "2022"
           ]
         },
-        "datasource": "Expenses",
-        "definition": "select year(expenses.date) as year from expenses",
-        "description": null,
-        "error": null,
+        "datasource": {
+          "type": "mysql",
+          "uid": "PD311416FA3AADB4D"
+        },
+        "definition": "select year(expenses.expend_date) as year from expenses",
         "hide": 0,
         "includeAll": true,
-        "label": null,
         "multi": true,
         "name": "year",
         "options": [],
-        "query": "select year(expenses.date) as year from expenses",
+        "query": "select year(expenses.expend_date) as year from expenses",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1091,23 +1393,22 @@
         "type": "query"
       },
       {
-        "allValue": null,
         "current": {
           "selected": false,
           "text": "October",
           "value": "10"
         },
-        "datasource": "Expenses",
-        "definition": "select month(expenses.date) as __value, monthname(expenses.date) as __text   from expenses order by 1 asc",
-        "description": null,
-        "error": null,
+        "datasource": {
+          "type": "mysql",
+          "uid": "PD311416FA3AADB4D"
+        },
+        "definition": "select month(expenses.expend_date) as __value, monthname(expenses.expend_date) as __text   from expenses order by 1 asc",
         "hide": 0,
         "includeAll": false,
-        "label": null,
         "multi": false,
         "name": "month",
         "options": [],
-        "query": "select month(expenses.date) as __value, monthname(expenses.date) as __text   from expenses order by 1 asc",
+        "query": "select month(expenses.expend_date) as __value, monthname(expenses.expend_date) as __text   from expenses order by 1 asc",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1115,22 +1416,20 @@
         "type": "query"
       },
       {
-        "allValue": null,
         "current": {
           "selected": true,
           "text": [
-            "Services",
-            "Gifts"
+            "Rent"
           ],
           "value": [
-            "services",
-            "gifts"
+            "rent"
           ]
         },
-        "datasource": "Expenses",
+        "datasource": {
+          "type": "mysql",
+          "uid": "PD311416FA3AADB4D"
+        },
         "definition": "select id as __value, name as __text from categories",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Categories",
@@ -1147,12 +1446,13 @@
     ]
   },
   "time": {
-    "from": "2021-08-20T13:56:40.850Z",
-    "to": "2022-01-22T19:58:38.835Z"
+    "from": "2021-06-03T22:55:41.857Z",
+    "to": "2022-04-10T10:59:37.827Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Expenses",
   "uid": "VL3Zt1cnz",
-  "version": 1
+  "version": 3,
+  "weekStart": ""
 }
