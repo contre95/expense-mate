@@ -14,10 +14,12 @@ import (
 	"expenses-app/pkg/gateways/storage/json"
 	"expenses-app/pkg/gateways/storage/sqlstorage"
 	"expenses-app/pkg/presenters/http"
+	"expenses-app/pkg/presenters/telegram"
 	"os"
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gofiber/fiber/v2"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
@@ -91,7 +93,8 @@ func main() {
 
 	// Managing
 	createUser := managing.NewUserCreator(managerLogger, passHasher, jsonStorage)
-	manager := managing.NewService(*createUser)
+	createCategory := managing.NewCategoryCreator(managerLogger, sqlStorage)
+	manager := managing.NewService(*createUser, *createCategory)
 
 	// Importing
 	importExpenses := importing.NewExpenseImporter(importerLogger, importers, sqlStorage)
@@ -104,5 +107,14 @@ func main() {
 	// API
 	fiberApp := fiber.New()
 	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator, &querier)
-	fiberApp.Listen(":3000")
+	initLogger.Info("Startin fiber server on port  %d", 3000)
+	for _, route := range fiberApp.GetRoutes(true) {
+		initLogger.Info("Route %s and method %s registered.", route.Path, route.Params)
+	}
+	go http.Run(fiberApp, 3000)
+
+	// Telegram Bot
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
+	telegram.Run(bot, &healthChecker, &manager, &importer, &authenticator, &querier)
 }
