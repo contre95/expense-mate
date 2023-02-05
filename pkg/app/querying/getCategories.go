@@ -21,6 +21,7 @@ func NewCategoryGetter(l app.Logger, e expense.Expenses) *CategoryGetter {
 }
 
 func (s *CategoryGetter) Get() (*GetCategoriesResp, error) {
+	s.logger.Info("Getting all categories")
 	categories, err := s.expenses.GetCategories()
 	if err != nil {
 		s.logger.Err("Could not get categories from storage")
