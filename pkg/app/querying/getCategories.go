@@ -11,16 +11,16 @@ type GetCategoriesResp struct {
 
 //type GetCategoriesReq struct {}
 
-type CategoryGetter struct {
+type CategoryQuerier struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewCategoryGetter(l app.Logger, e expense.Expenses) *CategoryGetter {
-	return &CategoryGetter{l, e}
+func NewCategoryGetter(l app.Logger, e expense.Expenses) *CategoryQuerier {
+	return &CategoryQuerier{l, e}
 }
 
-func (s *CategoryGetter) Get() (*GetCategoriesResp, error) {
+func (s *CategoryQuerier) Get() (*GetCategoriesResp, error) {
 	s.logger.Info("Getting all categories")
 	categories, err := s.expenses.GetCategories()
 	if err != nil {
@@ -33,5 +33,4 @@ func (s *CategoryGetter) Get() (*GetCategoriesResp, error) {
 		resp.Categories[string(c.ID)] = string(c.Name)
 	}
 	return &resp, nil
-
 }

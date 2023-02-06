@@ -2,7 +2,7 @@ package telegram
 
 import "expenses-app/pkg/app/querying"
 
-func getCategories(cg querying.CategoryGetter) ([]string, error) {
+func getCategories(cg querying.CategoryQuerier) ([]string, error) {
 	resp, err := cg.Get()
 	if err != nil {
 		return nil, err
