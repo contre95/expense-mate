@@ -11,7 +11,6 @@ import (
 const SQL_DATE_FORMAT = "2006-01-02 15:04:05"
 
 func (sqls *SQLStorage) Add(e expense.Expense) error {
-	//q := "INSTER INTO `expenses` (price, product, currency, shop, city, people, `date`, created_at, updated_at, category_id)  VALUES (?,?,?,?,?,?,?,?,?,?);"
 	exist, err := sqls.CategoryExists(e.Category.ID)
 	if err != nil {
 		return err
@@ -56,7 +55,7 @@ func (sqls *SQLStorage) AddCategory(c expense.Category) error {
 }
 
 func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, error) {
-	q := "SELECT id FROM categories where id=?"
+	q := "SELECT * FROM categories where id=?"
 	var category expense.Category
 	err := sqls.db.QueryRow(q, id).Scan(&category.ID, &category.Name)
 	if err != nil {
@@ -68,21 +67,19 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {
 	// TODO: Find a better way of making this
 	var q string
-	if limit == 0 {
-		q = "SELECT * FROM expenses WHERE expend_date >= ? AND expend_date <= ? ORDER BY expend_date DESC"
-	} else {
-		q = "SELECT * FROM expenses WHERE expend_date >= ? AND expend_date <= ? ORDER BY expend_date DESC LIMIT ? OFFSET ?"
-	}
-	rows, err := sqls.db.Query(q, from.Format(SQL_DATE_FORMAT), to.Format(SQL_DATE_FORMAT))
+	q = "SELECT * FROM expenses WHERE expend_date >= ? AND expend_date <= ? ORDER BY expend_date DESC LIMIT ? OFFSET ?"
+	rows, err := sqls.db.Query(q, from.Format(SQL_DATE_FORMAT), to.Format(SQL_DATE_FORMAT), limit, offset)
+	fmt.Printf("SELECT * FROM expenses WHERE expend_date >= %s AND expend_date <= %s ORDER BY expend_date DESC LIMIT %d OFFSET %d", from.Format(SQL_DATE_FORMAT), to.Format(SQL_DATE_FORMAT), limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	var expenses []expense.Expense
+	fmt.Println(rows.Next())
 	for rows.Next() {
 		var catID expense.CategoryID
 		var e expense.Expense
-		err := rows.Scan(&e.ID, &e.Price.Amount, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
+		err := rows.Scan(&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +93,8 @@ func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint)
 		}
 		expenses = append(expenses, e)
 	}
-	return nil, nil
+	fmt.Println(expenses)
+	return expenses, nil
 }
 
 func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {

@@ -13,7 +13,7 @@ type ID string
 
 type Place struct {
 	City string `validate:"min=2,max=64"`
-	Town string `validate:"min=2,max=64"`
+	Town string
 	Shop string `validate:"min=2,max=64"`
 }
 type Price struct {

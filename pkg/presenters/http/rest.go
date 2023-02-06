@@ -28,8 +28,9 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *import
 	// Restricted
 	fi.Get("/restricted", restricted)
 	fi.Post("/users", createUsers(m.UserCreator))
-	fi.Get("/expenses/categories", getCategories(q.CategoryGetter))
+	fi.Get("/expenses/categories", getCategories(q.CategoryQuerier))
 	fi.Post("/expenses/categories", createCategory(m.CategoryCreator))
+	fi.Get("/expenses", getExpenses(q.ExpenseQuerier))
 	fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
 }
 
