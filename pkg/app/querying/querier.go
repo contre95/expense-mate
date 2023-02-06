@@ -2,9 +2,9 @@ package querying
 
 // Service just holds all the querying use cases
 type Service struct {
-	CategoryGetter CategoryGetter
+	CategoryGetter CategoryQuerier
 }
 
-func NewService(cg CategoryGetter) Service {
+func NewService(cg CategoryQuerier) Service {
 	return Service{cg}
 }

@@ -13,7 +13,7 @@ type Category struct {
 	Name string
 }
 
-func getCategories(cg querying.CategoryGetter) func(*fiber.Ctx) error {
+func getCategories(cg querying.CategoryQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		resp, err := cg.Get()
 		if err != nil {
