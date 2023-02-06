@@ -47,7 +47,7 @@ func handleCommands(update tgbotapi.Update, q *querying.Service) tgbotapi.Chatta
 	case "help":
 		msg.Text = "I understand /categories and /status."
 	case "categories":
-		categories, err := getCategories(q.CategoryGetter)
+		categories, err := getCategories(q.CategoryQuerier)
 		if err != nil {
 			msg.Text = err.Error()
 		}

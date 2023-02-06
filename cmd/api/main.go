@@ -43,7 +43,7 @@ func main() {
 
 	// SQL Storage
 	mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
-	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB")
+	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB") + "?parseTime=true"
 	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db, err := sql.Open("mysql", mysqlUser+mysqlUrl)
 	defer db.Close()
@@ -84,8 +84,9 @@ func main() {
 	healthChecker := health.NewService(healthLogger)
 
 	// Querying
-	getCategories := querying.NewCategoryGetter(querierLogger, sqlStorage)
-	querier := querying.NewService(*getCategories)
+	getCategories := querying.NewCategoryQuerier(querierLogger, sqlStorage)
+	getExpenses := querying.NewExpenseQuerier(querierLogger, sqlStorage)
+	querier := querying.NewService(*getCategories, *getExpenses)
 
 	// Tracking
 	//createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
