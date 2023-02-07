@@ -21,6 +21,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -107,6 +108,11 @@ func main() {
 
 	// API
 	fiberApp := fiber.New()
+	fiberApp.Use(cors.New(cors.Config{
+		AllowOrigins: os.Getenv("CORS_ALLOWLIST"),
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
+
 	http.MapRoutes(fiberApp, &healthChecker, &manager, &importer, &authenticator, &querier)
 	initLogger.Info("Startin fiber server on port  %d", 3000)
 	for _, route := range fiberApp.GetRoutes(true) {
