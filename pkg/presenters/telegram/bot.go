@@ -3,13 +3,15 @@ package telegram
 import (
 	"expenses-app/pkg/app/authenticating"
 	"expenses-app/pkg/app/health"
-	"expenses-app/pkg/app/importing"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
+	"expenses-app/pkg/app/tracking"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+const HELP_MSG = "I understand the following commands \n /ListCategories \n /Status \n /N26MonthTracking"
 
 func GetKeyBoardMap(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarkup {
 	matrix := [][]tgbotapi.KeyboardButton{}
@@ -25,39 +27,39 @@ func GetKeyBoardMap(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(matrix...)
 }
 
-func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, i *importing.Service, a *authenticating.Service, q *querying.Service) {
+func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
 	tbot.Debug = true
 	log.Printf("Authorized on account %s", tbot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 	for update := range updates {
-		if update.Message == nil { // ignore any non-Message updates
-			continue
-		}
-		if update.Message.IsCommand() { // ignore any non-command Messages
-			tbot.Send(handleCommands(update, q))
+		if update.Message.IsCommand() {
+			tbot.Send(handleCommands(update, &updates, tbot, q, t, h))
+			// } else if update.Message.Document != nil {
+		} else {
+			tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 		}
 	}
 }
 
-func handleCommands(update tgbotapi.Update, q *querying.Service) tgbotapi.Chattable {
+func handleCommands(update tgbotapi.Update, updates *tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, q *querying.Service, t *tracking.Service, h *health.Service) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 	switch update.Message.Command() {
 	case "help":
-		msg.Text = "I understand /categories and /status."
-	case "categories":
-		categories, err := getCategories(q.CategoryQuerier)
-		if err != nil {
-			msg.Text = err.Error()
-		}
-		msg.Text = "What category ?"
-		msg.ReplyMarkup = GetKeyBoardMap(categories, 4)
-	case "status":
-		msg.Text = "I'm ok."
+		msg.Text = HELP_MSG
+	case "ListCategories":
+		listCategories(&msg, q)
+	case "N26MonthTracking":
+		n26MonthTracking(&msg, tbot, &update, updates, t)
+	case "Status":
+		ping(&msg, h)
 	default:
-		msg.Text = "I don't know that command"
-
+		msg.Text = HELP_MSG
 	}
 	return msg
+}
+
+func ping(msg *tgbotapi.MessageConfig, h *health.Service) {
+	msg.Text = h.Ping()
 }
