@@ -1,0 +1,24 @@
+{
+  "message_id": 1176,
+  "from": {
+    "id": 527377846,
+    "is_bot": false,
+    "first_name": "Contre",
+    "username": "contre",
+    "language_code": "es"
+  },
+  "chat": {
+    "id": 527377846,
+    "first_name": "Contre",
+    "username": "contre",
+    "type": "private"
+  },
+  "date": 1675964309,
+  "document": {
+    "file_name": "n26-csv-transactions.csv",
+    "mime_type": "text/csv",
+    "file_id": "BQACAgEAAxkBAAIEmGPlL5VKMofdhCg9yP9KAm6glrPDAAJbBAACJWEoR-3nPlQOgcGULgQ",
+    "file_unique_id": "AgADWwQAAiVhKEc",
+    "file_size": 640
+  }
+}
