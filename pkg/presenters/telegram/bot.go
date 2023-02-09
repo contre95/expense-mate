@@ -10,7 +10,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-const HELP_MSG = "I understand the following commands \n /ListCategories \n /Status \n /N26MonthTracking"
+const HELP_MSG = "I don't get it. I'm no ChatGPT\n Chech the menu for available commands, please"
 
 // Register the following commands in the botfather
 
