@@ -56,7 +56,7 @@ func n26MonthTracking(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, updates *t
 			}
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Pick a category")
 			msg.ReplyMarkup = setOneTimeKeyBoardMap(category_keys, 4)
-            tbot.Send(msg)
+			tbot.Send(msg)
 			// END TODO
 			break
 		} else {
