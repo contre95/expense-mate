@@ -8,6 +8,7 @@ import (
 	"expenses-app/pkg/app/importing"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
+	"expenses-app/pkg/app/tracking"
 	"expenses-app/pkg/gateways/hasher"
 	"expenses-app/pkg/gateways/importers"
 	"expenses-app/pkg/gateways/logger"
@@ -36,7 +37,7 @@ func main() {
 	managerLogger := logger.NewSTDLogger("Managing", logger.CYAN)
 	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
-	//trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
+	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 
 	// JSON Storage
 	jsonStorage := json.NewStorage(os.Getenv("JSON_STORAGE_PATH"))
@@ -90,8 +91,8 @@ func main() {
 	querier := querying.NewService(*getCategories, *getExpenses)
 
 	// Tracking
-	//createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
-	//tracker := tracking.NewService(*createExpense)
+	createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
+	tracker := tracking.NewService(*createExpense)
 
 	// Managing
 	createUser := managing.NewUserCreator(managerLogger, passHasher, jsonStorage)
@@ -123,5 +124,5 @@ func main() {
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
-	telegram.Run(bot, &healthChecker, &manager, &importer, &authenticator, &querier)
+	telegram.Run(bot, &healthChecker, &manager, &tracker, &authenticator, &querier)
 }
