@@ -38,6 +38,7 @@ func main() {
 	importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
+	telergamLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
 
 	// JSON Storage
 	jsonStorage := json.NewStorage(os.Getenv("JSON_STORAGE_PATH"))
@@ -123,6 +124,7 @@ func main() {
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	tgbotapi.SetLogger(telergamLogger)
 	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
 	telegram.Run(bot, &healthChecker, &manager, &tracker, &authenticator, &querier)
 }
