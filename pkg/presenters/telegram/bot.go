@@ -10,7 +10,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-const HELP_MSG = "I don't get it. I'm no ChatGPT\n Chech the menu for available commands, please"
+const HELP_MSG = "I don't get it. I'm no ChatGPT 🤖\n\nCheck the menu for available commands, please."
 
 // Register the following commands in the botfather
 
@@ -18,7 +18,6 @@ const HELP_MSG = "I don't get it. I'm no ChatGPT\n Chech the menu for available 
 // n26importer - Import expenses from N26 csv file export
 // ping - Check if the bot is working
 func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
-	tgbotapi.NewRemoveKeyboard(true)
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -27,7 +26,9 @@ func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *track
 		if update.Message.IsCommand() {
 			handleCommands(update, &updates, tbot, q, t, h)
 		} else {
-			tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG)
+			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			tbot.Send(msg)
 		}
 	}
 }
