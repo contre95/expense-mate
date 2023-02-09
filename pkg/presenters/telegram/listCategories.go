@@ -6,16 +6,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func listCategories(msg *tgbotapi.MessageConfig, q *querying.Service) {
+func listCategories(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, q *querying.Service) {
 	cg := q.CategoryQuerier
 	resp, err := cg.Query()
 	if err != nil {
-		msg.Text = err.Error()
+		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 	}
-	categories := []string{}
 	for _, name := range resp.Categories {
-		categories = append(categories, name)
+		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, name))
 	}
-	msg.Text = "What category ?"
-	msg.ReplyMarkup = GetKeyBoardMap(categories, 4)
 }
