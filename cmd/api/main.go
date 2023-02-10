@@ -120,7 +120,7 @@ func main() {
 	for _, route := range fiberApp.GetRoutes(true) {
 		initLogger.Info("Route %s and method %s registered.", route.Path, route.Params)
 	}
-	go http.Run(fiberApp, 3000)
+	go http.Run(fiberApp, 3030)
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
