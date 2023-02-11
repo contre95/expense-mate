@@ -10,13 +10,29 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-const HELP_MSG = "I don't get it. I'm no ChatGPT 🤖\n\nCheck the menu for available commands, please."
+const HELP_MSG string = `
+Check the menu for available commands, please.
+
+/n26importer - Start the N26 tracking importer.
+/categories - Sends you all the categories available
+/ping - Checks bot availability and health 
+/help - Displays this menu
+`
+const DEFAULT_MSG string = "I don't get it. I'm no ChatGPT 🤖\n"
+const WELCOME_MSG string = `
+"Hello! I'm your personal expense manager bot 🤖
+I'll help you keep track of your spending and budget, so you can take control of your finances. 
+Let's get started by adding your first expense. Need help with anything? Just type /help to see what I can do for you."
+`
 
 // Register the following commands in the botfather
 
 // categories - Get a list of categories
-// n26importer - Import expenses from N26 csv file export
+// n26importer - Start the N26 tracking importer.
 // ping - Check if the bot is working
+// help - Display the help message
+
+// Run start the Telegram expense bot
 func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
@@ -26,7 +42,7 @@ func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *track
 		if update.Message.IsCommand() {
 			handleCommands(update, &updates, tbot, q, t, h)
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, DEFAULT_MSG)
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			tbot.Send(msg)
 		}
@@ -40,10 +56,13 @@ func handleCommands(update tgbotapi.Update, updates *tgbotapi.UpdatesChannel, tb
 		listCategories(tbot, &update, q)
 	case "n26importer":
 		n26MonthTracking(tbot, &update, updates, t, q)
+	case "start":
+		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, WELCOME_MSG))
+	case "help":
+		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 	case "ping":
 		ping(tbot, update, h)
 	default:
-		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 	}
 	return msg
 }
