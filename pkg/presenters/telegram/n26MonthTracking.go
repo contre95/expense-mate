@@ -19,7 +19,7 @@ type DocumentConfig struct {
 	MessageID       int
 }
 
-const EXIT_COMMAND = "N26TrackingClose"
+const N26_EXIT_TRACKER string = "Closing N26 Report Importer 📄\n --------"
 
 func getCategories(tbot *tgbotapi.BotAPI, chatID int64, q *querying.Service) ([]string, error) {
 	cg := q.CategoryQuerier
@@ -49,7 +49,7 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 	}
 	// Fetch the categories
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("There are %d expenses to process", len(csvData))))
-	for _, record := range csvData[1:] {
+	for i, record := range csvData[1:] {
 		date, err := time.Parse("2006-01-02", record[0])
 		if err != nil {
 			return err
@@ -58,11 +58,20 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 		if err != nil {
 			return err
 		}
-		resp := tracking.CreateExpenseReq{Product: "Product", Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: userName, Category: "Categ"}
+		resp := tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: userName}
 		// https://core.telegram.org/bots/api#formatting-options
-		msgText := fmt.Sprintf("<b>Place:</b>          %s\n<b>Price:</b>           <code>€ %s</code>\n<b>People:</b>       %s\n<b>Date:</b>           %s\n\n What category does it belong ?",
-			strings.Replace(fmt.Sprintf("%.2f", resp.Price), ".", ",", -1),
+		msgText := fmt.Sprintf(` %d ) Expense 💶:
+<code>
+<b>Place:</b>        %s
+<b>Price:</b>        `+"€ %s"+`
+<b>People:</b>       %s
+<b>Date:</b>         %s
+</code>
+
+What category does it belong ?`,
+			i+1,
 			resp.Place,
+			strings.Replace(fmt.Sprintf("%.2f", resp.Price), ".", ",", -1),
 			record[0], // Using the original date string not to fomratted again
 			resp.People,
 		)
@@ -70,19 +79,54 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = setOneTimeKeyBoardMap(categories, 4)
 		_, err = tbot.Send(msg)
-		for update := range *updates {
-          // check if in category
-		}
 		if err != nil {
 			return err
 		}
+		for categoryUpdate := range *updates {
+			if !contains([]string{"Skip", "⏭"}, categoryUpdate.Message.Text) && contains(categories, categoryUpdate.Message.Text) {
+				resp.Category = categoryUpdate.Message.Text
+				tbot.Send(tgbotapi.NewMessage(chatID, "Category set ✅ !\n Now, please type the name of the product:"))
+				for productUpdate := range *updates {
+					if productUpdate.Message == nil {
+						continue
+					} else {
+						resp.Product = productUpdate.Message.Text
+						break
+					}
+				}
+				break
+			} else if categoryUpdate.Message.Text == "Skip" || categoryUpdate.Message.Text == "⏭" {
+				tbot.Send(tgbotapi.NewMessage(chatID, "Exepense skipped ⏭"))
+				break
+			} else {
+				tbot.Send(tgbotapi.NewMessage(chatID, "Please pick a proper category or set \"Skip\" in order to skip this expense."))
+				continue
+			}
+		}
+		if resp.Category != "" {
+			tbot.Send(tgbotapi.NewMessage(chatID, "Expense saved 💾"))
+			//  Save category here
+		}
+		fmt.Println(len(csvData))
+		if i >= len(csvData[1:])-1 {
+			tbot.Send(tgbotapi.NewMessage(chatID, "Then end 📉 :)"))
+			msg := tgbotapi.NewMessage(chatID, N26_EXIT_TRACKER)
+			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			tbot.Send(msg)
+		} else {
+			tbot.Send(tgbotapi.NewMessage(chatID, "Next ⬇️"))
+		}
 	}
+
 	return nil
 }
 
 func n26MonthTracking(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, updates *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service) {
-	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Starting N26 Report 📄"))
-	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Please send me an N26 csv file export"))
+	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Starting N26 Report 📄\n --------"))
+	n26HelpMsg := tgbotapi.NewMessage(update.Message.Chat.ID, "Please send me an N26 CSV file export. You can pick the date range and download it from <a href='https://app.n26.com/downloads'>here </a>")
+	n26HelpMsg.ParseMode = tgbotapi.ModeHTML
+	n26HelpMsg.DisableWebPagePreview = true
+	tbot.Send(n26HelpMsg)
 	// Iterate over the new newUpdates
 	for newUpdate := range *updates {
 		chatID := newUpdate.Message.Chat.ID
@@ -97,17 +141,20 @@ func n26MonthTracking(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, updates *t
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 				break
 			}
+			categories = append(categories, "⏭") // Add skip button
 			err = categorizeAndCreate(tbot, updates, chatID, newUpdate.Message.Chat.UserName, categories, file, t)
 			if err != nil {
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 				break
 			}
-		} else {
-			msg := tgbotapi.NewMessage(newUpdate.Message.Chat.ID, "Closing N26 Report Importer 📄")
+		} else if newUpdate.Message != nil && newUpdate.Message.Text == "Exit" {
+			msg := tgbotapi.NewMessage(chatID, N26_EXIT_TRACKER)
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			tbot.Send(msg)
-			tbot.Send(tgbotapi.NewMessage(newUpdate.Message.Chat.ID, "Please send me an N26 csv file export. N26 Monlty tracker stopped."))
 			break
+		} else {
+			tbot.Send(tgbotapi.NewMessage(newUpdate.Message.Chat.ID, "Please send me an N26 CSV file export. Otherwise send \"Exit\" "))
+			continue // This can be removed
 		}
 	}
 }
