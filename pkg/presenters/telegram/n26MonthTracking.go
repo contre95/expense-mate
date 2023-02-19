@@ -80,7 +80,7 @@ func newCreateRequest(record []string, userName string) (*tracking.CreateExpense
 	if err != nil {
 		return nil, err
 	}
-	record[0] = date.String() // Replace original record with parsed value
+	record[0] = date.Format("2006-01-02") // Replace original record with parsed value
 	price, err := strconv.ParseFloat(record[5], 64)
 	if err != nil {
 		return nil, err
@@ -104,6 +104,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("There are %d expenses to process", len(csvData))))
 	for i, record := range csvData[1:] {
 		// Skip row
+		userSkip := false
 		if skipRow(record) {
 			fmt.Println("Skipping", record)
 			continue
@@ -137,23 +138,23 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 				break
 			} else if contains([]string{SKIP_EXP_1, SKIP_EXP_2}, productUpdate.Message.Text) { // The user has skipped the Expense
 				tbot.Send(tgbotapi.NewMessage(chatID, "Exepense skipped ⏭"))
+				userSkip = true
 				break
 			} else if productUpdate.Message.Text == EDIT_PRICE_1 { // The user want's to edit the price
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Please give me the new price for %s", record[1])))
 				for priceUpdate := range *updates {
 					if priceUpdate.Message == nil {
 						continue
-					} else {
-						p, err := strconv.ParseFloat(priceUpdate.Message.Text, 64)
-						if err != nil {
-							tbot.Send(tgbotapi.NewMessage(chatID, "Invalid price, please send me a float"))
-							continue
-						}
-						createReq.Price = p
-						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product)))
-						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
-						break
 					}
+					p, err := strconv.ParseFloat(priceUpdate.Message.Text, 64)
+					if err != nil {
+						tbot.Send(tgbotapi.NewMessage(chatID, "Invalid price, please send me a float"))
+						continue
+					}
+					createReq.Price = p
+					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product)))
+					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
+					break
 				}
 			} else { // The user has set a wrong update
 				tbot.Send(tgbotapi.NewMessage(chatID, "Please pick a proper category or send \"Skip\" in order to skip this expense."))
@@ -162,11 +163,13 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 		}
 
 		//  Save category here
-		createResp, createErr := t.ExpenseCreator.Create(*createReq)
-		if createErr != nil {
-			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Could not save Expense: %v", createErr)))
-		} else {
-			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Expense saved 💾\n%s", createResp.ID)))
+		if !userSkip {
+			createResp, createErr := t.ExpenseCreator.Create(*createReq)
+			if createErr != nil {
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Could not save Expense: %v", createErr)))
+			} else {
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Expense saved 💾\n%s", createResp.ID)))
+			}
 		}
 
 		// Check if it has finished importing csv
