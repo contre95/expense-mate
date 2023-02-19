@@ -20,6 +20,9 @@ type DocumentConfig struct {
 }
 
 const N26_EXIT_TRACKER string = "Closing N26 Report Importer 📄\n --------"
+const SKIP_EXP_1 string = "Skip"
+const SKIP_EXP_2 string = "⏭"
+const EDIT_PRICE_1 string = "✏️ 💶"
 
 func getCategories(tbot *tgbotapi.BotAPI, chatID int64, q *querying.Service) ([]string, error) {
 	cg := q.CategoryQuerier
@@ -36,6 +39,16 @@ func getCategories(tbot *tgbotapi.BotAPI, chatID int64, q *querying.Service) ([]
 	return categories, nil
 }
 
+func skipRow(row []string) bool {
+	if strings.Contains(row[4], "Round-up") {
+		return true
+	}
+	if row[3] == "Income" {
+		return true
+	}
+	return false
+}
+
 func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, chatID int64, userName string, categories []string, file *tgbotapi.File, t *tracking.Service) error {
 	// Download the file and read it
 	response, err := http.Get(file.Link(tbot.Token))
@@ -50,6 +63,10 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 	// Fetch the categories
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("There are %d expenses to process", len(csvData))))
 	for i, record := range csvData[1:] {
+		if skipRow(record) {
+			fmt.Println("Skipping", record)
+			continue
+		}
 		date, err := time.Parse("2006-01-02", record[0])
 		if err != nil {
 			return err
@@ -62,6 +79,7 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 		// https://core.telegram.org/bots/api#formatting-options
 		msgText := fmt.Sprintf(` %d ) Expense 💶:
 <code>
+<b>Type:</b>         %s
 <b>Place:</b>        %s
 <b>Price:</b>        `+"€ %s"+`
 <b>People:</b>       %s
@@ -70,6 +88,7 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 
 What category does it belong ?`,
 			i+1,
+			record[3],
 			resp.Place,
 			strings.Replace(fmt.Sprintf("%.2f", resp.Price), ".", ",", -1),
 			record[0], // Using the original date string not to fomratted again
@@ -83,9 +102,10 @@ What category does it belong ?`,
 			return err
 		}
 		for categoryUpdate := range *updates {
-			if !contains([]string{"Skip", "⏭"}, categoryUpdate.Message.Text) && contains(categories, categoryUpdate.Message.Text) {
+			if !contains([]string{SKIP_EXP_1, SKIP_EXP_1, EDIT_PRICE_1}, categoryUpdate.Message.Text) && contains(categories, categoryUpdate.Message.Text) {
 				resp.Category = categoryUpdate.Message.Text
-				tbot.Send(tgbotapi.NewMessage(chatID, "Category set ✅ !\n Now, please type the name of the product:"))
+				tbot.Send(tgbotapi.NewMessage(chatID, "Category set ✅"))
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, please type the name of the product for %s:", record[1])))
 				for productUpdate := range *updates {
 					if productUpdate.Message == nil {
 						continue
@@ -98,6 +118,23 @@ What category does it belong ?`,
 			} else if categoryUpdate.Message.Text == "Skip" || categoryUpdate.Message.Text == "⏭" {
 				tbot.Send(tgbotapi.NewMessage(chatID, "Exepense skipped ⏭"))
 				break
+			} else if categoryUpdate.Message.Text == EDIT_PRICE_1 {
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Please give me the new price for %s", record[1])))
+				for priceUpdate := range *updates {
+					if priceUpdate.Message == nil {
+						continue
+					} else {
+						p, err := strconv.ParseFloat(priceUpdate.Message.Text, 64)
+						if err != nil {
+							tbot.Send(tgbotapi.NewMessage(chatID, "Invalid price, please send me a float"))
+							continue
+						}
+						resp.Price = p
+						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", resp.Price, resp.Product)))
+						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", resp.Product)))
+						break
+					}
+				}
 			} else {
 				tbot.Send(tgbotapi.NewMessage(chatID, "Please pick a proper category or set \"Skip\" in order to skip this expense."))
 				continue
@@ -141,7 +178,8 @@ func n26MonthTracking(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, updates *t
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 				break
 			}
-			categories = append(categories, "⏭") // Add skip button
+			categories = append(categories, SKIP_EXP_2)   // Add skip button
+			categories = append(categories, EDIT_PRICE_1) // Add skip button
 			err = categorizeAndCreate(tbot, updates, chatID, newUpdate.Message.Chat.UserName, categories, file, t)
 			if err != nil {
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
