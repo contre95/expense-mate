@@ -49,7 +49,47 @@ func skipRow(row []string) bool {
 	return false
 }
 
-func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, chatID int64, userName string, categories []string, file *tgbotapi.File, t *tracking.Service) error {
+func formatMessage(record []string, categories []string, expNum int, chatID int64) tgbotapi.MessageConfig {
+	// https://core.telegram.org/bots/api#formatting-options
+	msgText := fmt.Sprintf(` %d ) Expense 💶:
+<code>
+<b>Type:</b>         %s
+<b>Place:</b>        %s
+<b>Price:</b>        `+"€ %s"+`
+<b>Date:</b>         %s
+</code>
+
+What category does it belong ?`,
+		expNum,
+		record[3],
+		record[1],
+		strings.Replace(record[5], ".", ",", -1),
+		record[0], // Using the original date string not to fomratted again
+	)
+	msg := tgbotapi.NewMessage(chatID, msgText)
+	msg.ParseMode = tgbotapi.ModeHTML
+	keyboard := append(categories, SKIP_EXP_2) // Add skip button aside from categories
+	keyboard = append(keyboard, EDIT_PRICE_1)  // Add edit buttong
+	msg.ReplyMarkup = setOneTimeKeyBoardMap(keyboard, 4)
+	return msg
+}
+
+func newCreateRequest(record []string, userName string) (*tracking.CreateExpenseReq, error) {
+	// Create Expense Request for use case
+	date, err := time.Parse("2006-01-02", record[0])
+	if err != nil {
+		return nil, err
+	}
+	record[0] = date.String() // Replace original record with parsed value
+	price, err := strconv.ParseFloat(record[5], 64)
+	if err != nil {
+		return nil, err
+	}
+	record[5] = fmt.Sprintf("%.2f", float64(price*-1)) // Replace original record with parsed value no to be using the request model
+	return &tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: userName}, nil
+}
+
+func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, chatID int64, userName string, categories []string, file *tgbotapi.File, t *tracking.Service) error {
 	// Download the file and read it
 	response, err := http.Get(file.Link(tbot.Token))
 	if err != nil {
@@ -60,65 +100,45 @@ func categorizeAndCreate(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel
 	if err != nil {
 		return nil
 	}
-	// Fetch the categories
+	// Iterate over the imported rows of the csv
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("There are %d expenses to process", len(csvData))))
 	for i, record := range csvData[1:] {
+		// Skip row
 		if skipRow(record) {
 			fmt.Println("Skipping", record)
 			continue
 		}
-		date, err := time.Parse("2006-01-02", record[0])
+		// create CreateExpenseReq
+		createReq, err := newCreateRequest(record, userName)
 		if err != nil {
 			return err
 		}
-		price, err := strconv.ParseFloat(record[5], 64)
+		// Send message with row already using the response
+		_, err = tbot.Send(formatMessage(record, categories, i+1, chatID))
 		if err != nil {
 			return err
 		}
-		resp := tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: userName}
-		// https://core.telegram.org/bots/api#formatting-options
-		msgText := fmt.Sprintf(` %d ) Expense 💶:
-<code>
-<b>Type:</b>         %s
-<b>Place:</b>        %s
-<b>Price:</b>        `+"€ %s"+`
-<b>People:</b>       %s
-<b>Date:</b>         %s
-</code>
 
-What category does it belong ?`,
-			i+1,
-			record[3],
-			resp.Place,
-			strings.Replace(fmt.Sprintf("%.2f", resp.Price), ".", ",", -1),
-			record[0], // Using the original date string not to fomratted again
-			resp.People,
-		)
-		msg := tgbotapi.NewMessage(chatID, msgText)
-		msg.ParseMode = tgbotapi.ModeHTML
-		msg.ReplyMarkup = setOneTimeKeyBoardMap(categories, 4)
-		_, err = tbot.Send(msg)
-		if err != nil {
-			return err
-		}
-		for categoryUpdate := range *updates {
-			if !contains([]string{SKIP_EXP_1, SKIP_EXP_1, EDIT_PRICE_1}, categoryUpdate.Message.Text) && contains(categories, categoryUpdate.Message.Text) {
-				resp.Category = categoryUpdate.Message.Text
+		// Iterate over updates
+		// TODO: Maybe handle all these if/else in different function or make a switch case
+		for productUpdate := range *updates {
+			if contains(categories, productUpdate.Message.Text) { // The user has send a category
+				createReq.Category = productUpdate.Message.Text
 				tbot.Send(tgbotapi.NewMessage(chatID, "Category set ✅"))
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, please type the name of the product for %s:", record[1])))
 				for productUpdate := range *updates {
 					if productUpdate.Message == nil {
 						continue
 					} else {
-						resp.Product = productUpdate.Message.Text
+						createReq.Product = productUpdate.Message.Text
 						break
 					}
 				}
 				break
-			} else if categoryUpdate.Message.Text == "Skip" || categoryUpdate.Message.Text == "⏭" {
+			} else if contains([]string{SKIP_EXP_1, SKIP_EXP_2}, productUpdate.Message.Text) { // The user has skipped the Expense
 				tbot.Send(tgbotapi.NewMessage(chatID, "Exepense skipped ⏭"))
 				break
-			} else if categoryUpdate.Message.Text == EDIT_PRICE_1 {
+			} else if productUpdate.Message.Text == EDIT_PRICE_1 { // The user want's to edit the price
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Please give me the new price for %s", record[1])))
 				for priceUpdate := range *updates {
 					if priceUpdate.Message == nil {
@@ -129,22 +149,27 @@ What category does it belong ?`,
 							tbot.Send(tgbotapi.NewMessage(chatID, "Invalid price, please send me a float"))
 							continue
 						}
-						resp.Price = p
-						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", resp.Price, resp.Product)))
-						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", resp.Product)))
+						createReq.Price = p
+						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product)))
+						tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
 						break
 					}
 				}
-			} else {
-				tbot.Send(tgbotapi.NewMessage(chatID, "Please pick a proper category or set \"Skip\" in order to skip this expense."))
+			} else { // The user has set a wrong update
+				tbot.Send(tgbotapi.NewMessage(chatID, "Please pick a proper category or send \"Skip\" in order to skip this expense."))
 				continue
 			}
 		}
-		if resp.Category != "" {
-			tbot.Send(tgbotapi.NewMessage(chatID, "Expense saved 💾"))
-			//  Save category here
+
+		//  Save category here
+		createResp, createErr := t.ExpenseCreator.Create(*createReq)
+		if createErr != nil {
+			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Could not save Expense: %v", createErr)))
+		} else {
+			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Expense saved 💾\n%s", createResp.ID)))
 		}
-		fmt.Println(len(csvData))
+
+		// Check if it has finished importing csv
 		if i >= len(csvData[1:])-1 {
 			tbot.Send(tgbotapi.NewMessage(chatID, "Then end 📉 :)"))
 			msg := tgbotapi.NewMessage(chatID, N26_EXIT_TRACKER)
@@ -154,7 +179,6 @@ What category does it belong ?`,
 			tbot.Send(tgbotapi.NewMessage(chatID, "Next ⬇️"))
 		}
 	}
-
 	return nil
 }
 
@@ -178,9 +202,7 @@ func n26MonthTracking(tbot *tgbotapi.BotAPI, update *tgbotapi.Update, updates *t
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 				break
 			}
-			categories = append(categories, SKIP_EXP_2)   // Add skip button
-			categories = append(categories, EDIT_PRICE_1) // Add skip button
-			err = categorizeAndCreate(tbot, updates, chatID, newUpdate.Message.Chat.UserName, categories, file, t)
+			err = importN26Expenses(tbot, updates, chatID, newUpdate.Message.Chat.UserName, categories, file, t)
 			if err != nil {
 				tbot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 				break
