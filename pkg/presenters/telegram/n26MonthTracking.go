@@ -23,6 +23,7 @@ const N26_EXIT_TRACKER string = "Closing N26 Report Importer 📄\n --------"
 const SKIP_EXP_1 string = "Skip"
 const SKIP_EXP_2 string = "⏭"
 const EDIT_PRICE_1 string = "✏️ 💶"
+const EDIT_PERSON_1 string = "✏️ 👥" // This is different from EDIT_PRICE_1
 
 func getCategories(tbot *tgbotapi.BotAPI, chatID int64, q *querying.Service) ([]string, error) {
 	cg := q.CategoryQuerier
@@ -57,6 +58,7 @@ func formatMessage(record []string, categories []string, expNum int, chatID int6
 <b>Place:</b>        %s
 <b>Price:</b>        `+"€ %s"+`
 <b>Date:</b>         %s
+<b>Reference:</b>    %s
 </code>
 
 What category does it belong ?`,
@@ -65,6 +67,7 @@ What category does it belong ?`,
 		record[1],
 		strings.Replace(record[5], ".", ",", -1),
 		record[0], // Using the original date string not to fomratted again
+		record[4], // Using the original date string not to fomratted again
 	)
 	msg := tgbotapi.NewMessage(chatID, msgText)
 	msg.ParseMode = tgbotapi.ModeHTML
@@ -86,7 +89,7 @@ func newCreateRequest(record []string, userName string) (*tracking.CreateExpense
 		return nil, err
 	}
 	record[5] = fmt.Sprintf("%.2f", float64(price*-1)) // Replace original record with parsed value no to be using the request model
-	return &tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: userName}, nil
+	return &tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: globalBotConfig.PeopleUsers[userName]}, nil
 }
 
 func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, chatID int64, userName string, categories []string, file *tgbotapi.File, t *tracking.Service) error {
@@ -140,6 +143,26 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 				tbot.Send(tgbotapi.NewMessage(chatID, "Exepense skipped ⏭"))
 				userSkip = true
 				break
+			} else if productUpdate.Message.Text == EDIT_PERSON_1 { // The user want's to edit the price
+				peopleMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Who has made this Expense ? \n%s ", record[1]))
+				peopleMsg.ReplyMarkup = setOneTimeKeyBoardMap(globalBotConfig.People, 4)
+				tbot.Send(peopleMsg)
+				for peopleUpdate := range *updates {
+					if peopleUpdate.Message == nil {
+						continue
+					}
+					if !contains(globalBotConfig.People, peopleUpdate.Message.Text) {
+						tbot.Send(tgbotapi.NewMessage(chatID, "Invalid person, please try again."))
+						tbot.Send(peopleMsg)
+						continue
+					}
+					createReq.People = peopleUpdate.Message.Text
+					peopleDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("%s now marked as the expender", createReq.People))
+					peopleDoneMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					tbot.Send(peopleDoneMsg)
+					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
+					break
+				}
 			} else if productUpdate.Message.Text == EDIT_PRICE_1 { // The user want's to edit the price
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Please give me the new price for %s", record[1])))
 				for priceUpdate := range *updates {
@@ -152,7 +175,9 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 						continue
 					}
 					createReq.Price = p
-					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product)))
+					priceDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product))
+					priceDoneMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					tbot.Send(priceDoneMsg)
 					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
 					break
 				}

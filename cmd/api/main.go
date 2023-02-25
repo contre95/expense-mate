@@ -124,7 +124,12 @@ func main() {
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	botConfig := telegram.BotConfig{
+		AllowedUsers: []string{"contre", "anouxx"},
+		People:       []string{"Anoux", "Contre", "Anoux / Contre"},
+		PeopleUsers:  map[string]string{"contre": "Contre", "anouxx": "Anoux"},
+	}
 	tgbotapi.SetLogger(telergamLogger)
 	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
-	telegram.Run(bot, &healthChecker, &manager, &tracker, &authenticator, &querier)
+	telegram.Run(bot, botConfig, &healthChecker, &manager, &tracker, &authenticator, &querier)
 }
