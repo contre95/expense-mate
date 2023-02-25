@@ -25,6 +25,8 @@ I'll help you keep track of your spending and budget, so you can take control of
 Let's get started by adding your first expense. Need help with anything? Just type /help to see what I can do for you."
 `
 
+// const PEOPLE []string = []string{"Contre", "Anoux / Contre", "Anoux"}
+
 // Register the following commands in the botfather
 
 // categories - Get a list of categories
@@ -32,8 +34,30 @@ Let's get started by adding your first expense. Need help with anything? Just ty
 // ping - Check if the bot is working
 // help - Display the help message
 
+type BotConfig struct {
+	AllowedUsers []string
+	People       []string
+	PeopleUsers  map[string]string
+}
+
+func validConfig(c BotConfig) bool {
+	for _, au := range c.AllowedUsers {
+		if pe, _ := c.PeopleUsers[au]; !contains(c.People, pe) {
+			return false
+		}
+	}
+	return true
+}
+
+var globalBotConfig BotConfig // TODO: Probably this is not the best way. Mayby pass the condig all around or use some ctx
+
 // Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
+func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
+	if !validConfig(botConfig) {
+		panic("Wrong Telegram configuration")
+	} else {
+		globalBotConfig = botConfig
+	}
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
