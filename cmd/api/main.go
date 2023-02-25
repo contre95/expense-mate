@@ -61,7 +61,7 @@ func main() {
 	exampleImporter := importers.NewExampleImporter("example data")
 	initLogger.Info("Example importer initialized")
 	// Sheets importer
-	sheetsRangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RAGELEN"))
+	sheetsRangeLength, _ := strconv.Atoi(os.Getenv("SHEETS_IMPORTER_RANGELEN"))
 	sheetsID := os.Getenv("SHEETS_IMPORTER_ID")
 	sheetsPageRange := os.Getenv("SHEETS_IMPORTER_PAGERANGE")
 	sheetsPath := os.Getenv("SHEETS_IMPORTER_SA_PATH")
