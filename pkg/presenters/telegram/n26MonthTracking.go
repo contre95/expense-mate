@@ -50,7 +50,7 @@ func skipRow(row []string) bool {
 	return false
 }
 
-func formatMessage(record []string, categories []string, expNum int, chatID int64) tgbotapi.MessageConfig {
+func formatMessage(record []string, expNum int, chatID int64) tgbotapi.MessageConfig {
 	// https://core.telegram.org/bots/api#formatting-options
 	msgText := fmt.Sprintf(` %d ) Expense 💶:
 <code>
@@ -71,9 +71,6 @@ What category does it belong ?`,
 	)
 	msg := tgbotapi.NewMessage(chatID, msgText)
 	msg.ParseMode = tgbotapi.ModeHTML
-	keyboard := append(categories, SKIP_EXP_2) // Add skip button aside from categories
-	keyboard = append(keyboard, EDIT_PRICE_1)  // Add edit buttong
-	msg.ReplyMarkup = setOneTimeKeyBoardMap(keyboard, 4)
 	return msg
 }
 
@@ -118,7 +115,12 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 			return err
 		}
 		// Send message with row already using the response
-		_, err = tbot.Send(formatMessage(record, categories, i+1, chatID))
+		allkeys := append(categories, SKIP_EXP_2) // Add skip button aside from categories
+		allkeys = append(allkeys, EDIT_PRICE_1)   // Add edit buttong
+		allkeys = append(allkeys, EDIT_PERSON_1)  // Add edit buttong
+		msg := formatMessage(record, i+1, chatID)
+		msg.ReplyMarkup = setOneTimeKeyBoardMap(allkeys, 4)
+		_, err = tbot.Send(msg)
 		if err != nil {
 			return err
 		}
@@ -158,7 +160,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 					}
 					createReq.People = peopleUpdate.Message.Text
 					peopleDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("%s now marked as the expender", createReq.People))
-					peopleDoneMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					peopleDoneMsg.ReplyMarkup = setOneTimeKeyBoardMap(allkeys, 4)
 					tbot.Send(peopleDoneMsg)
 					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
 					break
@@ -176,7 +178,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 					}
 					createReq.Price = p
 					priceDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product))
-					priceDoneMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					priceDoneMsg.ReplyMarkup = setOneTimeKeyBoardMap(allkeys, 4)
 					tbot.Send(priceDoneMsg)
 					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))
 					break
