@@ -55,7 +55,7 @@ func formatMessage(record []string, expNum int, chatID int64) tgbotapi.MessageCo
 	msgText := fmt.Sprintf(` %d ) Expense 💶:
 <code>
 <b>Type:</b>         %s
-<b>Place:</b>        %s
+<b>Shop:</b>        %s
 <b>Price:</b>        `+"€ %s"+`
 <b>Date:</b>         %s
 <b>Reference:</b>    %s
@@ -86,7 +86,14 @@ func newCreateRequest(record []string, userName string) (*tracking.CreateExpense
 		return nil, err
 	}
 	record[5] = fmt.Sprintf("%.2f", float64(price*-1)) // Replace original record with parsed value no to be using the request model
-	return &tracking.CreateExpenseReq{Price: float64(price * -1), Currency: "Euro", Place: record[1], City: "Barcelona", Date: date, People: globalBotConfig.PeopleUsers[userName]}, nil
+	return &tracking.CreateExpenseReq{
+		Price:    float64(price * -1),
+		Currency: "Euro",
+		Shop:     record[1],
+		City:     "Barcelona",
+		Date:     date,
+		People:   globalBotConfig.PeopleUsers[userName],
+	}, nil
 }
 
 func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, chatID int64, userName string, categories []string, file *tgbotapi.File, t *tracking.Service) error {

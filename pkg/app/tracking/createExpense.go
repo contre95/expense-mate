@@ -16,7 +16,7 @@ type CreateExpenseReq struct {
 	Product  string
 	Price    float64
 	Currency string
-	Place    string
+	Shop     string
 	City     string
 	Date     time.Time
 	People   string
@@ -40,8 +40,8 @@ func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error
 		Amount:   req.Price,
 	}
 	place := expense.Place{
-		City: req.Place,
-		Shop: req.City,
+		City: req.City,
+		Shop: req.Shop,
 	}
 	newExpense, createErr := expense.NewExpense(price, req.Product, req.People, place, req.Date, req.Category)
 	if createErr != nil {
