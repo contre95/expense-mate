@@ -19,6 +19,7 @@ Check the menu for available commands, please.
 /help - Displays this menu
 `
 const DEFAULT_MSG string = "I don't get it. I'm no ChatGPT 🤖\n"
+const NOT_ALLOWED_MSG string = "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"
 const WELCOME_MSG string = `
 "Hello! I'm your personal expense manager bot 🤖
 I'll help you keep track of your spending and budget, so you can take control of your finances. 
@@ -38,6 +39,7 @@ type BotConfig struct {
 	AllowedUsers []string
 	People       []string
 	PeopleUsers  map[string]string
+	AuthUsers    []int64
 }
 
 func validConfig(c BotConfig) bool {
@@ -51,6 +53,15 @@ func validConfig(c BotConfig) bool {
 
 var globalBotConfig BotConfig // TODO: Probably this is not the best way. Mayby pass the condig all around or use some ctx
 
+func isAuthorized(chatID int64, authorizedUsers []int64) bool {
+	for _, authorizedID := range authorizedUsers {
+		if chatID == authorizedID {
+			return true
+		}
+	}
+	return false
+}
+
 // Run start the Telegram expense bot
 func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
 	if !validConfig(botConfig) {
@@ -63,10 +74,16 @@ func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, m *manag
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 	for update := range updates {
-		if update.Message.IsCommand() {
-			handleCommands(update, &updates, tbot, q, t, h)
+		if isAuthorized(update.Message.Chat.ID, botConfig.AuthUsers) {
+			if update.Message.IsCommand() {
+				handleCommands(update, &updates, tbot, q, t, h)
+			} else {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, DEFAULT_MSG)
+				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+				tbot.Send(msg)
+			}
 		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, DEFAULT_MSG)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			tbot.Send(msg)
 		}
