@@ -18,6 +18,7 @@ import (
 	"expenses-app/pkg/presenters/telegram"
 	"os"
 	"strconv"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -124,10 +125,16 @@ func main() {
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	if err != nil {
+		initLogger.Err("%v", err)
+		return
+	}
+    strings.Split
 	botConfig := telegram.BotConfig{
 		AllowedUsers: []string{"contre", "anouxx"},
 		People:       []string{"Anoux", "Contre", "Anoux / Contre"},
 		PeopleUsers:  map[string]string{"contre": "Contre", "anouxx": "Anoux"},
+		AuthUsers:    []int64{527377846},
 	}
 	tgbotapi.SetLogger(telergamLogger)
 	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
