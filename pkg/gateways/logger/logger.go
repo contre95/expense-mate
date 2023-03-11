@@ -38,3 +38,16 @@ func (l *stdLogger) Debug(format string, i ...interface{}) {
 	fmt.Printf(PURPLE + BOLD + " [DEBUG] " + RESET)
 	log.Printf(format, i...)
 }
+
+func (l *stdLogger) Printf(format string, v ...interface{}) {
+	fmt.Printf(l.instanceName)
+	fmt.Printf(PURPLE + BOLD + " [-] " + RESET)
+	log.Printf(format, v...)
+
+}
+
+func (l *stdLogger) Println(i ...interface{}) {
+	fmt.Printf(l.instanceName)
+	fmt.Printf(PURPLE + BOLD + " [-] " + RESET)
+	log.Println(i...)
+}

@@ -5,33 +5,32 @@ import (
 	"expenses-app/pkg/domain/expense"
 )
 
-type GetCategoriesResp struct {
+type CategoryQuerierResp struct {
 	Categories map[string]string
 }
 
 //type GetCategoriesReq struct {}
 
-type CategoryGetter struct {
+type CategoryQuerier struct {
 	logger   app.Logger
 	expenses expense.Expenses
 }
 
-func NewCategoryGetter(l app.Logger, e expense.Expenses) *CategoryGetter {
-	return &CategoryGetter{l, e}
+func NewCategoryQuerier(l app.Logger, e expense.Expenses) *CategoryQuerier {
+	return &CategoryQuerier{l, e}
 }
 
-func (s *CategoryGetter) Get() (*GetCategoriesResp, error) {
+func (s *CategoryQuerier) Query() (*CategoryQuerierResp, error) {
 	s.logger.Info("Getting all categories")
 	categories, err := s.expenses.GetCategories()
 	if err != nil {
-		s.logger.Err("Could not get categories from storage")
+		s.logger.Err("Could not get categories from storage: %v", err)
 		return nil, err
 	}
-	resp := GetCategoriesResp{}
+	resp := CategoryQuerierResp{}
 	resp.Categories = make(map[string]string)
 	for _, c := range categories {
 		resp.Categories[string(c.ID)] = string(c.Name)
 	}
 	return &resp, nil
-
 }
