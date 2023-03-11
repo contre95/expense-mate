@@ -13,7 +13,7 @@ type ID string
 
 type Place struct {
 	City string `validate:"min=2,max=64"`
-	Town string `validate:"min=2,max=64"`
+	Town string
 	Shop string `validate:"min=2,max=64"`
 }
 type Price struct {
@@ -51,6 +51,10 @@ type Category struct {
 
 // Expenses is the repository for all the command actions for Expense
 type Expenses interface {
+	// Get is used to retrieve all expenses from a certain time range with the ability to "paginate" using limit and offset. By passing limit = 0 paginating will be dismissed.
+	GetFromTimeRange(from, to time.Time, limit, offset uint) ([]Expense, error)
+	// Count how many expenses are in a time range for a given category
+	//Count(from, to *time.Time, categories []Category) (uint, error)
 	// Add is used to add a new Expense to the system
 	Add(e Expense) error
 	// Delete is used to remove a Expense from the system
