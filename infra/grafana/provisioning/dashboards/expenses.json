@@ -35,69 +35,40 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "services-gas": {
-                  "index": 1,
-                  "text": "Gas"
-                },
-                "services-internet": {
-                  "index": 3,
-                  "text": "Internet"
-                },
-                "services-luz": {
-                  "index": 0,
-                  "text": "Electricidad"
-                },
-                "services-phone": {
-                  "index": 2,
-                  "text": "Phone"
-                },
-                "services-water": {
-                  "index": 4,
-                  "text": "Agua"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "light-blue",
+                "color": "purple",
                 "value": null
               }
             ]
           },
-          "unit": "currencyEUR"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 9,
         "w": 18,
         "x": 0,
         "y": 0
       },
-      "id": 21,
+      "id": 27,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [],
-          "fields": "",
+          "fields": "/.*/",
           "values": true
         },
-        "text": {
-          "valueSize": 100
-        },
-        "textMode": "value_and_name"
+        "textMode": "auto"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "9.4.1",
       "targets": [
         {
           "datasource": {
@@ -108,13 +79,13 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select AVG(price), category_id\nfrom expenses\nwhere category_id like \"%Service%\"\ngroup by 2\norder by 1",
+          "rawSql": "select CONCAT(DAYNAME(e.expend_date), \" \",DAY(e.expend_date),\",  \",MONTHNAME(e.expend_date),\" \", YEAR(e.expend_date)) as \"Date\" from expenses as e order by expend_date desc limit 1",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "id"
+                  "price"
                 ],
                 "type": "column"
               }
@@ -132,7 +103,7 @@
           ]
         }
       ],
-      "title": "Average prices on Services",
+      "title": "Last tracked expense",
       "transparent": true,
       "type": "stat"
     },
@@ -151,7 +122,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#979797",
+                "color": "light-blue",
                 "value": null
               }
             ]
@@ -180,9 +151,9 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "value"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "9.4.1",
       "targets": [
         {
           "datasource": {
@@ -218,6 +189,133 @@
         }
       ],
       "title": "Total spend since arrival",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "services-gas": {
+                  "index": 1,
+                  "text": "Gas"
+                },
+                "services-internet": {
+                  "index": 3,
+                  "text": "Internet"
+                },
+                "services-luz": {
+                  "index": 0,
+                  "text": "Electricidad"
+                },
+                "services-phone": {
+                  "index": 2,
+                  "text": "Phone"
+                },
+                "services-water": {
+                  "index": 4,
+                  "text": "Agua"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "super-light-blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "x": 0,
+        "y": 9
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "text": {
+          "valueSize": 100
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "9.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select AVG(price), category_id\nfrom expenses\nwhere category_id like \"%Service%\"\nAND  year(expend_date) in ($year) \ngroup by 2\norder by 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Average prices on Services",
+      "transparent": true,
       "type": "stat"
     },
     {
@@ -233,31 +331,47 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
+            "axisLabel": "€",
             "axisPlacement": "auto",
-            "axisSoftMin": 1,
-            "axisWidth": 98,
-            "fillOpacity": 100,
-            "gradientMode": "opacity",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 11,
+            "gradientMode": "hue",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineWidth": 0,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 3,
+            "pointSize": 2,
             "scaleDistribution": {
               "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
           "mappings": [],
-          "max": 1000,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
@@ -267,13 +381,43 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "€"
+              "options": "Acumulation for 'services'"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-purple",
+                  "fixedColor": "text",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Acumulation for 'cleaning','clothing','entertainments','food','gifts','health','home','others','perfume-&-hygiene','rent','salivery','services','subscriptions','transport'"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Acumulation select categories"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
                   "mode": "fixed"
                 }
               }
@@ -282,34 +426,24 @@
         ]
       },
       "gridPos": {
-        "h": 16,
-        "w": 9,
-        "x": 0,
-        "y": 7
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 9
       },
-      "id": 12,
+      "id": 16,
       "options": {
-        "barRadius": 0,
-        "barWidth": 0.96,
-        "groupWidth": 0.7,
         "legend": {
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
-        "orientation": "vertical",
-        "showValue": "always",
-        "stacking": "none",
-        "text": {},
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
+        }
       },
-      "pluginVersion": "8.2.3",
       "targets": [
         {
           "datasource": {
@@ -320,7 +454,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.expend_date)=$month and year(expenses.expend_date) in ($year) group by category_id order by 2 desc;",
+          "rawSql": "SELECT\n  expend_date,\n  (\n    SELECT\n      SUM(b.price)\n    FROM\n      expenses AS b\n    WHERE\n      b.expend_date <= a.expend_date\n      AND category_id  in ($categories)\n  ) AS \"Acumulation select categories\"\nFROM\n  expenses AS a\nWHERE\n  category_id  in ($categories)\nGROUP BY\n  2\nORDER BY\n  expend_date\nASC;\n",
           "refId": "A",
           "select": [
             [
@@ -344,9 +478,273 @@
           ]
         }
       ],
-      "title": "$month expenses",
-      "transformations": [],
-      "type": "barchart"
+      "title": "Acumulated spendings",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "Anoux": {
+                  "color": "purple",
+                  "index": 0
+                },
+                "Anoux / Contre": {
+                  "color": "green",
+                  "index": 2
+                },
+                "Clothing": {
+                  "index": 6,
+                  "text": "👕 Clothing"
+                },
+                "Contre": {
+                  "color": "blue",
+                  "index": 1
+                },
+                "Entertainments": {
+                  "index": 17,
+                  "text": "🏓 Entertainments"
+                },
+                "Food": {
+                  "index": 4,
+                  "text": "🍎 Food"
+                },
+                "Gifts": {
+                  "index": 16,
+                  "text": "🎁 Gifts"
+                },
+                "Health": {
+                  "index": 20,
+                  "text": "🥼 Health"
+                },
+                "Holidays": {
+                  "index": 14,
+                  "text": "🛫 Holidays"
+                },
+                "Home": {
+                  "index": 12,
+                  "text": "🏺 Home"
+                },
+                "Paperwork": {
+                  "index": 18,
+                  "text": "📄 Paperwork"
+                },
+                "Rent": {
+                  "index": 3,
+                  "text": "🛖 Rent"
+                },
+                "Salivery": {
+                  "index": 5,
+                  "text": "🍸 Salivery"
+                },
+                "Services Gas": {
+                  "index": 9,
+                  "text": "🔥 Services Gas"
+                },
+                "Services Internet": {
+                  "index": 7,
+                  "text": "🌐 Services Internet"
+                },
+                "Services Luz": {
+                  "index": 11,
+                  "text": "⚡ Services Luz"
+                },
+                "Services Phone": {
+                  "index": 8,
+                  "text": "📱 Services Phone"
+                },
+                "Services Water": {
+                  "index": 10,
+                  "text": "💧 Services Water"
+                },
+                "Subscriptions": {
+                  "index": 19,
+                  "text": "💳 Subscriptions"
+                },
+                "Taxes": {
+                  "index": 15,
+                  "text": "🏛 Taxes"
+                },
+                "Technology": {
+                  "index": 21,
+                  "text": "💻 Technology"
+                },
+                "Transport": {
+                  "index": 13,
+                  "text": "🚇 Transport"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "semi-dark-green",
+                  "index": 22
+                },
+                "to": 30
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 30,
+                "result": {
+                  "color": "yellow",
+                  "index": 23
+                },
+                "to": 50
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 50,
+                "result": {
+                  "color": "orange",
+                  "index": 24
+                },
+                "to": 100
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 100,
+                "result": {
+                  "color": "red",
+                  "index": 25
+                },
+                "to": 1000
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 1000,
+                "result": {
+                  "color": "dark-red",
+                  "index": 26
+                },
+                "to": 10000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.inspect",
+                "value": true
+              },
+              {
+                "id": "custom.filterable",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 9,
+        "x": 0,
+        "y": 16
+      },
+      "id": 25,
+      "options": {
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "expend_date"
+          }
+        ]
+      },
+      "pluginVersion": "9.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT e.product AS \"Product\",\n       concat(e.price, \" €\") AS \"Price\",\n       c.name AS \"Category\",\n       e.people AS \"People\",\n       CONCAT(DAYNAME(e.expend_date), \" \", DAY(e.expend_date), \",  \", MONTHNAME(e.expend_date), \" \", YEAR(e.expend_date)) AS \"Date\"\n       FROM expenses AS e\nJOIN categories AS c ON e.category_id=c.id\nWHERE category_id in ($categories)\nORDER BY e.expend_date desc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration_ms"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "log_entries",
+          "timeColumn": "request_ts",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Expenses table",
+      "type": "table"
     },
     {
       "aliasColors": {
@@ -372,7 +770,7 @@
         "h": 15,
         "w": 9,
         "x": 9,
-        "y": 7
+        "y": 16
       },
       "hiddenSeries": false,
       "id": 19,
@@ -396,7 +794,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "9.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -417,6 +815,7 @@
             "type": "mysql",
             "uid": "PD311416FA3AADB4D"
           },
+          "editorMode": "code",
           "format": "time_series",
           "group": [],
           "hide": false,
@@ -434,6 +833,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "expenses",
           "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
@@ -875,170 +1291,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "€",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 11,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 3,
-            "pointSize": 2,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "always",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Acumulation for 'services'"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "text",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Acumulation for 'cleaning','clothing','entertainments','food','gifts','health','home','others','perfume-&-hygiene','rent','salivery','services','subscriptions','transport'"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Acumulation select categories"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 9
-      },
-      "id": 16,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "mysql",
-            "uid": "PD311416FA3AADB4D"
-          },
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  expend_date,\n  (\n    SELECT\n      SUM(b.price)\n    FROM\n      expenses AS b\n    WHERE\n      b.expend_date <= a.expend_date\n      AND category_id  in ($categories)\n  ) AS \"Acumulation select categories\"\nFROM\n  expenses AS a\nWHERE\n  category_id  in ($categories)\nGROUP BY\n  2\nORDER BY\n  expend_date\nASC;\n",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "expend_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Acumulated spendings",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "mysql",
-        "uid": "PD311416FA3AADB4D"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -1051,10 +1303,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 23,
+        "h": 15,
         "w": 6,
         "x": 18,
-        "y": 14
+        "y": 16
       },
       "id": 7,
       "options": {
@@ -1130,6 +1382,138 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 1,
+            "axisWidth": 98,
+            "fillOpacity": 100,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "€"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 9,
+        "x": 0,
+        "y": 31
+      },
+      "id": 12,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.96,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "none",
+        "text": {},
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "8.2.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.expend_date)=$month and year(expenses.expend_date) in ($year) group by category_id order by 2 desc;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "expenses",
+          "timeColumn": "expend_date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "$month expenses",
+      "transformations": [],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1176,10 +1560,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 15,
+        "h": 16,
         "w": 9,
         "x": 9,
-        "y": 22
+        "y": 31
       },
       "id": 14,
       "options": {
@@ -1302,10 +1686,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
-        "w": 9,
-        "x": 0,
-        "y": 23
+        "h": 16,
+        "w": 6,
+        "x": 18,
+        "y": 31
       },
       "id": 23,
       "options": {
@@ -1357,10 +1741,274 @@
       ],
       "title": "Normal price distribution 0€‎ - 200€‎",
       "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "PD311416FA3AADB4D"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "Anoux": {
+                  "color": "purple",
+                  "index": 0
+                },
+                "Anoux / Contre": {
+                  "color": "green",
+                  "index": 2
+                },
+                "Clothing": {
+                  "index": 6,
+                  "text": "👕 Clothing"
+                },
+                "Contre": {
+                  "color": "blue",
+                  "index": 1
+                },
+                "Entertainments": {
+                  "index": 17,
+                  "text": "🏓 Entertainments"
+                },
+                "Food": {
+                  "index": 4,
+                  "text": "🍎 Food"
+                },
+                "Gifts": {
+                  "index": 16,
+                  "text": "🎁 Gifts"
+                },
+                "Health": {
+                  "index": 20,
+                  "text": "🥼 Health"
+                },
+                "Holidays": {
+                  "index": 14,
+                  "text": "🛫 Holidays"
+                },
+                "Home": {
+                  "index": 12,
+                  "text": "🏺 Home"
+                },
+                "Paperwork": {
+                  "index": 18,
+                  "text": "📄 Paperwork"
+                },
+                "Rent": {
+                  "index": 3,
+                  "text": "🛖 Rent"
+                },
+                "Salivery": {
+                  "index": 5,
+                  "text": "🍸 Salivery"
+                },
+                "Services Gas": {
+                  "index": 9,
+                  "text": "🔥 Services Gas"
+                },
+                "Services Internet": {
+                  "index": 7,
+                  "text": "🌐 Services Internet"
+                },
+                "Services Luz": {
+                  "index": 11,
+                  "text": "⚡ Services Luz"
+                },
+                "Services Phone": {
+                  "index": 8,
+                  "text": "📱 Services Phone"
+                },
+                "Services Water": {
+                  "index": 10,
+                  "text": "💧 Services Water"
+                },
+                "Subscriptions": {
+                  "index": 19,
+                  "text": "💳 Subscriptions"
+                },
+                "Taxes": {
+                  "index": 15,
+                  "text": "🏛 Taxes"
+                },
+                "Technology": {
+                  "index": 21,
+                  "text": "💻 Technology"
+                },
+                "Transport": {
+                  "index": 13,
+                  "text": "🚇 Transport"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "semi-dark-green",
+                  "index": 22
+                },
+                "to": 30
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 30,
+                "result": {
+                  "color": "yellow",
+                  "index": 23
+                },
+                "to": 50
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 50,
+                "result": {
+                  "color": "orange",
+                  "index": 24
+                },
+                "to": 100
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 100,
+                "result": {
+                  "color": "red",
+                  "index": 25
+                },
+                "to": 1000
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 1000,
+                "result": {
+                  "color": "dark-red",
+                  "index": 26
+                },
+                "to": 10000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.inspect",
+                "value": true
+              },
+              {
+                "id": "custom.filterable",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 28,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "expend_date"
+          }
+        ]
+      },
+      "pluginVersion": "9.1.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "PD311416FA3AADB4D"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT e.*, c.name\nFROM expenses AS e\nJOIN categories AS c ON e.category_id=c.id\nWHERE category_id in ($categories)\nORDER BY e.expend_date desc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration_ms"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "log_entries",
+          "timeColumn": "request_ts",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Debug Expenses table",
+      "type": "table"
     }
   ],
-  "refresh": false,
-  "schemaVersion": 37,
+  "refresh": "5s",
+  "revision": 1,
+  "schemaVersion": 38,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1369,10 +2017,10 @@
         "current": {
           "selected": true,
           "text": [
-            "2022"
+            "All"
           ],
           "value": [
-            "2022"
+            "$__all"
           ]
         },
         "datasource": {
@@ -1419,10 +2067,50 @@
         "current": {
           "selected": true,
           "text": [
-            "Rent"
+            "Clothing",
+            "Entertainments",
+            "Food",
+            "Gifts",
+            "Health",
+            "Holidays",
+            "Home",
+            "Others",
+            "Paperwork",
+            "Perfume & Hygiene",
+            "Rent",
+            "Salivery",
+            "Services Gas",
+            "Services Internet",
+            "Services Luz",
+            "Services Phone",
+            "Services Water",
+            "Subscriptions",
+            "Taxes",
+            "Technology",
+            "Transport"
           ],
           "value": [
-            "rent"
+            "clothing",
+            "entertainments",
+            "food",
+            "gifts",
+            "health",
+            "holidays",
+            "home",
+            "others",
+            "paperwork",
+            "perfume-&-hygiene",
+            "rent",
+            "salivery",
+            "services-gas",
+            "services-internet",
+            "services-luz",
+            "services-phone",
+            "services-water",
+            "subscriptions",
+            "taxes",
+            "technology",
+            "transport"
           ]
         },
         "datasource": {
@@ -1446,13 +2134,13 @@
     ]
   },
   "time": {
-    "from": "2021-06-03T22:55:41.857Z",
-    "to": "2022-04-10T10:59:37.827Z"
+    "from": "2020-08-30T00:00:00.000Z",
+    "to": "2024-05-05T00:00:00.000Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Expenses",
   "uid": "VL3Zt1cnz",
-  "version": 3,
+  "version": 11,
   "weekStart": ""
-}
+

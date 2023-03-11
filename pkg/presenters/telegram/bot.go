@@ -1,9 +1,7 @@
 package telegram
 
 import (
-	"expenses-app/pkg/app/authenticating"
 	"expenses-app/pkg/app/health"
-	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 
@@ -53,7 +51,7 @@ func validConfig(c BotConfig) bool {
 
 var globalBotConfig BotConfig // TODO: Probably this is not the best way. Mayby pass the condig all around or use some ctx
 
-func isAuthorized(chatID int64, authorizedUsers []int64) bool {
+func isAllowed(chatID int64, authorizedUsers []int64) bool {
 	for _, authorizedID := range authorizedUsers {
 		if chatID == authorizedID {
 			return true
@@ -63,7 +61,7 @@ func isAuthorized(chatID int64, authorizedUsers []int64) bool {
 }
 
 // Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, m *managing.Service, t *tracking.Service, a *authenticating.Service, q *querying.Service) {
+func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, t *tracking.Service, q *querying.Service) {
 	if !validConfig(botConfig) {
 		panic("Wrong Telegram configuration")
 	} else {
@@ -74,7 +72,7 @@ func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, m *manag
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 	for update := range updates {
-		if isAuthorized(update.Message.Chat.ID, botConfig.AuthUsers) {
+		if isAllowed(update.Message.Chat.ID, botConfig.AuthUsers) {
 			if update.Message.IsCommand() {
 				handleCommands(update, &updates, tbot, q, t, h)
 			} else {
