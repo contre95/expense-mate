@@ -72,7 +72,7 @@ func main() {
 		AllowedUsers: []string{"contre", "anouxx"},
 		People:       []string{"Anoux", "Contre", "Anoux / Contre"},
 		PeopleUsers:  map[string]string{"contre": "Contre", "anouxx": "Anoux"},
-		AuthUsers:    []int64{527377846},
+		AuthUsers:    []int64{527377846, 751504879},
 	}
 	tgbotapi.SetLogger(telergamLogger)
 	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
