@@ -68,7 +68,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.4.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -153,7 +153,7 @@
         "text": {},
         "textMode": "value"
       },
-      "pluginVersion": "9.4.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -261,7 +261,7 @@
         },
         "textMode": "value_and_name"
       },
-      "pluginVersion": "9.4.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -692,6 +692,7 @@
       },
       "id": 25,
       "options": {
+        "cellHeight": "sm",
         "footer": {
           "countRows": false,
           "fields": "",
@@ -708,18 +709,19 @@
           }
         ]
       },
-      "pluginVersion": "9.4.1",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
             "type": "mysql",
             "uid": "PD311416FA3AADB4D"
           },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT e.product AS \"Product\",\n       concat(e.price, \" €\") AS \"Price\",\n       c.name AS \"Category\",\n       e.people AS \"People\",\n       CONCAT(DAYNAME(e.expend_date), \" \", DAY(e.expend_date), \",  \", MONTHNAME(e.expend_date), \" \", YEAR(e.expend_date)) AS \"Date\"\n       FROM expenses AS e\nJOIN categories AS c ON e.category_id=c.id\nWHERE category_id in ($categories)\nORDER BY e.expend_date desc",
+          "rawSql": "SELECT e.product AS \"Product\",\n       concat(e.price, \" €\") AS \"Price\",\n       c.name AS \"Category\",\n       e.people AS \"People\",\n       CONCAT(DAYNAME(e.expend_date), \" \", DAY(e.expend_date), \",  \", MONTHNAME(e.expend_date), \" \", YEAR(e.expend_date)) AS \"Date\"\n       FROM expenses AS e\nJOIN categories AS c ON e.category_id=c.id\nWHERE category_id in ($categories) and month(e.expend_date) in ($month) and year(e.expend_date) in ($year) \nORDER BY e.expend_date desc",
           "refId": "A",
           "select": [
             [
@@ -731,6 +733,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "log_entries",
           "timeColumn": "request_ts",
           "timeColumnType": "timestamp",
@@ -794,7 +813,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "9.4.1",
+      "pluginVersion": "9.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1338,11 +1357,12 @@
             "type": "mysql",
             "uid": "PD311416FA3AADB4D"
           },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE category_id in ($categories)\nGROUP BY category_id",
+          "rawSql": "SELECT sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE category_id in ($categories) and month(expenses.expend_date) in ($month) and year(expenses.expend_date) in ($year) \nGROUP BY category_id",
           "refId": "A",
           "select": [
             [
@@ -1354,6 +1374,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "expenses",
           "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
@@ -1469,11 +1506,12 @@
             "type": "mysql",
             "uid": "PD311416FA3AADB4D"
           },
+          "editorMode": "code",
           "format": "table",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.expend_date)=$month and year(expenses.expend_date) in ($year) group by category_id order by 2 desc;",
+          "rawSql": "select name as \"Category\", sum(price) as \"€\" from expenses join categories on expenses.category_id=categories.id where categories.id not in (\"rent\", \"gifts\", \"cleaning\") and month(expenses.expend_date) in ($month) and year(expenses.expend_date) in ($year) group by category_id order by 2 desc;",
           "refId": "A",
           "select": [
             [
@@ -1485,6 +1523,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "expenses",
           "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
@@ -1584,45 +1639,13 @@
             "type": "mysql",
             "uid": "PD311416FA3AADB4D"
           },
-          "format": "time_series",
-          "group": [],
-          "hide": true,
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(expend_date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM (SELECT * from expenses) as expenses\nWHERE\n  $__timeFilter(expend_date) and category_id in ($categories)\ngroup by  $__timeGroup(expend_date, \"30d\")  ,category_id\nORDER BY expend_date",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "id"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "expenses",
-          "timeColumn": "expend_date",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "mysql",
-            "uid": "PD311416FA3AADB4D"
-          },
+          "editorMode": "code",
           "format": "time_series",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(expend_date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE\n  $__timeFilter(expend_date) and category_id in ($categories)\ngroup by 1 ,category_id\nORDER BY expend_date",
+          "rawSql": "SELECT $__timeGroup(expend_date, \"30d\",0) AS time,\n  sum(price) as \"€\",\n  category_id\nFROM expenses\nWHERE\n  $__timeFilter(expend_date) and category_id in ($categories) and month(expenses.expend_date) in ($month) and year(expenses.expend_date) in ($year) \ngroup by 1 ,category_id\nORDER BY expend_date",
           "refId": "B",
           "select": [
             [
@@ -1634,6 +1657,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "expenses",
           "timeColumn": "expend_date",
           "timeColumnType": "timestamp",
@@ -1914,7 +1954,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "text"
+                "color": "text",
+                "value": null
               }
             ]
           }
@@ -1952,7 +1993,9 @@
       },
       "id": 28,
       "options": {
+        "cellHeight": "sm",
         "footer": {
+          "countRows": false,
           "fields": "",
           "reducer": [
             "sum"
@@ -1967,7 +2010,7 @@
           }
         ]
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "9.5.3",
       "targets": [
         {
           "datasource": {
@@ -2017,10 +2060,10 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "2023"
           ],
           "value": [
-            "$__all"
+            "2023"
           ]
         },
         "datasource": {
@@ -2042,9 +2085,19 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "October",
-          "value": "10"
+          "selected": true,
+          "text": [
+            "January",
+            "February",
+            "March",
+            "April"
+          ],
+          "value": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
         },
         "datasource": {
           "type": "mysql",
@@ -2052,8 +2105,8 @@
         },
         "definition": "select month(expenses.expend_date) as __value, monthname(expenses.expend_date) as __text   from expenses order by 1 asc",
         "hide": 0,
-        "includeAll": false,
-        "multi": false,
+        "includeAll": true,
+        "multi": true,
         "name": "month",
         "options": [],
         "query": "select month(expenses.expend_date) as __value, monthname(expenses.expend_date) as __text   from expenses order by 1 asc",
@@ -2077,7 +2130,6 @@
             "Others",
             "Paperwork",
             "Perfume & Hygiene",
-            "Rent",
             "Salivery",
             "Services Gas",
             "Services Internet",
@@ -2100,7 +2152,6 @@
             "others",
             "paperwork",
             "perfume-&-hygiene",
-            "rent",
             "salivery",
             "services-gas",
             "services-internet",
@@ -2134,13 +2185,13 @@
     ]
   },
   "time": {
-    "from": "2020-08-30T00:00:00.000Z",
-    "to": "2024-05-05T00:00:00.000Z"
+    "from": "now-5y",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Expenses",
   "uid": "VL3Zt1cnz",
-  "version": 11,
+  "version": 12,
   "weekStart": ""
-
+}
