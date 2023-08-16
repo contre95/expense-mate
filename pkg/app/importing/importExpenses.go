@@ -91,7 +91,7 @@ func (u *ImportExpenses) Import(req ImportExpensesReq) (*ImportExpensesResp, err
 				u.logger.Err("Failed to save expense %s : %s", newExp.ID, err)
 				if !req.BypassWrongExpenses {
 					fmt.Println(req.BypassWrongExpenses)
-					return nil, fmt.Errorf("Failed to save expense %d : %s", newExp.ID, err)
+					return nil, fmt.Errorf("Failed to save expense %s : %s", newExp.ID, err)
 				}
 			}
 		}
