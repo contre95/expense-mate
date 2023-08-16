@@ -29,13 +29,6 @@ go mod tidy
 # Source the env variables
 . <(cat .env | grep -v -e '^$' | grep -v "#" | awk '{print "export " $1}')
 ```
-
-# Run with podman
-```shell
-cd infra
-podman play kube infra.yml --replace --build 
-```
-
 # Endpoints
 
 ### Login
