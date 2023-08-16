@@ -1,3 +1,4 @@
 pocs
+secrets.json
 db/mysql-secrets.json
 .env
