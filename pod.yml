@@ -6,32 +6,24 @@ metadata:
 spec:
   restartPolicy: OnFailure
   containers:
-    - name: telegrambot
-      image: build
-      ports:
-        - name: front
-          containerPort: 3000
-          hostPort: 3000
-          protocol: TCP
+    - name: expenses-bot
+      image: golang:1.20
       env:
         - name: "EXPENSES_USER"
           value: "expuser"
-        - name: "EXPENSES_USER"
-          value: "expuser"
+        - name: "MYSQL_HOST"
+          value: "contre.io"
+        - name: "MYSQL_PORT"
+          value: 3306
         - name: "EXPENSES_DB"
           value: "expdb"
+        - name: "TELEGRAM_APITOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: expenses-secrets
+              key: telegram-token
         - name: "EXPENSES_PASS"
           valueFrom:
             secretKeyRef:
               name: mysql-secrets
               key: mysql-expenses-pass
-      volumeMounts:
-        - mountPath: /
-          name: local-users
-  volumes:
-  - name: local-users
-    hostPath:
-      path: /mnt/SSD/data/
-      type: ''
-
-
