@@ -109,7 +109,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 	}
 	// Iterate over the imported rows of the csv
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("There are %d expenses to process", len(csvData))))
-	for i, record := range csvData[1:] {
+	for i, record := range csvData[0:] {
 		// Skip row
 		userSkip := false
 		if skipRow(record) {
@@ -207,7 +207,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 		}
 
 		// Check if it has finished importing csv
-		if i >= len(csvData[1:])-1 {
+		if i >= len(csvData)-1 { // Will never be > than len(csvData)
 			tbot.Send(tgbotapi.NewMessage(chatID, "Then end 📉 :)"))
 			msg := tgbotapi.NewMessage(chatID, N26_EXIT_TRACKER)
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
