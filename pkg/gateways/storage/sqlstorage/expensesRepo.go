@@ -34,12 +34,37 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 	return nil
 }
 
+func (sqls *SQLStorage) Update(e expense.Expense) error {
+	q := "UPDATE `expenses` SET price=?, product=?, currency=?, shop=?, city=?, people=?, expend_date=?, category_id=? WHERE id=?"
+	stmt, err := sqls.db.Prepare(q)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(e.Price.Amount, e.Product, e.Price.Currency, e.Place.Shop, e.Place.City, e.People, e.Date, e.Category.ID, e.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (sqls *SQLStorage) Delete(id expense.ID) error {
 	_, err := sqls.db.Exec(fmt.Sprintf("delete from expenses where id = %s", id))
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// Get retrieves an expense from the db
+func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
+	q := "SELECT * FROM expenses where id=?"
+	var catID expense.CategoryID
+	var e expense.Expense
+	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
+	if err != nil {
+		return nil, err
+	}
+	return &e, nil
 }
 
 func (sqls *SQLStorage) AddCategory(c expense.Category) error {
@@ -75,7 +100,6 @@ func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint)
 	}
 	defer rows.Close()
 	var expenses []expense.Expense
-	fmt.Println(rows.Next())
 	for rows.Next() {
 		var catID expense.CategoryID
 		var e expense.Expense
@@ -93,7 +117,6 @@ func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint)
 		}
 		expenses = append(expenses, e)
 	}
-	fmt.Println(expenses)
 	return expenses, nil
 }
 

@@ -4,6 +4,6 @@ type Service struct {
 	UserAuthenticator UserAuthenticator
 }
 
-func NewAuthenticator(u UserAuthenticator) Service {
+func NewService(u UserAuthenticator) Service {
 	return Service{u}
 }

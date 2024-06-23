@@ -33,7 +33,7 @@ func NewExpenseCreator(l app.Logger, e expense.Expenses) *ExpenseCreator {
 	return &ExpenseCreator{l, e}
 }
 
-// Create use cases function creates a new category
+// Create use cases function creates a new expense
 func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error) {
 	price := expense.Price{
 		Currency: req.Currency,
