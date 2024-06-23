@@ -9,7 +9,9 @@ type CategoryQuerierResp struct {
 	Categories map[string]string
 }
 
-//type GetCategoriesReq struct {}
+// type GetCategoriesReq struct {
+// 	CategoryID string
+// }
 
 type CategoryQuerier struct {
 	logger   app.Logger

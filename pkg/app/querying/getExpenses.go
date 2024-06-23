@@ -8,6 +8,7 @@ import (
 
 type ExpensesBasics struct {
 	ID       string
+	Date     string
 	Price    float64
 	Product  string
 	People   string
@@ -50,6 +51,7 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	for _, exp := range expenses {
 		expBasic := ExpensesBasics{
 			ID:       string(exp.ID),
+			Date:     exp.Date.Format("02/01/06"),
 			Price:    exp.Price.Amount,
 			Product:  exp.Product,
 			People:   exp.People,

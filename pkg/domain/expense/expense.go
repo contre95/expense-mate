@@ -34,8 +34,11 @@ type Expense struct {
 	Category Category
 }
 
-const CategoryNotFoundErr = "Category not found"
-const CategoryAlreadyExists = "Category already exists"
+var (
+	ErrNotFound      = errors.New("The resource you are trying to get does not exist")
+	ErrAlreadyExists = errors.New("The resource you are trying to get already exists")
+	ErrInvalidEntity = errors.New("The entity you are trying create is not valid")
+)
 
 // CategoryID is the unique identifier for the domain object of type Category
 type CategoryID string
@@ -51,20 +54,24 @@ type Category struct {
 
 // Expenses is the repository for all the command actions for Expense
 type Expenses interface {
-	// Get is used to retrieve all expenses from a certain time range with the ability to "paginate" using limit and offset. By passing limit = 0 paginating will be dismissed.
+	// Get retrieves an Expense from storage
+	Get(id ID) (*Expense, error)
+	// GetFromTimeRange is used to retrieve all expenses from a certain time range with the ability to "paginate" using limit and offset. By passing limit = 0 paginating will be dismissed.
 	GetFromTimeRange(from, to time.Time, limit, offset uint) ([]Expense, error)
 	// Count how many expenses are in a time range for a given category
 	//Count(from, to *time.Time, categories []Category) (uint, error)
 	// Add is used to add a new Expense to the system
 	Add(e Expense) error
-	// Delete is used to remove a Expense from the system
+	// Delete is used to remove an Expense
 	Delete(id ID) error
+	// Update is used to update an Expnese
+	Update(Expense) error
 	// Add is used to save a new category for future expenses
 	GetCategories() ([]Category, error)
 	// Creates a new category returns expense.CategoryAlreadyExistsErr if category is duplicated.
 	AddCategory(c Category) error
 	// Validates if a category exists
-	CategoryExists(id CategoryID) (bool, error)
+	GetCategory(id CategoryID) (*Category, error)
 }
 
 // Validate
