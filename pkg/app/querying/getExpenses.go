@@ -22,10 +22,10 @@ type ExpenseQuerierResp struct {
 }
 
 type ExpenseQuerierReq struct {
-	From     time.Time
-	To       time.Time
-	Page     uint
-	PageSize uint
+	From        time.Time
+	To          time.Time
+	Page        uint
+	MaxPageSize uint
 }
 
 type ExpenseQuerier struct {
@@ -37,9 +37,31 @@ func NewExpenseQuerier(l app.Logger, e expense.Expenses) *ExpenseQuerier {
 	return &ExpenseQuerier{l, e}
 }
 
+func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
+	s.logger.Info("Getting expense " + id)
+	expense, err := s.expenses.Get(expense.ID(id))
+	if err != nil {
+	}
+	resp := ExpenseQuerierResp{
+		Expenses: []ExpensesBasics{
+			{
+				ID:       string(expense.ID),
+				Date:     expense.Date.Format("02/01/06"),
+				Price:    expense.Price.Amount,
+				Product:  expense.Product,
+				People:   expense.People,
+				Category: string(expense.Category.Name),
+			},
+		},
+		Page:     0,
+		PageSize: 1,
+	}
+	return &resp, nil
+}
+
 func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, error) {
 	s.logger.Info("Getting all expenses")
-	expenses, err := s.expenses.GetFromTimeRange(req.From, req.To, req.PageSize, req.Page*req.PageSize)
+	expenses, err := s.expenses.GetFromTimeRange(req.From, req.To, req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err

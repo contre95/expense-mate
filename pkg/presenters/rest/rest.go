@@ -25,16 +25,23 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	// Unrestricted
 	fi.Static("/assets", "./public/assets")
 	fi.Get("/", ui.Home)
-	fi.Get("/expenses/table", ui.ExpensesTable(q.ExpenseQuerier))
+	fi.Get("/expenses", ui.ExpenseSection(q.ExpenseQuerier))
+	fi.Get("/expenses/:id/edit", ui.ExpenseRowEdit(q.ExpenseQuerier, q.CategoryQuerier))
+	// fi.Get("/expenses/:id/edit", func(c *fiber.Ctx) error {
+	// 	fmt.Println(c.Params("id"))
+	// 	return nil
+	// })
+	fi.Get("/importer", ui.Importer())
 	fi.Get("/ping", ping(*he))
 	// fi.Post("/login", login(*a))
-	fi.Get("/expenses", getExpenses(q.ExpenseQuerier))
-	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
+	fi.Get("/api/expenses", getExpenses(q.ExpenseQuerier))
+
 	// Restricted
+	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 	fi.Get("/restricted", restricted)
 	// fi.Post("/users", createUsers(m.UserCreator))
-	fi.Get("/expenses/categories", getCategories(q.CategoryQuerier))
-	fi.Post("/expenses/categories", createCategory(m.CategoryCreator))
+	fi.Get("/api/expenses/categories", getCategories(q.CategoryQuerier))
+	fi.Post("/api/expenses/categories", createCategory(m.CategoryCreator))
 	// fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
 }
 

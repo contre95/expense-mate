@@ -53,7 +53,7 @@ func getExpenses(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 			From:     time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysFrom)),
 			To:       time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysTo)),
 			Page:     uint(pageNum),
-			PageSize: uint(pageSize),
+			MaxPageSize: uint(pageSize),
 		}
 		resp, err := eq.Query(req)
 		if err != nil {

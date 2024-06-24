@@ -10,5 +10,10 @@ import (
 func Home(c *fiber.Ctx) error {
 	slog.Info("HOME")
 	// render index template
-	return c.Render("main", fiber.Map{})
+	c.Append("Hx-Trigger", "expensesTable")
+	return c.Render("main", fiber.Map{
+		"Expenses":  nil,
+		"Dashboard": nil,
+		"Settings":  nil,
+	})
 }
