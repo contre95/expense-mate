@@ -55,7 +55,7 @@ func (sqls *SQLStorage) Delete(id expense.ID) error {
 	return nil
 }
 
-// Get retrieves an expense from the db
+// Get retrieves an expense from the db. It returns a valid expense.Expense
 func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 	q := "SELECT * FROM expenses where id=?"
 	var catID expense.CategoryID
@@ -64,6 +64,11 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 	if err != nil {
 		return nil, err
 	}
+	category, err := sqls.GetCategory(catID)
+	if err != nil {
+		return nil, err
+	}
+	e.Category = *category
 	return &e, nil
 }
 

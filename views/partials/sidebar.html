@@ -9,22 +9,37 @@
     </div>
     <ul class="flex flex-col py-4">
       <li>
-        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
-          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-home"></i></span>
+        <button hx-trigger="click,{{ .DashboardTrigger }}" hx-get="/dashboard/" hx-push-url="true" hx-swap="innerHTML"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+              class="bx bxs-dashboard"></i></span>
           <span class="text-sm font-medium">Dashboard</span>
-        </a>
+          </a>
       </li>
       <li>
-      <a hx-get="/expenses/table?days_from=190" hx-swap="innerHTML" hx-target="#contenido" hx-trigger="click" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
-          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-table"></i></span>
-          <span class="text-sm font-medium">Tables</span>
-        </a>
+        <button hx-trigger="click,{{ .ExpensesTrigger }}" hx-get="/expenses" hx-push-url="true" hx-swap="innerHTML" hx-target="#contenido"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+              class="bx bx-table"></i></span>
+          <span class="text-sm font-medium">Expenese</span>
+        </button>
       </li>
       <li>
-        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
-          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-cog"></i></span>
-          <span class="text-sm font-medium">Organize</span>
-        </a>
+        <button hx-trigger="click,{{ .ImporterTrigger }}" hx-get="/importer" hx-swap="innerHTML" hx-target="#contenido" hx-push-url="true"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+              class="bx bxs-file-import"></i></span>
+          <span class="text-sm font-medium">Import CSV</span>
+        </button>
+      </li>
+      <li>
+        <button hx-trigger="click,{{ .TelegramTrigger }}" hx-get="/telegram/" hx-swap="innerHTML" hx-target="#contenido"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400">
+            <i class="bx bxl-telegram" style="color:#1DA0DC"></i>
+          </span>
+          <span class="text-sm font-medium" style="color:#1DA0DC">Telegram</span>
+        </button>
       </li>
       <!-- <li> -->
       <!--   <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800"> -->

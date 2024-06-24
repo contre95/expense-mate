@@ -16,7 +16,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -36,7 +35,6 @@ func main() {
 	// SQL Storage
 	mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
 	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB") + "?parseTime=true"
-	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db, err := sql.Open("mysql", mysqlUser+mysqlUrl)
 	defer db.Close()
 	if err != nil {
@@ -82,10 +80,10 @@ func main() {
 		},
 	})
 
-	fiberApp.Use(cors.New(cors.Config{
-		AllowOrigins: os.Getenv("CORS_ALLOWLIST"),
-		AllowHeaders: "Origin, Content-Type, Accept",
-	}))
+	// fiberApp.Use(cors.New(cors.Config{
+	// AllowOrigins: os.Getenv("CORS_ALLOWLIST"),
+	// AllowHeaders: "Origin, Content-Type, Accept",
+	// }))
 
 	// rest.MapRoutes(fiberApp, &healthChecker, &tracker, &querier)
 	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier)
