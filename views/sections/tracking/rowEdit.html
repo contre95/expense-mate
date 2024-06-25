@@ -1,34 +1,35 @@
 <tr id="editRow" class="border-b border-blue-gray-200">
-  <form id="edit-form" hx-put="/expenses/{{ .Expense.ID }}" hx-target="this" hx-swap="outerHTML">
-    <td class="py-3 px-4">
-      <input class="bg-gray-50 p-2.5 rounded-md" type="date" name="date"
-        value='{{ .Expense.Date.Format "2006-01-02" }}'>
-    </td>
-    <td class="py-3 px-4">
-      <input class="bg-gray-50 p-2.5 rounded-md" type="text" name="" value="{{ .Expense.Product}}">
-    </td>
-    <td class="py-3 px-4">
-      <input class="bg-gray-50 p-2.5 lg rounded-md" type="number" min="0" name="price"
-        value='{{printf "%.2f" .Expense.Price}}'>
-    </td>
-    <td class="py-3 px-4">
-      <select id="category"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-2.5">
-        {{ $current := .Expense.Category }}
-        {{ range $id, $name := .Categories }}
-        {{ if eq $current $name}}
-        <option value="{{$id}}" selected>{{$name}}</option>
-        {{else}}
-        <option value="{{$id}}">{{$name}}</option>
-        {{end}}
-        {{end}}
-      </select>
-    </td>
-    <td class="py-3 px-4">
-      <button hx-trigger="click" hx-put="/expenses/{{ .Expense.ID }}" hx-swap="outerHTML" hx-include="#edit-form"
-        hx-target="#mitoast" class="font-medium text-blue-600 hover:text-blue-800">
-        Apply</button>
-      <button hx-target="#editRow" class="font-medium text-red-600 hover:text-red-800">Cancel</button>
-    </td>
-  </form>
+  <td class="py-3 px-4">
+    <input class="bg-gray-50 p-2.5 rounded-md" type="date" id="date" name="date"
+      value='{{ .Expense.Date.Format "2006-01-02" }}'>
+  </td>
+  <td class="py-3 px-4">
+    <input class="bg-gray-50 p-2.5 rounded-md" type="text" id="shop" name="shop" value="{{ .Expense.Shop }}">
+  </td>
+  <td class="py-3 px-4">
+    <input class="bg-gray-50 p-2.5 rounded-md" type="text" id="product" name="product" value="{{ .Expense.Product}}">
+  </td>
+  <td class="py-3 px-4">
+    <select id="category" name="category"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-2.5">
+      {{ $current := .Expense.Category }}
+      {{ range $id, $name := .Categories }}
+      {{ if eq $current $name}}
+      <option value="{{$id}}" selected>{{$name}}</option>
+      {{else}}
+      <option value="{{$id}}">{{$name}}</option>
+      {{end}}
+      {{end}}
+    </select>
+  </td>
+  <td class="py-3 px-4">
+    <input class="bg-gray-50 p-2.5 lg rounded-md" type="number" min="0" id="amount" name="amount"
+      value='{{printf "%.2f" .Expense.Amount}}'>
+  </td>
+  <td class="py-3 px-4">
+<button id="apply" hx-trigger="click" class="font-medium text-blue-600 hover:text-blue-800"> Apply </button>
+<div id="mitoast" hx-put="/expenses/{{ .Expense.ID }}" hx-swap="innerHTML" hx-include="#editRow input, #editRow select" hx-trigger="click from: #apply"> </div>
+<div id="editRow" hx-get="/expenses/{{ .Expense.ID }}/row" hx-swap="outerHTML" hx-trigger="click from: #apply"> </div>
+<button id="cancel" hx-get="/expenses/{{ .Expense.ID }}/row" hx-swap="outerHTML" hx-trigger="click" class="font-medium text-red-600 hover:text-red-800">Cancel</button>
+  </td>
 </tr>

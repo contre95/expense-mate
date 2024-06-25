@@ -7,31 +7,13 @@
 </head>
 
 <body hx-boost="true">
-  <!-- sidenav  -->
   <div class="flex">
     {{template "sidebar" .}}
-    <!-- end sidenav -->
-
-    <main class="flex-1 overflow-y-auto bg-gray-100 lg:h-screen">
-      <!-- Navbar -->
-      {{template "navbar" .}}
-      <!-- end Navbar -->
-      <!-- Main -->
-      <div id="contenido">
-
-      </div>
-      <div class="h-36">
-      </div>
-      <!-- end Main -->
+    <div id="contenido">
+    </div>
     </main>
-    <div class="absolute m-4 right-0 z-50 top-0 ">
-      <div id="mitoast">
-      </div>
-    </div>
   </div>
-  <div class="absolute m-4 right-0 z-50 top-0 ">
-    <div id="mitoast">
-    </div>
+  <div id="mitoast" class="absolute m-4 right-0 z-50 top-0 ">
   </div>
 </body>
 {{template "scripts" .}}

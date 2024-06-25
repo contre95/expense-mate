@@ -3,6 +3,7 @@ package querying
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+	"fmt"
 	"time"
 )
 
@@ -41,18 +42,22 @@ func NewExpenseQuerier(l app.Logger, e expense.Expenses) *ExpenseQuerier {
 
 func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	s.logger.Info("Getting expense " + id)
-	expense, err := s.expenses.Get(expense.ID(id))
+	e, err := s.expenses.Get(expense.ID(id))
 	if err != nil {
+		s.logger.Err("Could not get expense from storage: %v", err)
+		return nil, expense.ErrNotFound
 	}
 	resp := ExpenseQuerierResp{
 		Expenses: []ExpensesBasics{
 			{
-				ID:       string(expense.ID),
-				Date:     expense.Date,
-				Amount:   expense.Price.Amount,
-				Product:  expense.Product,
-				People:   expense.People,
-				Category: string(expense.Category.Name),
+				Amount:     e.Price.Amount,
+				Category:   string(e.Category.Name),
+				CategoryID: id,
+				Date:       e.Date,
+				ID:         string(e.ID),
+				People:     e.People,
+				Product:    e.Product,
+				Shop:       e.Place.Shop,
 			},
 		},
 		Page:     0,
@@ -74,15 +79,18 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	}
 	for _, exp := range expenses {
 		expBasic := ExpensesBasics{
-			ID:       string(exp.ID),
-			Date:     exp.Date,
-			Amount:   exp.Price.Amount,
-			Product:  exp.Product,
-			People:   exp.People,
-			Category: string(exp.Category.Name),
+			Amount:     exp.Price.Amount,
+			Category:   string(exp.Category.Name),
+			CategoryID: string(exp.Category.ID),
+			Date:       exp.Date,
+			ID:         string(exp.ID),
+			People:     exp.People,
+			Product:    exp.Product,
+			Shop:       exp.Place.Shop,
 		}
 		resp.Expenses = append(resp.Expenses, expBasic)
 	}
+	fmt.Println(resp)
 	resp.PageSize = uint(len(resp.Expenses))
 	return &resp, nil
 }

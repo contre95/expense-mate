@@ -6,7 +6,8 @@
       <thead>
         <tr class="bg-blue-gray-100 text-gray-700">
           <th class="py-3 px-4 text-left">Date</th>
-          <th class="py-3 px-4 text-left">Description</th>
+          <th class="py-3 px-4 text-left">Shop</th>
+          <th class="py-3 px-4 text-left">Product</th>
           <th class="py-3 px-4 text-left">Category</th>
           <th class="py-3 px-4 text-left">Price</th>
           <th class="py-3 px-4 text-left">Action</th>
@@ -14,17 +15,18 @@
       </thead>
       <tbody class="text-blue-gray-900">
         {{range .Expenses}}
-        <tr hx-target="this" hx-swap="outerHTML" class="border-b border-blue-gray-200">
+        <tr id="expenseRow{{ .ID }}" class="border-b border-blue-gray-200">
           <td class="py-3 px-4">{{ .Date.Format "02-01-2006" }}</td>
-          <td class="py-3 px-4">{{.Product}}</td>
-          <td class="py-3 px-4">${{printf "%.2f" .Price}}</td>
+          <td class="py-3 px-4">{{.Shop}}</td>
+          <td class="py-3 px-4">{{.Product }}</td>
           <td class="py-3 px-4">
             {{ $colors := nameToColor .Category }}
             <span
               class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Category}}</span>
           </td>
+          <td class="py-3 px-4">${{printf "%.2f" .Amount}}</td>
           <td class="py-3 px-4">
-            <button hx-get="/expenses/{{ .ID }}/edit" hx-url-push="true"  class="font-medium text-blue-600 hover:text-blue-800">Edit</button>
+            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-push-url="true" hx-swap="outerHTML" class="font-medium text-blue-600 hover:text-blue-800">Edit</button>
           </td>
         </tr>
         {{end}}

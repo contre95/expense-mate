@@ -2,6 +2,7 @@ package sqlstorage
 
 import (
 	"database/sql"
+	"errors"
 	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"log"
@@ -61,7 +62,10 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 	var catID expense.CategoryID
 	var e expense.Expense
 	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
-	if err != nil {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return nil, expense.ErrNotFound
+	case err != nil:
 		return nil, err
 	}
 	category, err := sqls.GetCategory(catID)
@@ -88,43 +92,59 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 	q := "SELECT * FROM categories where id=?"
 	var category expense.Category
 	err := sqls.db.QueryRow(q, id).Scan(&category.ID, &category.Name)
-	switch err {
-	case sql.ErrNoRows:
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
 		return nil, expense.ErrNotFound
-	case nil:
-		return &category, nil
+	case err != nil:
+		return nil, err
 	}
-	return nil, err
+	return &category, nil
 }
 
 func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {
-	// TODO: Find a better way of making this
-	var q string
-	q = "SELECT * FROM expenses WHERE expend_date >= ? AND expend_date <= ? ORDER BY expend_date DESC LIMIT ? OFFSET ?"
-	rows, err := sqls.db.Query(q, from.Format(SQL_DATE_FORMAT), to.Format(SQL_DATE_FORMAT), limit, offset)
-	fmt.Printf("SELECT * FROM expenses WHERE expend_date >= %s AND expend_date <= %s ORDER BY expend_date DESC LIMIT %d OFFSET %d", from.Format(SQL_DATE_FORMAT), to.Format(SQL_DATE_FORMAT), limit, offset)
+	query := `
+		SELECT 
+			e.id, e.price, e.product, e.currency, e.shop, e.city, 
+			e.people, e.expend_date, c.id, c.name 
+		FROM 
+			expenses e
+		JOIN 
+			categories c ON e.category_id = c.id
+		WHERE 
+			e.expend_date >= ? AND e.expend_date <= ?
+		ORDER BY 
+			e.expend_date DESC 
+		LIMIT ? OFFSET ?`
+
+	rows, err := sqls.db.Query(query, from, to, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var expenses []expense.Expense
 	for rows.Next() {
-		var catID expense.CategoryID
 		var e expense.Expense
-		err := rows.Scan(&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
+		var cat expense.Category
+
+		err := rows.Scan(
+			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
+			&e.People, &e.Date, &cat.ID, &cat.Name)
 		if err != nil {
 			return nil, err
 		}
-		category, err := sqls.GetCategory(catID)
-		if err != nil {
+
+		e.Category = cat
+		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}
-		e.Category = *category
-		if _, err = e.Validate(); err != nil { // Validate the Expense is well recontructed
-			return nil, err
-		}
+
 		expenses = append(expenses, e)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return expenses, nil
 }
 
@@ -132,11 +152,10 @@ func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {
 	q := "SELECT id FROM categories where id=?"
 	var cat_id string
 	err := sqls.db.QueryRow(q, id).Scan(&cat_id)
-	switch err {
-	case sql.ErrNoRows:
+	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
-	case nil:
-		return true, nil
+	} else if err != nil {
+		return false, err
 	}
 	return true, err
 }

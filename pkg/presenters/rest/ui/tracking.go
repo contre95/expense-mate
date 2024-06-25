@@ -23,37 +23,37 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		}
 		// Payload to unmarshal te form
 		payload := struct {
-			ExpenseID   string  `form:"id"`
-			Amount      float64 `form:"amount"`
-			Description string  `form:"description"`
-			Date        string  `form:"date"`
-			Shop        string  `form:"shop"`
-			CategoryID  string  `form:"category"`
+			Date       string  `form:"date"`
+			Shop       string  `form:"shop"`
+			Product    string  `form:"product"`
+			CategoryID string  `form:"category"`
+			Amount     float64 `form:"amount"`
 		}{}
 		if err := c.BodyParser(&payload); err != nil {
-			panic("Implement error")
+			panic("Form parsing error")
 		}
+		fmt.Println(payload)
 		inputLayout := "2006-01-02"
 		parsedDate, err := time.Parse(inputLayout, payload.Date)
 		if err != nil {
-			panic("Implement error")
+			panic("Date parse Error")
 		}
 		req := tracking.UpdateExpenseReq{
-			Amount:      payload.Amount,
-			CategoryID:  payload.CategoryID,
-			Date:        parsedDate,
-			ExpenseID:   payload.ExpenseID,
-			People:      respExpense.Expenses[0].People,
-			Description: payload.Description,
-			Shop:        respExpense.Expenses[0].Shop,
+			Amount:     payload.Amount,
+			CategoryID: payload.CategoryID,
+			Date:       parsedDate,
+			ExpenseID:  respExpense.Expenses[0].ID,
+			People:     respExpense.Expenses[0].People,
+			Product:    payload.Product,
+			Shop:       respExpense.Expenses[0].Shop,
 		}
 		resp, err := eu.Update(req)
 		if err != nil {
-			panic("Implement error")
+			panic("Update Error")
 		}
-		fmt.Println(resp)
 		return c.Render("alerts/toastInfo", fiber.Map{
-			"UpdatedID": resp.ExpenseID,
+			"Title": "Created",
+			"Msg":   resp.ExpenseID + " updated",
 		})
 	}
 }
@@ -68,6 +68,25 @@ func LoadTrackingSection() func(*fiber.Ctx) error {
 			})
 		}
 		return c.Render("sections/tracking/index", fiber.Map{})
+	}
+}
+
+func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		if c.Get("HX-Request") != "true" {
+			fmt.Println("No HX-Request refreshing with revealed")
+			// c.Append("hx-trigger", "newPair")  // Not working :(
+			return c.Render("main", fiber.Map{
+				"ExpensesTrigger": "revealed",
+			})
+		}
+		respExpense, err := eq.GetByID(c.Params("id"))
+		if err != nil {
+			panic("Implement error")
+		}
+		return c.Render("sections/tracking/row", fiber.Map{
+			"Expense": respExpense.Expenses[0],
+		})
 	}
 }
 
