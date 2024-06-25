@@ -7,12 +7,14 @@ import (
 )
 
 type ExpensesBasics struct {
-	ID       string
-	Date     string
-	Price    float64
-	Product  string
-	People   string
-	Category string
+	Amount     float64
+	Category   string
+	CategoryID string
+	Date       time.Time
+	ID         string
+	People     string
+	Product    string
+	Shop       string
 }
 
 type ExpenseQuerierResp struct {
@@ -46,8 +48,8 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 		Expenses: []ExpensesBasics{
 			{
 				ID:       string(expense.ID),
-				Date:     expense.Date.Format("02/01/06"),
-				Price:    expense.Price.Amount,
+				Date:     expense.Date,
+				Amount:   expense.Price.Amount,
 				Product:  expense.Product,
 				People:   expense.People,
 				Category: string(expense.Category.Name),
@@ -73,8 +75,8 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	for _, exp := range expenses {
 		expBasic := ExpensesBasics{
 			ID:       string(exp.ID),
-			Date:     exp.Date.Format("02/01/06"),
-			Price:    exp.Price.Amount,
+			Date:     exp.Date,
+			Amount:   exp.Price.Amount,
 			Product:  exp.Product,
 			People:   exp.People,
 			Category: string(exp.Category.Name),
