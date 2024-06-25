@@ -14,13 +14,13 @@ type UpdateExpenseResp struct {
 }
 
 type UpdateExpenseReq struct {
-	Amount      float64
-	CategoryID  string
-	Date        time.Time
-	ExpenseID   string
-	People      string
-	Description string
-	Shop        string
+	Amount     float64
+	CategoryID string
+	Date       time.Time
+	ExpenseID  string
+	People     string
+	Product    string
+	Shop       string
 }
 
 type ExpenseUpdater struct {
@@ -36,14 +36,17 @@ func NewExpenseUpdater(l app.Logger, e expense.Expenses) *ExpenseUpdater {
 func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error) {
 	// Get the oldExpense from the db
 	oldExpense, getErr := s.expenses.Get(expense.ID(req.ExpenseID))
-	if getErr != nil {
-		s.logger.Debug("Failed to update expense %s: %v", req, getErr)
+	switch {
+	case errors.Is(getErr, expense.ErrNotFound):
+		s.logger.Debug("Expense %s not found in storage: %v", req.ExpenseID, getErr)
+	case getErr != nil:
+		s.logger.Debug("Failed to update expense %s: %v", req.ExpenseID, getErr)
 		return nil, getErr
 	}
 	// Update the values
 	oldExpense.Price.Amount = req.Amount
 	oldExpense.Place.Shop = req.Shop
-	oldExpense.Product = req.Description
+	oldExpense.Product = req.Product
 	oldExpense.Date = req.Date
 	oldExpense.People = req.People
 	newCategory, err := s.expenses.GetCategory(expense.CategoryID(req.CategoryID))
