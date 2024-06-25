@@ -12,7 +12,7 @@ import (
 
 const DEFAULT_DAYS_FROM_PARAM = "190"
 const DEFAULT_DAYS_TO_PARAM = "0" // Now
-const DEFAULT_PSIZE_PARAM = "20"
+const DEFAULT_PSIZE_PARAM = "35"
 const DEFAULT_PNUM_PARAM = "0"
 
 func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*fiber.Ctx) error {
@@ -36,7 +36,11 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		inputLayout := "2006-01-02"
 		parsedDate, err := time.Parse(inputLayout, payload.Date)
 		if err != nil {
-			panic("Date parse Error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Wrong Date",
+				"Msg":   "Error parsing date",
+			})
+
 		}
 		req := tracking.UpdateExpenseReq{
 			Amount:     payload.Amount,
@@ -45,15 +49,16 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			ExpenseID:  respExpense.Expenses[0].ID,
 			People:     respExpense.Expenses[0].People,
 			Product:    payload.Product,
-			Shop:       respExpense.Expenses[0].Shop,
+			Shop:       payload.Shop,
 		}
-		resp, err := eu.Update(req)
+		_, err = eu.Update(req)
 		if err != nil {
 			panic("Update Error")
 		}
-		return c.Render("alerts/toastInfo", fiber.Map{
+		c.Append("Hx-Trigger", "reloadRow")
+		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
-			"Msg":   resp.ExpenseID + " updated",
+			"Msg":   "Expense updated.",
 		})
 	}
 }
@@ -73,13 +78,6 @@ func LoadTrackingSection() func(*fiber.Ctx) error {
 
 func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ExpensesTrigger": "revealed",
-			})
-		}
 		respExpense, err := eq.GetByID(c.Params("id"))
 		if err != nil {
 			panic("Implement error")

@@ -37,6 +37,7 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 
 func (sqls *SQLStorage) Update(e expense.Expense) error {
 	q := "UPDATE `expenses` SET price=?, product=?, currency=?, shop=?, city=?, people=?, expend_date=?, category_id=? WHERE id=?"
+	fmt.Println("Hola")
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
