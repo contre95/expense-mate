@@ -14,16 +14,13 @@ type UpdateExpenseResp struct {
 }
 
 type UpdateExpenseReq struct {
-	ExpenseID  string
-	Amount     float64
-	Product    string
-	Price      float64
-	City       string
-	Currency   string
-	Shop       string
-	Date       time.Time
-	People     string
-	CategoryID string
+	Amount      float64
+	CategoryID  string
+	Date        time.Time
+	ExpenseID   string
+	People      string
+	Description string
+	Shop        string
 }
 
 type ExpenseUpdater struct {
@@ -44,11 +41,9 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		return nil, getErr
 	}
 	// Update the values
-	oldExpense.Price.Amount = req.Price
-	oldExpense.Price.Currency = req.Currency
-	oldExpense.Place.City = req.City
+	oldExpense.Price.Amount = req.Amount
 	oldExpense.Place.Shop = req.Shop
-	oldExpense.Product = req.Product
+	oldExpense.Product = req.Description
 	oldExpense.Date = req.Date
 	oldExpense.People = req.People
 	newCategory, err := s.expenses.GetCategory(expense.CategoryID(req.CategoryID))
@@ -57,10 +52,14 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		s.logger.Err("The category you are trying to reach doesn't exists", req, err)
 		return nil, err
 	case err != nil:
-		s.logger.Err("Could not update category.", req, err)
+		s.logger.Err("Could not get category.", req, err)
 		return nil, err
 	}
 	oldExpense.Category = *newCategory
-	s.expenses.Update(*oldExpense)
+	updateErr := s.expenses.Update(*oldExpense)
+	if updateErr != nil {
+		s.logger.Err("Could not update expense", req, err)
+		return nil, err
+	}
 	return &UpdateExpenseResp{ExpenseID: req.ExpenseID}, nil
 }

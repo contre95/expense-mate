@@ -88,10 +88,13 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 	q := "SELECT * FROM categories where id=?"
 	var category expense.Category
 	err := sqls.db.QueryRow(q, id).Scan(&category.ID, &category.Name)
-	if err != nil {
-		return nil, err
+	switch err {
+	case sql.ErrNoRows:
+		return nil, expense.ErrNotFound
+	case nil:
+		return &category, nil
 	}
-	return &category, nil
+	return nil, err
 }
 
 func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {

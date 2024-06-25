@@ -5,6 +5,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/presenters/rest/api"
 	"expenses-app/pkg/presenters/rest/ui"
 	"os"
 	"strconv"
@@ -22,27 +23,26 @@ func Run(fi *fiber.App, port int) {
 // MapRoutes is where http REST routes are mapped to functions
 // func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *importing.Service, t *tracking.Service, q *querying.Service) {
 func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracking.Service, q *querying.Service) {
-	// Unrestricted
+	// UI
 	fi.Static("/assets", "./public/assets")
 	fi.Get("/", ui.Home)
-	fi.Get("/expenses", ui.ExpenseSection(q.ExpenseQuerier))
-	fi.Get("/expenses/:id/edit", ui.ExpenseRowEdit(q.ExpenseQuerier, q.CategoryQuerier))
-	// fi.Get("/expenses/:id/edit", func(c *fiber.Ctx) error {
-	// 	fmt.Println(c.Params("id"))
-	// 	return nil
-	// })
+	fi.Get("/expenses", ui.LoadTrackingSection())
+	fi.Get("/expenses/table", ui.LoadTrackingTable(q.ExpenseQuerier))
+	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier))
+	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
 	fi.Get("/importer", ui.Importer())
-	fi.Get("/ping", ping(*he))
-	// fi.Post("/login", login(*a))
-	fi.Get("/api/expenses", getExpenses(q.ExpenseQuerier))
 
-	// Restricted
+	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
+
+	// fi.Post("/login", login(*a))
+	fi.Get("/api/ping", api.Ping(*he))
+	fi.Get("/api/expenses", api.GetExpenses(q.ExpenseQuerier))
 	fi.Get("/restricted", restricted)
 	// fi.Post("/users", createUsers(m.UserCreator))
-	fi.Get("/api/expenses/categories", getCategories(q.CategoryQuerier))
-	fi.Post("/api/expenses/categories", createCategory(m.CategoryCreator))
-	// fi.Post("/importers/:id", importExpenses(i.ImportExpenses))
+	fi.Get("/api/expenses/categories", api.GetCategories(q.CategoryQuerier))
+	fi.Post("/api/expenses/categories", api.CreateCategory(m.CategoryCreator))
+	// fi.Post("/importers/:id", api.ImportExpenses(i.ImportExpenses))
 }
 
 func restricted(c *fiber.Ctx) error {
