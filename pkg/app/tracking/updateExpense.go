@@ -4,6 +4,7 @@ import (
 	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+	"fmt"
 	"time"
 )
 
@@ -36,6 +37,7 @@ func NewExpenseUpdater(l app.Logger, e expense.Expenses) *ExpenseUpdater {
 func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error) {
 	// Get the oldExpense from the db
 	oldExpense, getErr := s.expenses.Get(expense.ID(req.ExpenseID))
+	fmt.Println(oldExpense)
 	switch {
 	case errors.Is(getErr, expense.ErrNotFound):
 		s.logger.Debug("Expense %s not found in storage: %v", req.ExpenseID, getErr)

@@ -1,15 +1,15 @@
-<tr id="expenseRow{{ .ID }}" class="border-b border-blue-gray-200">
-  <td class="py-3 px-4">{{ .Expense.Date.Format "02-01-2006" }}</td>
-  <td class="py-3 px-4">{{.Expense.Shop}}</td>
-  <td class="py-3 px-4">{{.Expense.Product }}</td>
-  <td class="py-3 px-4">
+<tr id="expenseRow{{ .Expense.ID }}" class="transition duration-1000 border-b border-blue-gray-200" _="on load add .bg-blue-200 to me then wait 1s then remove .bg-blue-200 from me">
+  <td class="py-1 px-4">{{ .Expense.Date.Format "02-01-2006" }}</td>
+  <td class="py-1 px-4">{{.Expense.Shop}}</td>
+  <td class="py-1 px-4">{{.Expense.Product }}</td>
+  <td class="py-1 px-4">
     {{ $colors := nameToColor .Expense.Category }}
     <span
-      class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Category}}</span>
+      class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Expense.Category}}</span>
   </td>
-  <td class="py-3 px-4">${{printf "%.2f" .Expense.Amount}}</td>
-  <td class="py-3 px-4">
-    <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-push-url="true" hx-swap="outerHTML"
+  <td class="py-1 px-4">${{printf "%.2f" .Expense.Amount}}</td>
+  <td class="py-1 px-4">
+    <button hx-get="/expenses/{{ .Expense.ID }}/edit" hx-target="#expenseRow{{.Expense.ID}}" hx-push-url="true" hx-swap="outerHTML"
       class="font-medium text-blue-600 hover:text-blue-800">Edit</button>
   </td>
 </tr>
