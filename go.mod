@@ -11,6 +11,7 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/google/uuid v1.3.0
+	github.com/mattn/go-sqlite3 v1.14.22
 	golang.org/x/crypto v0.4.0
 	google.golang.org/api v0.105.0
 )

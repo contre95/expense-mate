@@ -6,6 +6,7 @@ import (
 	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -37,7 +38,6 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 
 func (sqls *SQLStorage) Update(e expense.Expense) error {
 	q := "UPDATE `expenses` SET price=?, product=?, currency=?, shop=?, city=?, people=?, expend_date=?, category_id=? WHERE id=?"
-	fmt.Println("Hola")
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 	return &category, nil
 }
 
-func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {
+func (sqls *SQLStorage) FilterByCategory(cid string, limit, offset uint) ([]expense.Expense, error) {
 	query := `
 		SELECT 
 			e.id, e.price, e.product, e.currency, e.shop, e.city, 
@@ -111,43 +111,172 @@ func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint)
 			expenses e
 		JOIN 
 			categories c ON e.category_id = c.id
-		WHERE 
-			e.expend_date >= ? AND e.expend_date <= ?
+        WHERE
+            c.id = ?
 		ORDER BY 
 			e.expend_date DESC 
 		LIMIT ? OFFSET ?`
-
-	rows, err := sqls.db.Query(query, from, to, limit, offset)
+	rows, err := sqls.db.Query(query, limit, offset, cid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
 	var expenses []expense.Expense
 	for rows.Next() {
 		var e expense.Expense
 		var cat expense.Category
-
 		err := rows.Scan(
 			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
 			&e.People, &e.Date, &cat.ID, &cat.Name)
 		if err != nil {
 			return nil, err
 		}
-
 		e.Category = cat
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}
-
-		expenses = append(expenses, e)
+		fmt.Println(e)
 	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
 	return expenses, nil
 }
+
+// Filter retrieves expenses from the db based on the given filters. It skips the filter parameters with zero value
+func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]expense.Expense, error) {
+	var conditions []string
+	query := "SELECT e.id, e.price, e.product, e.currency, e.shop, e.city, e.people, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id"
+	if !from.IsZero() {
+		conditions = append(conditions, fmt.Sprintf("date >= '%s'", from.Format("2006-01-02")))
+	}
+	if !to.IsZero() {
+		conditions = append(conditions, fmt.Sprintf("date <= '%s'", to.Format("2006-01-02")))
+	}
+	if minPrice > 0 {
+		conditions = append(conditions, fmt.Sprintf("price >= %.2f", float64(minPrice)))
+	}
+	if maxPrice > 0 {
+		conditions = append(conditions, fmt.Sprintf("price <= %.2f", float64(maxPrice)))
+	}
+	if shop != "" {
+		conditions = append(conditions, fmt.Sprintf("shop LIKE '%%%s%%'", shop))
+	}
+	if product != "" {
+		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
+	}
+	if len(categories) > 0 {
+		categoryConditions := make([]string, len(categories))
+		for i, cat := range categories {
+			categoryConditions[i] = fmt.Sprintf("category LIKE '%%%s%%'", cat)
+		}
+		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
+	}
+	if len(conditions) > 0 {
+		whereClause := " " + strings.Join(conditions, " AND ")
+		query += " WHERE " + whereClause
+	}
+	query += fmt.Sprintf(" ORDER BY e.expend_date DESC LIMIT ? OFFSET ?")
+	rows, err := sqls.db.Query(query, limit, offset)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, expense.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var expenses []expense.Expense
+	for rows.Next() {
+		var e expense.Expense
+		var cat expense.Category
+		err := rows.Scan(
+			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
+			&e.People, &e.Date, &cat.ID, &cat.Name)
+		if err != nil {
+			return nil, err
+		}
+		e.Category = cat
+		if _, err = e.Validate(); err != nil {
+			return nil, err
+		}
+		expenses = append(expenses, e)
+	}
+	return expenses, nil
+}
+
+func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
+	query := `
+		SELECT e.id, e.price, e.product, e.currency, e.shop, e.city, e.people, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id
+		ORDER BY e.expend_date DESC
+		LIMIT ? OFFSET ?`
+	rows, err := sqls.db.Query(query, limit, offset)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, expense.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var expenses []expense.Expense
+	for rows.Next() {
+		var e expense.Expense
+		var cat expense.Category
+		err := rows.Scan(
+			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
+			&e.People, &e.Date, &cat.ID, &cat.Name)
+		if err != nil {
+			return nil, err
+		}
+		e.Category = cat
+		if _, err = e.Validate(); err != nil {
+			return nil, err
+		}
+		expenses = append(expenses, e)
+	}
+	return expenses, nil
+}
+
+// func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {
+// 	query := `
+// 		SELECT
+// 			e.id, e.price, e.product, e.currency, e.shop, e.city,
+// 			e.people, e.expend_date, c.id, c.name
+// 		FROM
+// 			expenses e
+// 		JOIN
+// 			categories c ON e.category_id = c.id
+// 		WHERE
+// 			e.expend_date >= ? AND e.expend_date <= ?
+// 		ORDER BY
+// 			e.expend_date DESC
+// 		LIMIT ? OFFSET ?`
+//
+// 	rows, err := sqls.db.Query(query, from, to, limit, offset)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+//
+// 	var expenses []expense.Expense
+// 	for rows.Next() {
+// 		var e expense.Expense
+// 		var cat expense.Category
+//
+// 		err := rows.Scan(
+// 			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
+// 			&e.People, &e.Date, &cat.ID, &cat.Name)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+//
+// 		e.Category = cat
+// 		if _, err = e.Validate(); err != nil {
+// 			return nil, err
+// 		}
+//
+// 		expenses = append(expenses, e)
+// 	}
+// 	if err = rows.Err(); err != nil {
+// 		return nil, err
+// 	}
+//
+// 	return expenses, nil
+// }
 
 func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {
 	q := "SELECT id FROM categories where id=?"

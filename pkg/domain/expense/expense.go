@@ -54,13 +54,13 @@ type Category struct {
 
 // Expenses is the repository for all the command actions for Expense
 type Expenses interface {
+	// All retrieves all Expenses with pagination
+	Filter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)
+	// All retrieves all Expenses with pagination
+	All(limit, offset uint) ([]Expense, error)
 	// Get retrieves an Expense from storage
 	Get(id ID) (*Expense, error)
-	// GetFromTimeRange is used to retrieve all expenses from a certain time range with the ability to "paginate" using limit and offset. By passing limit = 0 paginating will be dismissed.
-	GetFromTimeRange(from, to time.Time, limit, offset uint) ([]Expense, error)
-	// Count how many expenses are in a time range for a given category
-	//Count(from, to *time.Time, categories []Category) (uint, error)
-	// Add is used to add a new Expense to the system
+	// // Add is used to add a new Expense to the system
 	Add(e Expense) error
 	// Delete is used to remove an Expense
 	Delete(id ID) error
