@@ -14,6 +14,8 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
@@ -32,17 +34,37 @@ func main() {
 	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 	telergamLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
 
-	// SQL Storage
-	mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
-	mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB") + "?parseTime=true"
-	db, err := sql.Open("mysql", mysqlUser+mysqlUrl)
+	// SQL storage
+	var err error
+	var db *sql.DB
 	defer db.Close()
-	if err != nil {
-		initLogger.Err("%v", err)
-		return
+	switch os.Getenv("STORAGE_ENGINE") {
+	case "mysql":
+		mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
+		mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB") + "?parseTime=true"
+		db, err = sql.Open("mysql", mysqlUser+mysqlUrl)
+		defer db.Close()
+		if err != nil {
+			initLogger.Err("Error instanciating mysql: %v", err)
+			return
+		}
+		initLogger.Info("MySQL storage initialized on %s", mysqlUrl)
+	case "sqlite":
+		path := os.Getenv("SQLITE_PATH")
+		db, err = sql.Open("sqlite3", path)
+		if err != nil {
+			initLogger.Err("Error instanciating sqlite3: %v", err)
+			return
+		}
+		_, err = db.Exec(sqlstorage.Tables)
+		if err != nil {
+			initLogger.Err("Error creating sqlite tables: %v", err)
+			return
+		}
+		initLogger.Info("SQLte storage initialized on %s", path)
 	}
+
 	sqlStorage := sqlstorage.NewStorage(db)
-	initLogger.Info("SQL storage initializer on %s", mysqlUrl)
 
 	// Authenticating
 	// authenticator := authenticating.NewService()

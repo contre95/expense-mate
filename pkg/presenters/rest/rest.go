@@ -27,6 +27,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Static("/assets", "./public/assets")
 	fi.Get("/", ui.Home)
 	fi.Get("/expenses", ui.LoadTrackingSection())
+	fi.Get("/expenses/form", ui.LoadTrackingTable(q.ExpenseQuerier))
 	fi.Get("/expenses/table", ui.LoadTrackingTable(q.ExpenseQuerier))
 	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))

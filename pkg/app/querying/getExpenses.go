@@ -3,7 +3,6 @@ package querying
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
-	"fmt"
 	"time"
 )
 
@@ -19,16 +18,23 @@ type ExpensesBasics struct {
 }
 
 type ExpenseQuerierResp struct {
-	Expenses []ExpensesBasics
+	Expenses map[string]ExpensesBasics
 	Page     uint
 	PageSize uint
 }
 
+type ExpenseQuerierFilter struct {
+	ByCategory []string
+	ByShop     string
+	ByProduct  string
+	ByPrice    [2]uint
+	ByTime     [2]time.Time
+}
+
 type ExpenseQuerierReq struct {
-	From        time.Time
-	To          time.Time
-	Page        uint
-	MaxPageSize uint
+	Page          uint
+	MaxPageSize   uint
+	ExpenseFilter ExpenseQuerierFilter
 }
 
 type ExpenseQuerier struct {
@@ -48,8 +54,8 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 		return nil, expense.ErrNotFound
 	}
 	resp := ExpenseQuerierResp{
-		Expenses: []ExpensesBasics{
-			{
+		Expenses: map[string]ExpensesBasics{
+			string(e.ID): {
 				Amount:     e.Price.Amount,
 				Category:   string(e.Category.Name),
 				CategoryID: id,
@@ -67,14 +73,17 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 }
 
 func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, error) {
+	var expenses []expense.Expense
+	var err error
 	s.logger.Info("Getting all expenses")
-	expenses, err := s.expenses.GetFromTimeRange(req.From, req.To, req.MaxPageSize, req.Page*req.MaxPageSize)
+	// expenses, err = s.expenses.All(req.MaxPageSize, req.Page*req.MaxPageSize)
+	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategory, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err
 	}
 	resp := ExpenseQuerierResp{
-		Expenses: []ExpensesBasics{},
+		Expenses: map[string]ExpensesBasics{},
 		Page:     req.Page,
 	}
 	for _, exp := range expenses {
@@ -88,9 +97,8 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 			Product:    exp.Product,
 			Shop:       exp.Place.Shop,
 		}
-		resp.Expenses = append(resp.Expenses, expBasic)
+		resp.Expenses[string(expBasic.ID)] = expBasic
 	}
-	fmt.Println(resp)
 	resp.PageSize = uint(len(resp.Expenses))
 	return &resp, nil
 }

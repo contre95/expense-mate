@@ -1,8 +1,8 @@
 <!-- Table -->
 <div id="table">
   <div class="overflow-x-auto border shadow-md rounded-xl border-gray-200">
-    <table class="min-w-full bg-white" >
-      <thead class= "rounded-full">
+    <table class="min-w-full bg-white">
+      <thead class="rounded-full">
         <tr class="bg-slate-100 text-gray-700 rounded-lg ">
           <th class="px-4 py-3 text-left">Date</th>
           <th class="px-4 py-3 text-left">Shop</th>
@@ -25,7 +25,8 @@
           </td>
           <td class="px-4 py-1">${{printf "%.2f" .Amount}}</td>
           <td class="px-4 py-1">
-            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-push-url="true" hx-swap="outerHTML" class="font-medium fade-me-out text-blue-600 hover:text-blue-800">Edit</button>
+            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-push-url="true"
+              hx-swap="outerHTML" class="font-medium fade-me-out text-blue-600 hover:text-blue-800">Edit</button>
           </td>
         </tr>
         {{end}}
@@ -33,34 +34,36 @@
     </table>
   </div>
 
-<!-- Pagination -->
-<div class="flex flex-col items-center">
-  <!-- Help text -->
-  <span class="text-sm text-gray-700 dark:text-gray-400">
-    Showing page <span class="font-semibold text-gray-900 dark:text-white">{{ .CurrentPage }}</span> (<span class="font-semibold text-gray-900 dark:text-white">{{ .PageSize }}</span> Entries)
-  </span>
-  <div class="inline-flex mt-2 xs:mt-0">
-    <!-- Buttons -->
-    <button hx-get="/expenses/table?days_from=190&page_num={{ .PrevPage }}"
-      hx-swap="outerHTML" hx-target="#table" hx-push-url="true"
-                                                 class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white" {{ if eq .CurrentPage 0 }} disabled {{end}}>
-      <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 14 10">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M13 5H1m0 0 4 4M1 5l4-4" />
-      </svg>
-      Prev
-    </button>
-    <button hx-get="/expenses/table?days_from=190&page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
-      hx-push-url="true"
-      class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-      Next
-      <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 14 10">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M1 5h12m0 0L9 1m4 4L9 9" />
-      </svg>
-    </button>
+  <br>
+
+  <!-- Pagination -->
+  <div class="flex flex-col items-center">
+    <span class="text-sm text-gray-700 dark:text-gray-400">
+      Showing page <span class="font-semibold text-gray-900 dark:text-white">{{ .CurrentPage }}</span> (<span
+        class="font-semibold text-gray-900 dark:text-white">{{ .PageSize }}</span> Entries)
+    </span>
+    <div class="inline-flex mt-2 xs:mt-0">
+      <button hx-get="/expenses/table?days_from=190&page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table"
+        hx-push-url="true"
+        class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        {{ if eq .CurrentPage 0 }} disabled {{end}}>
+        <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 14 10">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 5H1m0 0 4 4M1 5l4-4" />
+        </svg>
+        Prev
+      </button>
+      <button hx-get="/expenses/table?days_from=190&page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
+        hx-push-url="true"
+        class="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+        Next
+        <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 14 10">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M1 5h12m0 0L9 1m4 4L9 9" />
+        </svg>
+      </button>
+    </div>
   </div>
-</div>
 </div>

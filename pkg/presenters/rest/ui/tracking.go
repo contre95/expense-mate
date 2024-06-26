@@ -46,8 +46,8 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			Amount:     payload.Amount,
 			CategoryID: payload.CategoryID,
 			Date:       parsedDate,
-			ExpenseID:  respExpense.Expenses[0].ID,
-			People:     respExpense.Expenses[0].People,
+			ExpenseID:  respExpense.Expenses[c.Params("id")].ID,
+			People:     respExpense.Expenses[c.Params("id")].People,
 			Product:    payload.Product,
 			Shop:       payload.Shop,
 		}
@@ -83,7 +83,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 			panic("Implement error")
 		}
 		return c.Render("sections/tracking/row", fiber.Map{
-			"Expense": respExpense.Expenses[0],
+			"Expense": respExpense.Expenses[c.Params("id")],
 		})
 	}
 }
@@ -108,7 +108,7 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		fmt.Println(respCategories)
 		fmt.Println(respExpense)
 		return c.Render("sections/tracking/rowEdit", fiber.Map{
-			"Expense":    respExpense.Expenses[0],
+			"Expense":    respExpense.Expenses[c.Params("id")],
 			"Categories": respCategories.Categories,
 		})
 	}
@@ -124,14 +124,6 @@ func LoadTrackingTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				"ExpensesTrigger": "revealed",
 			})
 		}
-		daysFrom, err := strconv.Atoi(c.Query("days_from", DEFAULT_DAYS_FROM_PARAM))
-		if err != nil {
-			panic("Implement me")
-		}
-		daysTo, err := strconv.Atoi(c.Query("days_to", DEFAULT_DAYS_TO_PARAM))
-		if err != nil {
-			panic("Implement me")
-		}
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
 			panic("Implement me")
@@ -141,8 +133,8 @@ func LoadTrackingTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 			panic("Implement me")
 		}
 		req := querying.ExpenseQuerierReq{
-			From:        time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysFrom)),
-			To:          time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysTo)),
+			// From:        time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysFrom)),
+			// To:          time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysTo)),
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 		}
@@ -152,8 +144,6 @@ func LoadTrackingTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		}
 		return c.Render("sections/tracking/table", fiber.Map{
 			"Expenses":    resp.Expenses,
-			"From":        req.From,
-			"To":          req.To,
 			"CurrentPage": req.Page,      // Add this line
 			"NextPage":    resp.Page + 1, // Add this line
 			"PrevPage":    resp.Page - 1, // Add this line
