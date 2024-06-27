@@ -145,10 +145,10 @@ func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, sho
 	var conditions []string
 	query := "SELECT e.id, e.price, e.product, e.currency, e.shop, e.city, e.people, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id"
 	if !from.IsZero() {
-		conditions = append(conditions, fmt.Sprintf("date >= '%s'", from.Format("2006-01-02")))
+		conditions = append(conditions, fmt.Sprintf("expend_date >= '%s'", from.Format("2006-01-02")))
 	}
 	if !to.IsZero() {
-		conditions = append(conditions, fmt.Sprintf("date <= '%s'", to.Format("2006-01-02")))
+		conditions = append(conditions, fmt.Sprintf("expend_date <= '%s'", to.Format("2006-01-02")))
 	}
 	if minPrice > 0 {
 		conditions = append(conditions, fmt.Sprintf("price >= %.2f", float64(minPrice)))
@@ -165,7 +165,7 @@ func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, sho
 	if len(categories) > 0 {
 		categoryConditions := make([]string, len(categories))
 		for i, cat := range categories {
-			categoryConditions[i] = fmt.Sprintf("category LIKE '%%%s%%'", cat)
+			categoryConditions[i] = fmt.Sprintf("category_id LIKE '%%%s%%'", cat)
 		}
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}

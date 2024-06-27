@@ -26,13 +26,15 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	// UI
 	fi.Static("/assets", "./public/assets")
 	fi.Get("/", ui.Home)
-	fi.Get("/expenses", ui.LoadTrackingSection())
-	fi.Get("/expenses/form", ui.LoadTrackingTable(q.ExpenseQuerier))
-	fi.Get("/expenses/table", ui.LoadTrackingTable(q.ExpenseQuerier))
+	fi.Get("/expenses", ui.LoadExpensesSection())
+	fi.Get("/expenses/filter", ui.LoadExpenseFilter(q.CategoryQuerier))
+	fi.Get("/expenses/table", ui.LoadExpensesTable(q.ExpenseQuerier))
 	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
-	fi.Get("/importer", ui.Importer())
+	fi.Get("/importers", ui.LoadImporterSection())
+	fi.Get("/importers/n26", ui.LoadN26Importer())
+	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
 
 	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
