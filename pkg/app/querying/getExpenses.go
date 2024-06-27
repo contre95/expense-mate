@@ -24,11 +24,11 @@ type ExpenseQuerierResp struct {
 }
 
 type ExpenseQuerierFilter struct {
-	ByCategory []string
-	ByShop     string
-	ByProduct  string
-	ByPrice    [2]uint
-	ByTime     [2]time.Time
+	ByCategoryID []string
+	ByShop       string
+	ByProduct    string
+	ByPrice      [2]uint
+	ByTime       [2]time.Time
 }
 
 type ExpenseQuerierReq struct {
@@ -77,7 +77,7 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	var err error
 	s.logger.Info("Getting all expenses")
 	// expenses, err = s.expenses.All(req.MaxPageSize, req.Page*req.MaxPageSize)
-	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategory, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
+	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err

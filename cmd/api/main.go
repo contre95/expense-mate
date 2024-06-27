@@ -62,6 +62,9 @@ func main() {
 			return
 		}
 		initLogger.Info("SQLte storage initialized on %s", path)
+	case "":
+		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
+		return
 	}
 
 	sqlStorage := sqlstorage.NewStorage(db)

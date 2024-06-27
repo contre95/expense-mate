@@ -63,7 +63,7 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 	}
 }
 
-func LoadTrackingSection() func(*fiber.Ctx) error {
+func LoadExpensesSection() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {
 			fmt.Println("No HX-Request refreshing with revealed")
@@ -72,7 +72,7 @@ func LoadTrackingSection() func(*fiber.Ctx) error {
 				"ExpensesTrigger": "revealed",
 			})
 		}
-		return c.Render("sections/tracking/index", fiber.Map{})
+		return c.Render("sections/expenses/index", fiber.Map{})
 	}
 }
 
@@ -82,7 +82,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 		if err != nil {
 			panic("Implement error")
 		}
-		return c.Render("sections/tracking/row", fiber.Map{
+		return c.Render("sections/expenses/row", fiber.Map{
 			"Expense": respExpense.Expenses[c.Params("id")],
 		})
 	}
@@ -107,15 +107,34 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		}
 		fmt.Println(respCategories)
 		fmt.Println(respExpense)
-		return c.Render("sections/tracking/rowEdit", fiber.Map{
+		return c.Render("sections/expenses/rowEdit", fiber.Map{
 			"Expense":    respExpense.Expenses[c.Params("id")],
+			"Categories": respCategories.Categories,
+		})
+	}
+
+}
+func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		if c.Get("HX-Request") != "true" {
+			fmt.Println("No HX-Request refreshing with revealed")
+			// c.Append("hx-trigger", "newPair")  // Not working :(
+			return c.Render("main", fiber.Map{
+				"ExpensesTrigger": "revealed",
+			})
+		}
+		respCategories, err := cq.Query()
+		if err != nil {
+			panic("Implement error")
+		}
+		return c.Render("sections/expenses/filter", fiber.Map{
 			"Categories": respCategories.Categories,
 		})
 	}
 }
 
-// LoadTrackingTable rendersn the Expenses section
-func LoadTrackingTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
+// LoadExpensesTable rendersn the Expenses section
+func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {
 			fmt.Println("No HX-Request refreshing with revealed")
@@ -126,23 +145,46 @@ func LoadTrackingTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		}
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
-			panic("Implement me")
+			panic("Atoi parse error")
 		}
 		pageSize, err := strconv.Atoi(c.Query("page_size", DEFAULT_PSIZE_PARAM))
 		if err != nil {
-			panic("Implement me")
+			panic("Atoi parse error")
 		}
+		fromDate, err := time.Parse("2006-01-02", c.Query("from-date", time.Time{}.Format("2006-01-02")))
+		if err != nil {
+			panic("Date parse error")
+		}
+		toDate, err := time.Parse("2006-01-02", c.Query("to-date", time.Time{}.Format("2006-01-02")))
+		if err != nil {
+			panic("Date parse error")
+		}
+		min_price, err := strconv.Atoi(c.Query("min_price", "0"))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+
+		max_price, err := strconv.Atoi(c.Query("max_price", "0"))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+		categories := c.Query("category")
 		req := querying.ExpenseQuerierReq{
-			// From:        time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysFrom)),
-			// To:          time.Now().Add(-1 * time.Hour * 24 * time.Duration(daysTo)),
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
+			ExpenseFilter: querying.ExpenseQuerierFilter{
+				ByCategoryID: []string{categories},
+				ByShop:       c.Query("shop"),
+				ByProduct:    c.Query("product"),
+				ByPrice:      [2]uint{uint(min_price), uint(max_price)},
+				ByTime:       [2]time.Time{fromDate, toDate},
+			},
 		}
 		resp, err := eq.Query(req)
 		if err != nil {
 			panic("Implement error UI")
 		}
-		return c.Render("sections/tracking/table", fiber.Map{
+		return c.Render("sections/expenses/table", fiber.Map{
 			"Expenses":    resp.Expenses,
 			"CurrentPage": req.Page,      // Add this line
 			"NextPage":    resp.Page + 1, // Add this line

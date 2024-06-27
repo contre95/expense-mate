@@ -6,8 +6,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// Home hanlder reders the homescreen
-func Importer() func(*fiber.Ctx) error {
+func LoadN26Importer() func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.Render("sections/importers/n26", fiber.Map{})
+	}
+}
+
+func LoadRevolutImporter() func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.Render("sections/importers/revolut", fiber.Map{})
+	}
+}
+
+func LoadImporterSection() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {
 			fmt.Println("No HX-Request refreshing with revealed")
@@ -16,6 +27,6 @@ func Importer() func(*fiber.Ctx) error {
 				"ImporterTrigger": "revealed",
 			})
 		}
-		return c.Render("sections/imports/index", fiber.Map{})
+		return c.Render("sections/importers/index", fiber.Map{})
 	}
 }

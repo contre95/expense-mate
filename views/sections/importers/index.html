@@ -1,0 +1,19 @@
+<div class="p-5 m-0 flex">
+  <div id="#n26importer" hx-get="/importers/n26" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+  </div>
+  <div id="#revolutImporter" hx-get="/importers/revolut" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+  </div>
+</div>
+<div class="p-5 m-0">
+  <span class="ml-2 text-xl text-gray-700">Uncatalogged expenses</span>
+  <br>
+  <span class="ml-2 text-md text-gray-500">Expenses will appear in this section when imported for you to manually set a
+    category.</span>
+  <br>
+  <br>
+  <div id="filters">
+    <input class="hidden" type="category" name="category" value="food">
+  </div>
+  <div id="#table" hx-get="/expenses/table?category=food" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+  </div>
+</div>
