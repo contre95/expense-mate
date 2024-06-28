@@ -102,42 +102,47 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 	return &category, nil
 }
 
-func (sqls *SQLStorage) FilterByCategory(cid string, limit, offset uint) ([]expense.Expense, error) {
-	query := `
-		SELECT 
-			e.id, e.price, e.product, e.currency, e.shop, e.city, 
-			e.people, e.expend_date, c.id, c.name 
-		FROM 
-			expenses e
-		JOIN 
-			categories c ON e.category_id = c.id
-        WHERE
-            c.id = ?
-		ORDER BY 
-			e.expend_date DESC 
-		LIMIT ? OFFSET ?`
-	rows, err := sqls.db.Query(query, limit, offset, cid)
-	if err != nil {
-		return nil, err
+// CountWithFilter
+func (sqls *SQLStorage) CountWithFilter(categories []string, minPrice, maxPrice uint, shop, product string, from, to time.Time) (uint, error) {
+	var conditions []string
+	query := "SELECT COUNT(*) FROM expenses e JOIN categories c ON e.category_id = c.id"
+	if !from.IsZero() {
+		conditions = append(conditions, fmt.Sprintf("expend_date >= '%s'", from.Format("2006-01-02")))
 	}
-	defer rows.Close()
-	var expenses []expense.Expense
-	for rows.Next() {
-		var e expense.Expense
-		var cat expense.Category
-		err := rows.Scan(
-			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
-			&e.People, &e.Date, &cat.ID, &cat.Name)
-		if err != nil {
-			return nil, err
-		}
-		e.Category = cat
-		if _, err = e.Validate(); err != nil {
-			return nil, err
-		}
-		fmt.Println(e)
+	if !to.IsZero() {
+		conditions = append(conditions, fmt.Sprintf("expend_date <= '%s'", to.Format("2006-01-02")))
 	}
-	return expenses, nil
+	if minPrice > 0 {
+		conditions = append(conditions, fmt.Sprintf("price >= %.2f", float64(minPrice)))
+	}
+	if maxPrice > 0 {
+		conditions = append(conditions, fmt.Sprintf("price <= %.2f", float64(maxPrice)))
+	}
+	if shop != "" {
+		conditions = append(conditions, fmt.Sprintf("shop LIKE '%%%s%%'", shop))
+	}
+	if product != "" {
+		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
+	}
+	if len(categories) > 0 {
+		categoryConditions := make([]string, len(categories))
+		for i, cat := range categories {
+			categoryConditions[i] = fmt.Sprintf("c.name LIKE '%%%s%%'", cat) // Assuming you filter by category name
+		}
+		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
+	}
+	if len(conditions) > 0 {
+		whereClause := strings.Join(conditions, " AND ")
+		query += " WHERE " + whereClause
+	}
+	var count uint
+	err := sqls.db.QueryRow(query).Scan(&count)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, expense.ErrNotFound
+	} else if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 // Filter retrieves expenses from the db based on the given filters. It skips the filter parameters with zero value

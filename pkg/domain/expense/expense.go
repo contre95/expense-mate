@@ -59,6 +59,8 @@ type Expenses interface {
 	// All retrieves all Expenses with pagination
 	All(limit, offset uint) ([]Expense, error)
 	// Get retrieves an Expense from storage
+	CountWithFilter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time) (uint, error)
+	// Get retrieves an Expense from storage
 	Get(id ID) (*Expense, error)
 	// // Add is used to add a new Expense to the system
 	Add(e Expense) error

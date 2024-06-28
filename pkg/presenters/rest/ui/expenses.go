@@ -4,6 +4,7 @@ import (
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -32,7 +33,6 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		if err := c.BodyParser(&payload); err != nil {
 			panic("Form parsing error")
 		}
-		fmt.Println(payload)
 		inputLayout := "2006-01-02"
 		parsedDate, err := time.Parse(inputLayout, payload.Date)
 		if err != nil {
@@ -40,7 +40,6 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 				"Title": "Wrong Date",
 				"Msg":   "Error parsing date",
 			})
-
 		}
 		req := tracking.UpdateExpenseReq{
 			Amount:     payload.Amount,
@@ -55,7 +54,6 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		if err != nil {
 			panic("Update Error")
 		}
-		c.Append("Hx-Trigger", "reloadRow")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
 			"Msg":   "Expense updated.",
@@ -82,6 +80,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 		if err != nil {
 			panic("Implement error")
 		}
+		c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
 		return c.Render("sections/expenses/row", fiber.Map{
 			"Expense": respExpense.Expenses[c.Params("id")],
 		})
@@ -92,7 +91,6 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {
 			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
 			return c.Render("main", fiber.Map{
 				"ExpensesTrigger": "revealed",
 			})
@@ -105,8 +103,6 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		if err != nil {
 			panic("Implement error")
 		}
-		fmt.Println(respCategories)
-		fmt.Println(respExpense)
 		return c.Render("sections/expenses/rowEdit", fiber.Map{
 			"Expense":    respExpense.Expenses[c.Params("id")],
 			"Categories": respCategories.Categories,
@@ -163,7 +159,6 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-
 		max_price, err := strconv.Atoi(c.Query("max_price", "0"))
 		if err != nil {
 			panic("Atoi parse error")
@@ -185,11 +180,13 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 			panic("Implement error UI")
 		}
 		return c.Render("sections/expenses/table", fiber.Map{
-			"Expenses":    resp.Expenses,
-			"CurrentPage": req.Page,      // Add this line
-			"NextPage":    resp.Page + 1, // Add this line
-			"PrevPage":    resp.Page - 1, // Add this line
-			"PageSize":    resp.PageSize,
+			"Expenses":      resp.Expenses,
+			"CurrentPage":   resp.Page,     // Add this line
+			"NextPage":      resp.Page + 1, // Add this line
+			"PrevPage":      resp.Page - 1, // Add this line
+			"TotalPages":    uint(math.Ceil(float64(resp.ExpensesCount / req.MaxPageSize))),
+			"PageSize":      resp.PageSize,
+			"ExpensesCount": resp.ExpensesCount,
 		})
 	}
 }
