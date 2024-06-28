@@ -96,7 +96,7 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			}
 			req := tracking.CreateExpenseReq{
 				Product:  line[3],
-				Price:    price,
+				Price:    price * -1,
 				Currency: "Euro",
 				Shop:     line[1],
 				City:     "City",
@@ -111,7 +111,7 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				slog.Error("Can't create expense:", err)
 			}
 		}
-		c.Append("HX-Trigger", "uncategorizeTable")
+		c.Append("HX-Trigger", "reloadImportTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
 			"Msg":   fmt.Sprintf("%d Expenses imported successfully. %d failed", int(lineNumber)-len(failedImports), len(failedImports)),
@@ -154,19 +154,6 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 			"ExpensesCount": re.ExpensesCount,
 			"TotalPages":    uint(math.Ceil(float64(re.ExpensesCount / req.MaxPageSize))),
 		})
-	}
-}
-
-func LoadUncotegorizedExpensesTable() func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ImporterTrigger": "revealed",
-			})
-		}
-		return c.Render("sections/importers/index", fiber.Map{})
 	}
 }
 
