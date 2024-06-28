@@ -1,6 +1,6 @@
 <div class="p-10 items-center justify-center w-1/2">
   <div class="overflow-x-auto">
-    <span class="text-xl text-gray-700" >Revolut</span>
+    <span class="text-xl text-gray-700">Revolut</span>
     <div class="flex items-center justify-center py-5">
       <label for="dropzone-file" style="border-color:#0B73B2;"
         class="flex flex-col items-center justify-center h-30 w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-50  hover:bg-purple-50">
@@ -10,14 +10,24 @@
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
           </svg>
+        <input id="n26csv" type='file' name='n26csv' accept=".csv" class="hidden" >
+        <p id="selectedFileName"></p>
           <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or
             drag and drop</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">CSV</p>
         </div>
-        <input id="dropzone-file" type="file" class="hidden" />
       </label>
     </div>
-    <small> Please refer to <a href="https://help.revolut.com/help/profile-and-plan/managing-my-account/trading-statements-and-reports/" target="_blank" class="text-blue-500">Revolut site</a> to see how to downlaod a CSV of your transactions.</small>
+        <small> Please refer to <a href="https://help.revolut.com/help/profile-and-plan/managing-my-account/trading-statements-and-reports/" target="_blank" class="text-blue-500">Revolut site</a> to see how to downlaod a CSV of your transactions.</small>
   </div>
+  <br>
+  <button class="font-medium fade-me-out text-blue-600 hover:text-blue-800"
+    hx-include="#n26csv" hx-encoding='multipart/form-data' hx-post='/importers/n26' > Import </button>
 </div>
+<script>
+  document.getElementById('n26csv').onchange = function () {
+    f = this.value.replace(/.*[\/\\]/, '');
+    document.getElementById('selectedFileName').innerText = f;
+};
+</script>
 

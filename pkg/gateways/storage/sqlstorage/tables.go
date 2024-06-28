@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS expenses (
 );
 
 -- Insert into categories table
+INSERT OR IGNORE INTO categories (id, name) VALUES ('unknown', 'Unknown');
 INSERT OR IGNORE INTO categories (id, name) VALUES ('services', 'Services');
 INSERT OR IGNORE INTO categories (id, name) VALUES ('entertainment', 'Entertainment');
 INSERT OR IGNORE INTO categories (id, name) VALUES ('salivery', 'Salivery');
