@@ -34,6 +34,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
 	fi.Get("/importers", ui.LoadImporterSection())
 	fi.Get("/importers/n26", ui.LoadN26Importer())
+	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator))
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
 

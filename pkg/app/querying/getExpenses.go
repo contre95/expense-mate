@@ -18,9 +18,10 @@ type ExpensesBasics struct {
 }
 
 type ExpenseQuerierResp struct {
-	Expenses map[string]ExpensesBasics
-	Page     uint
-	PageSize uint
+	Expenses      map[string]ExpensesBasics
+	Page          uint
+	PageSize      uint
+	ExpensesCount uint
 }
 
 type ExpenseQuerierFilter struct {
@@ -66,7 +67,7 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 				Shop:       e.Place.Shop,
 			},
 		},
-		Page:     0,
+		Page:     1,
 		PageSize: 1,
 	}
 	return &resp, nil
@@ -76,15 +77,21 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	var expenses []expense.Expense
 	var err error
 	s.logger.Info("Getting all expenses")
-	// expenses, err = s.expenses.All(req.MaxPageSize, req.Page*req.MaxPageSize)
+	totalExpenses, err := s.expenses.CountWithFilter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1])
+	if err != nil {
+		s.logger.Err("Could count expenses storage: %v", err)
+		return nil, err
+	}
 	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err
 	}
 	resp := ExpenseQuerierResp{
-		Expenses: map[string]ExpensesBasics{},
-		Page:     req.Page,
+		Expenses:      map[string]ExpensesBasics{},
+		Page:          req.Page,
+		ExpensesCount: totalExpenses,
+		PageSize:      uint(len(expenses)),
 	}
 	for _, exp := range expenses {
 		expBasic := ExpensesBasics{

@@ -2,10 +2,12 @@ package ui
 
 import (
 	"encoding/csv"
+	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"regexp"
 	"strconv"
 	"time"
@@ -45,7 +47,6 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				"Title": "Error",
 				"Msg":   fmt.Sprintln("Error reading CSV req:", err),
 			})
-
 		}
 		defer uploadedFile.Close()
 		csvReader := csv.NewReader(uploadedFile)
@@ -104,14 +105,12 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				Category: "unknown",
 			}
 			fmt.Println(req)
-			resp, err := t.Create(req)
+			_, err = t.Create(req)
 			if err != nil {
 				failedImports = append(failedImports, lineNumber)
 				slog.Error("Can't create expense:", err)
 			}
-			fmt.Println(resp)
 		}
-		fmt.Println("Imported")
 		c.Append("HX-Trigger", "uncategorizeTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
@@ -119,6 +118,45 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 		})
 	}
 }
+
+func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+		pageSize, err := strconv.Atoi(c.Query("page_size", DEFAULT_PSIZE_PARAM))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+		req := querying.ExpenseQuerierReq{
+			Page:        uint(pageNum),
+			MaxPageSize: uint(pageSize),
+			ExpenseFilter: querying.ExpenseQuerierFilter{
+				ByCategoryID: []string{"unknown"},
+			},
+		}
+		re, err := eq.Query(req)
+		if err != nil {
+			panic("Implement error")
+		}
+		rc, err := cq.Query()
+		if err != nil {
+			panic("Implement error")
+		}
+		return c.Render("sections/importers/table", fiber.Map{
+			"Expenses":      re.Expenses,
+			"Categories":    rc.Categories,
+			"CurrentPage":   req.Page,    // Add this line
+			"NextPage":      re.Page + 1, // Add this line
+			"PrevPage":      re.Page - 1, // Add this line
+			"PageSize":      re.PageSize,
+			"ExpensesCount": re.ExpensesCount,
+			"TotalPages":    uint(math.Ceil(float64(re.ExpensesCount / req.MaxPageSize))),
+		})
+	}
+}
+
 func LoadUncotegorizedExpensesTable() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {

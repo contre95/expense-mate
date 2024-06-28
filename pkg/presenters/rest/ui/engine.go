@@ -9,6 +9,12 @@ func Unescape(s string) template.HTML {
 	return template.HTML(s)
 }
 func NameToColor(s string) map[string]string {
+	if s == "Unknown" {
+		return map[string]string{
+			"txt": "text-gray-600",
+			"bg":  "bg-gray-200",
+		}
+	}
 	colorPairs := []struct {
 		text string
 		bg   string
