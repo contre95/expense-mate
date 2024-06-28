@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -132,13 +133,13 @@ func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 // LoadExpensesTable rendersn the Expenses section
 func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ExpensesTrigger": "revealed",
-			})
-		}
+		// if c.Get("HX-Request") != "true" {
+		// 	fmt.Println("No HX-Request refreshing with revealed")
+		// 	// c.Append("hx-trigger", "newPair")  // Not working :(
+		// 	return c.Render("main", fiber.Map{
+		// 		"ExpensesTrigger": "revealed",
+		// 	})
+		// }
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
 			panic("Atoi parse error")
@@ -163,12 +164,12 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		categories := c.Query("category")
+		categories := strings.Split(c.Query("categories"), ",")
 		req := querying.ExpenseQuerierReq{
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
-				ByCategoryID: []string{categories},
+				ByCategoryID: categories,
 				ByShop:       c.Query("shop"),
 				ByProduct:    c.Query("product"),
 				ByPrice:      [2]uint{uint(min_price), uint(max_price)},
