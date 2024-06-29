@@ -17,3 +17,10 @@ func Home(c *fiber.Ctx) error {
 		"Settings":  nil,
 	})
 }
+
+// Home hanlder reders the homescreen
+func Empty() func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.SendString("")
+	}
+}

@@ -1,4 +1,5 @@
-<tr id="expenseRow{{ .Expense.ID }}" class="transition duration-1000 border-b border-blue-gray-200" _="on load add .bg-blue-200 to me then wait 1s then remove .bg-blue-200 from me">
+<tr id="expenseRow{{ .Expense.ID }}" class="transition duration-1000 border-b border-blue-gray-200 animate__animated"
+  _="on load add .bg-blue-200 to me then wait 1s then remove .bg-blue-200 from me">
   <td class="py-1 px-4">{{ .Expense.Date.Format "02-01-2006" }}</td>
   <td class="py-1 px-4">{{.Expense.Shop}}</td>
   <td class="py-1 px-4">{{.Expense.Product }}</td>
@@ -9,7 +10,17 @@
   </td>
   <td class="py-1 px-4">${{printf "%.2f" .Expense.Amount}}</td>
   <td class="py-1 px-4">
-    <button hx-get="/expenses/{{ .Expense.ID }}/edit" hx-target="#expenseRow{{.Expense.ID}}" hx-push-url="true" hx-swap="outerHTML"
-      class="font-medium text-blue-600 hover:text-blue-800">Edit</button>
+    <button hx-get="/expenses/{{ .Expense.ID }}/edit" hx-target="#expenseRow{{.Expense.ID}}" hx-push-url="true"
+      hx-swap="outerHTML" class="font-medium text-blue-600 hover:text-blue-800">
+      Edit
+    </button>
+    <button id="deleteButton{{.Expense.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800" hx-swap="innerHTML"
+      hx-delete="/expenses/{{.Expense.ID}}" hx-target="#mitoast" _="on htmx:confirm(issueRequest)
+             halt the event
+             call Swal.fire({title: 'Confirm', text:'Delete expense. Are you sure ?'})
+             if result.isConfirmed toggle .animate__fadeOut on #expenseRow{{.Expense.ID}} then wait 1s then issueRequest()">
+      <i class='bx bx-trash'></i>
+    </button>
+    <div hx-trigger="deletedExpense-{{.Expense.ID}} from:body" hx-get="/empty" hx-target="#expenseRow{{.Expense.ID}}"></div>
   </td>
 </tr>

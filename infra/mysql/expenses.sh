@@ -14,7 +14,7 @@ mysql -u root -p"$MYSQL_ROOT_PASSWORD" --execute \
     );
     CREATE TABLE expenses (
     id bigint(64),
-    price float(16),
+    amount float(16),
     product text,
     currency text,
     shop text,

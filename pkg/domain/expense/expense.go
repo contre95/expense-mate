@@ -28,6 +28,13 @@ var (
 	ErrAlreadyExists = errors.New("The resource you are trying to get already exists")
 	ErrInvalidEntity = errors.New("The entity you are trying create is not valid")
 )
+var (
+	ErrInvalidAmount   = errors.New("The amount of the expense is invalid")
+	ErrInvalidProduct  = errors.New("The product name is invalid")
+	ErrInvalidShop     = errors.New("The shop name is invalid")
+	ErrInvalidDate     = errors.New("The date of the expense is invalid")
+	ErrInvalidCategory = errors.New("The category of the expense is invalid")
+)
 
 // CategoryID is the unique identifier for the domain object of type Category
 type CategoryID string
@@ -44,11 +51,11 @@ type Category struct {
 // Expenses is the repository for all the command actions for Expense
 type Expenses interface {
 	// All retrieves all Expenses with pagination
-	Filter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)
+	Filter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)
 	// All retrieves all Expenses with pagination
 	All(limit, offset uint) ([]Expense, error)
 	// Get retrieves an Expense from storage
-	CountWithFilter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time) (uint, error)
+	CountWithFilter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time) (uint, error)
 	// Get retrieves an Expense from storage
 	Get(id ID) (*Expense, error)
 	// // Add is used to add a new Expense to the system
@@ -73,7 +80,8 @@ func (c *Expense) Validate() (*Expense, error) {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return nil, errors.New(fmt.Sprintf("Invalid expense data: %v", err))
+		fmt.Println(err)
+		return nil, errors.New(fmt.Sprintf("Invalid expense data. Please review the fields."))
 	}
 	return c, nil
 }
@@ -85,7 +93,8 @@ func (c *Category) Validate() (*Category, error) {
 		if _, ok := err.(*validator.InvalidValidationError); ok {
 			fmt.Println(err)
 		}
-		return nil, errors.New(fmt.Sprintf("Invalid category data: %v", err))
+		fmt.Println(err)
+		return nil, errors.New(fmt.Sprintf("Invalid category data. Please review the fields."))
 	}
 	return c, nil
 }

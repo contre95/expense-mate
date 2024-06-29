@@ -50,11 +50,16 @@ func (sqls *SQLStorage) Update(e expense.Expense) error {
 }
 
 func (sqls *SQLStorage) Delete(id expense.ID) error {
-	_, err := sqls.db.Exec(fmt.Sprintf("delete from expenses where id = %s", id))
+	stmt, err := sqls.db.Prepare("DELETE FROM expenses WHERE id=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(id)
 	if err != nil {
 		return err
 	}
 	return nil
+
 }
 
 // Get retrieves an expense from the db. It returns a valid expense.Expense
@@ -127,8 +132,10 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 	if len(categories) > 0 {
 		categoryConditions := make([]string, len(categories))
 		for i, cat := range categories {
-			categoryConditions[i] = fmt.Sprintf("c.name LIKE '%%%s%%'", cat) // Assuming you filter by category name
+			// categoryConditions[i] = fmt.Sprintf("c.id LIKE '%%%s%%'", cat)
+			categoryConditions[i] = fmt.Sprintf("c.id ='%%%s%%'", cat)
 		}
+		fmt.Println(categoryConditions)
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
 	if len(conditions) > 0 {
@@ -167,10 +174,10 @@ func (sqls *SQLStorage) Filter(categories []string, minAmount, maxAmount uint, s
 	if product != "" {
 		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
 	}
-	if len(categories) > 0 {
+	if !(len(categories) == 1 && len(categories[0]) == 0) { // This mean they are sending []string{""}.
 		categoryConditions := make([]string, len(categories))
 		for i, cat := range categories {
-			categoryConditions[i] = fmt.Sprintf("category_id LIKE '%%%s%%'", cat)
+			categoryConditions[i] = fmt.Sprintf("c.id ='%s'", cat)
 		}
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
