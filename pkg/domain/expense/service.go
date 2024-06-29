@@ -8,13 +8,13 @@ import (
 )
 
 // NewExpense acts a Factory Method for new Expenses enforcinf invariants for the Expense entity
-func NewExpense(price float64, product string, shop string, date time.Time, cname string) (*Expense, error) {
+func NewExpense(amount float64, product string, shop string, date time.Time, cname string) (*Expense, error) {
 	newCat, err := NewCategory(cname)
 	if err != nil {
 		return nil, err
 	}
 	newExpense := Expense{
-		Amount:   price,
+		Amount:   amount,
 		Product:  product,
 		Shop:     shop,
 		Date:     date,

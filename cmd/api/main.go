@@ -102,7 +102,8 @@ func main() {
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, sqlStorage)
-	tracker := tracking.NewService(*createExpense, *updateExpense)
+	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, sqlStorage)
+	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense)
 
 	// API
 	engine := html.New("./views", ".html")

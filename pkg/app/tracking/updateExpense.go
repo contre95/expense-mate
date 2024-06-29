@@ -59,6 +59,11 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		return nil, err
 	}
 	oldExpense.Category = *newCategory
+	oldExpense, err = oldExpense.Validate()
+	if err != nil {
+		s.logger.Err("Could not update expense", req, err)
+		return nil, err
+	}
 	updateErr := s.expenses.Update(*oldExpense)
 	if updateErr != nil {
 		s.logger.Err("Could not update expense", req, err)

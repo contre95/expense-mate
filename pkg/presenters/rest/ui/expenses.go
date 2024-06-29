@@ -17,6 +17,64 @@ const DEFAULT_DAYS_TO_PARAM = "0" // Now
 const DEFAULT_PSIZE_PARAM = "35"
 const DEFAULT_PNUM_PARAM = "0"
 
+func DeleteExpense(ed tracking.ExpenseDeleter) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		req := tracking.DeleteExpenseReq{
+			IDS: []string{c.Params("id")},
+		}
+		resp, err := ed.Delete(req)
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Deletion Error",
+				"Msg":   err.Error(),
+			})
+		}
+		if len(resp.FailedDeletes) > 0 {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Could not delete expense",
+				"Msg":   "Expense could not be deleted.",
+			})
+		}
+		// c.Append("Hx-Trigger", "reloadExpensesTable")
+		c.Append("Hx-Trigger", "deletedExpense-"+c.Params("id"))
+		return c.Render("alerts/toastOk", fiber.Map{
+			"Title": "Deleted",
+			"Msg":   "Expenses deleted successfully.",
+		})
+	}
+}
+
+func DeleteExpenses(ed tracking.ExpenseDeleter) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		payload := struct {
+			IDs []string `json:"ids"`
+		}{}
+		if err := c.BodyParser(&payload); err != nil {
+			panic("Form parsing error")
+		}
+		req := tracking.DeleteExpenseReq{
+			IDS: payload.IDs,
+		}
+		resp, err := ed.Delete(req)
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Deletion Error",
+				"Msg":   err.Error(),
+			})
+		}
+		if len(resp.FailedDeletes) > 0 {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Partial Deletion",
+				"Msg":   "Some expenses could not be deleted.",
+			})
+		}
+		return c.Render("alerts/toastOk", fiber.Map{
+			"Title": "Deleted",
+			"Msg":   "Expenses deleted successfully.",
+		})
+	}
+}
+
 func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		payload := struct {
@@ -46,11 +104,14 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 		}
 		_, err = eu.Create(req)
 		if err != nil {
-			panic("Update Error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Can't create expense",
+				"Msg":   err,
+			})
 		}
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
-			"Msg":   "Expense updated.",
+			"Msg":   "Expense created.",
 		})
 	}
 }
@@ -70,14 +131,18 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			Amount     float64 `form:"amount"`
 		}{}
 		if err := c.BodyParser(&payload); err != nil {
-			panic("Form parsing error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Form",
+				"Msg":   "Error parsing form",
+			})
+
 		}
 		inputLayout := "2006-01-02"
 		parsedDate, err := time.Parse(inputLayout, payload.Date)
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{
 				"Title": "Wrong Date",
-				"Msg":   "Error parsing date",
+				"Msg":   "Error parsing date. Please use YYYY-MM-DD format.",
 			})
 		}
 		req := tracking.UpdateExpenseReq{
@@ -90,8 +155,12 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		}
 		_, err = eu.Update(req)
 		if err != nil {
-			panic("Update Error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Creation error",
+				"Msg":   "Error updating expense",
+			})
 		}
+		c.Append("Hx-Trigger", "reloadRow-"+c.Params("id"))
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
 			"Msg":   "Expense updated.",
@@ -171,7 +240,11 @@ func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 		// }
 		respCategories, err := cq.Query()
 		if err != nil {
-			panic("Implement error")
+			fmt.Println(err)
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Expense filter",
+				"Msg":   "Could not load the expense filter.",
+			})
 		}
 		return c.Render("sections/expenses/filter", fiber.Map{
 			"Categories": respCategories.Categories,
@@ -182,13 +255,6 @@ func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 // LoadExpensesTable rendersn the Expenses section
 func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		// if c.Get("HX-Request") != "true" {
-		// 	fmt.Println("No HX-Request refreshing with revealed")
-		// 	// c.Append("hx-trigger", "newPair")  // Not working :(
-		// 	return c.Render("main", fiber.Map{
-		// 		"ExpensesTrigger": "revealed",
-		// 	})
-		// }
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
 			panic("Atoi parse error")
@@ -205,11 +271,11 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Date parse error")
 		}
-		min_price, err := strconv.Atoi(c.Query("min_price", "0"))
+		min_amount, err := strconv.Atoi(c.Query("min_amount", "0"))
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		max_price, err := strconv.Atoi(c.Query("max_price", "0"))
+		max_amount, err := strconv.Atoi(c.Query("max_amount", "0"))
 		if err != nil {
 			panic("Atoi parse error")
 		}
@@ -221,13 +287,20 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				ByCategoryID: categories,
 				ByShop:       c.Query("shop"),
 				ByProduct:    c.Query("product"),
-				ByAmount:     [2]uint{uint(min_price), uint(max_price)},
+				ByAmount:     [2]uint{uint(min_amount), uint(max_amount)},
 				ByTime:       [2]time.Time{fromDate, toDate},
 			},
 		}
+		fmt.Println(req)
+		fmt.Println(req)
+		fmt.Println(req)
+		fmt.Println(req)
 		resp, err := eq.Query(req)
 		if err != nil {
-			panic("Implement error UI")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Table error",
+				"Msg":   "Error loading expenses table.",
+			})
 		}
 		return c.Render("sections/expenses/table", fiber.Map{
 			"Expenses":      resp.Expenses,

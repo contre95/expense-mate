@@ -38,7 +38,7 @@ DROP TABLE IF EXISTS `expenses`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `expenses` (
   `id` varchar(255) NOT NULL,
-  `price` float DEFAULT NULL,
+  `amount` float DEFAULT NULL,
   `product` text,
   `currency` text,
   `shop` text,
