@@ -29,7 +29,6 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 
 func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		fmt.Println("Importing N26 CSV")
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
 		file, err := c.FormFile("n26csv")
@@ -85,26 +84,26 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				failedImports = append(failedImports, lineNumber)
 				continue
 			}
-			// Exclude all incomes (i.e price > 0, this includes internal transfers between spaces)
-			price, err := strconv.ParseFloat(line[5], 64)
+			// Exclude all incomes (i.e amount > 0, this includes internal transfers between spaces)
+			amount, err := strconv.ParseFloat(line[5], 64)
 			if err != nil {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
 				failedImports = append(failedImports, lineNumber)
 				continue
 			}
-			if price > 0 {
+			if amount > 0 {
 				slog.Debug("Excluiding income", "Income", line[1])
 				continue
 			}
 			req := tracking.CreateExpenseReq{
-				Product:  line[3],
-				Price:    price * -1,
-				Currency: "Euro",
-				Shop:     line[1],
-				City:     "City",
-				Date:     date,
-				People:   "People",
-				Category: "unknown",
+				Product:    line[3],
+				Amount:     amount * -1,
+				Currency:   "Euro",
+				Shop:       line[1],
+				City:       "City",
+				Date:       date,
+				People:     "People",
+				CategoryID: "unknown",
 			}
 			fmt.Println(req)
 			_, err = t.Create(req)

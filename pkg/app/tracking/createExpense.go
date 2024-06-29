@@ -13,14 +13,14 @@ type CreateExpenseResp struct {
 }
 
 type CreateExpenseReq struct {
-	Product  string
-	Price    float64
-	Currency string
-	Shop     string
-	City     string
-	Date     time.Time
-	People   string
-	Category string
+	Product    string
+	Amount     float64
+	Currency   string
+	Shop       string
+	City       string
+	Date       time.Time
+	People     string
+	CategoryID string
 }
 
 // ExpenseCreator use case creates a category for a expense
@@ -35,15 +35,7 @@ func NewExpenseCreator(l app.Logger, e expense.Expenses) *ExpenseCreator {
 
 // Create use cases function creates a new expense
 func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error) {
-	price := expense.Price{
-		Currency: req.Currency,
-		Amount:   req.Price,
-	}
-	place := expense.Place{
-		City: req.City,
-		Shop: req.Shop,
-	}
-	newExpense, createErr := expense.NewExpense(price, req.Product, req.People, place, req.Date, req.Category)
+	newExpense, createErr := expense.NewExpense(req.Amount, req.Product, req.Shop, req.Date, req.CategoryID)
 	if createErr != nil {
 		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)
 		return nil, createErr

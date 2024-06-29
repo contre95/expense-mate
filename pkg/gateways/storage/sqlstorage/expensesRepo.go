@@ -23,12 +23,12 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 			return err
 		}
 	}
-	q := "INSERT INTO `expenses` (id, price, product, currency, shop, city, people, expend_date, category_id) VALUES (?,?,?,?,?,?,?,?,?);"
+	q := "INSERT INTO `expenses` (id, amount, product, shop, expend_date, category_id) VALUES (?,?,?,?,?,?);"
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(e.ID, e.Price.Amount, e.Product, e.Price.Currency, e.Place.Shop, e.Place.City, e.People, e.Date, e.Category.ID)
+	_, err = stmt.Exec(e.ID, e.Amount, e.Product, e.Shop, e.Date, e.Category.ID)
 	stmt.Close()
 	if err != nil {
 		return err
@@ -37,12 +37,12 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 }
 
 func (sqls *SQLStorage) Update(e expense.Expense) error {
-	q := "UPDATE `expenses` SET price=?, product=?, currency=?, shop=?, city=?, people=?, expend_date=?, category_id=? WHERE id=?"
+	q := "UPDATE `expenses` SET amount=?, product=?, shop=?, expend_date=?, category_id=? WHERE id=?"
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(e.Price.Amount, e.Product, e.Price.Currency, e.Place.Shop, e.Place.City, e.People, e.Date, e.Category.ID, e.ID)
+	_, err = stmt.Exec(e.Amount, e.Product, e.Shop, e.Date, e.Category.ID, e.ID)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 	q := "SELECT * FROM expenses where id=?"
 	var catID expense.CategoryID
 	var e expense.Expense
-	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City, &e.People, &e.Date, &catID)
+	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &catID)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		return nil, expense.ErrNotFound
@@ -103,7 +103,7 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 }
 
 // CountWithFilter
-func (sqls *SQLStorage) CountWithFilter(categories []string, minPrice, maxPrice uint, shop, product string, from, to time.Time) (uint, error) {
+func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmount uint, shop, product string, from, to time.Time) (uint, error) {
 	var conditions []string
 	query := "SELECT COUNT(*) FROM expenses e JOIN categories c ON e.category_id = c.id"
 	if !from.IsZero() {
@@ -112,11 +112,11 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minPrice, maxPrice 
 	if !to.IsZero() {
 		conditions = append(conditions, fmt.Sprintf("expend_date <= '%s'", to.Format("2006-01-02")))
 	}
-	if minPrice > 0 {
-		conditions = append(conditions, fmt.Sprintf("price >= %.2f", float64(minPrice)))
+	if minAmount > 0 {
+		conditions = append(conditions, fmt.Sprintf("amount >= %.2f", float64(minAmount)))
 	}
-	if maxPrice > 0 {
-		conditions = append(conditions, fmt.Sprintf("price <= %.2f", float64(maxPrice)))
+	if maxAmount > 0 {
+		conditions = append(conditions, fmt.Sprintf("amount <= %.2f", float64(maxAmount)))
 	}
 	if shop != "" {
 		conditions = append(conditions, fmt.Sprintf("shop LIKE '%%%s%%'", shop))
@@ -146,20 +146,20 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minPrice, maxPrice 
 }
 
 // Filter retrieves expenses from the db based on the given filters. It skips the filter parameters with zero value
-func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]expense.Expense, error) {
+func (sqls *SQLStorage) Filter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]expense.Expense, error) {
 	var conditions []string
-	query := "SELECT e.id, e.price, e.product, e.currency, e.shop, e.city, e.people, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id"
+	query := "SELECT e.id, e.amount, e.product, e.shop, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id"
 	if !from.IsZero() {
 		conditions = append(conditions, fmt.Sprintf("expend_date >= '%s'", from.Format("2006-01-02")))
 	}
 	if !to.IsZero() {
 		conditions = append(conditions, fmt.Sprintf("expend_date <= '%s'", to.Format("2006-01-02")))
 	}
-	if minPrice > 0 {
-		conditions = append(conditions, fmt.Sprintf("price >= %.2f", float64(minPrice)))
+	if minAmount > 0 {
+		conditions = append(conditions, fmt.Sprintf("amount >= %.2f", float64(minAmount)))
 	}
-	if maxPrice > 0 {
-		conditions = append(conditions, fmt.Sprintf("price <= %.2f", float64(maxPrice)))
+	if maxAmount > 0 {
+		conditions = append(conditions, fmt.Sprintf("amount <= %.2f", float64(maxAmount)))
 	}
 	if shop != "" {
 		conditions = append(conditions, fmt.Sprintf("shop LIKE '%%%s%%'", shop))
@@ -190,9 +190,7 @@ func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, sho
 	for rows.Next() {
 		var e expense.Expense
 		var cat expense.Category
-		err := rows.Scan(
-			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
-			&e.People, &e.Date, &cat.ID, &cat.Name)
+		err := rows.Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &cat.ID, &cat.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -207,7 +205,7 @@ func (sqls *SQLStorage) Filter(categories []string, minPrice, maxPrice uint, sho
 
 func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
 	query := `
-		SELECT e.id, e.price, e.product, e.currency, e.shop, e.city, e.people, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id
+		SELECT e.id, e.amount, e.product, e.shop,  e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id
 		ORDER BY e.expend_date DESC
 		LIMIT ? OFFSET ?`
 	rows, err := sqls.db.Query(query, limit, offset)
@@ -222,8 +220,7 @@ func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
 		var e expense.Expense
 		var cat expense.Category
 		err := rows.Scan(
-			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
-			&e.People, &e.Date, &cat.ID, &cat.Name)
+			&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &cat.ID, &cat.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -235,53 +232,6 @@ func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
 	}
 	return expenses, nil
 }
-
-// func (sqls *SQLStorage) GetFromTimeRange(from, to time.Time, limit, offset uint) ([]expense.Expense, error) {
-// 	query := `
-// 		SELECT
-// 			e.id, e.price, e.product, e.currency, e.shop, e.city,
-// 			e.people, e.expend_date, c.id, c.name
-// 		FROM
-// 			expenses e
-// 		JOIN
-// 			categories c ON e.category_id = c.id
-// 		WHERE
-// 			e.expend_date >= ? AND e.expend_date <= ?
-// 		ORDER BY
-// 			e.expend_date DESC
-// 		LIMIT ? OFFSET ?`
-//
-// 	rows, err := sqls.db.Query(query, from, to, limit, offset)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-//
-// 	var expenses []expense.Expense
-// 	for rows.Next() {
-// 		var e expense.Expense
-// 		var cat expense.Category
-//
-// 		err := rows.Scan(
-// 			&e.ID, &e.Price.Amount, &e.Product, &e.Price.Currency, &e.Place.Shop, &e.Place.City,
-// 			&e.People, &e.Date, &cat.ID, &cat.Name)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-//
-// 		e.Category = cat
-// 		if _, err = e.Validate(); err != nil {
-// 			return nil, err
-// 		}
-//
-// 		expenses = append(expenses, e)
-// 	}
-// 	if err = rows.Err(); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return expenses, nil
-// }
 
 func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {
 	q := "SELECT id FROM categories where id=?"

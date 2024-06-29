@@ -12,6 +12,7 @@ import (
 	"expenses-app/pkg/presenters/rest/ui"
 	"expenses-app/pkg/presenters/telegram"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
@@ -48,6 +49,17 @@ func main() {
 			initLogger.Err("Error instanciating mysql: %v", err)
 			return
 		}
+		statements := strings.Split(sqlstorage.MySQLTables, ";")
+		for _, stmt := range statements {
+			stmt = strings.TrimSpace(stmt)
+			if stmt == "" {
+				continue
+			}
+			_, err = db.Exec(stmt)
+			if err != nil {
+				initLogger.Err("Error creating mysql tables: %v", err)
+			}
+		}
 		initLogger.Info("MySQL storage initialized on %s", mysqlUrl)
 	case "sqlite":
 		path := os.Getenv("SQLITE_PATH")
@@ -56,7 +68,7 @@ func main() {
 			initLogger.Err("Error instanciating sqlite3: %v", err)
 			return
 		}
-		_, err = db.Exec(sqlstorage.Tables)
+		_, err = db.Exec(sqlstorage.SQLiteTables)
 		if err != nil {
 			initLogger.Err("Error creating sqlite tables: %v", err)
 			return

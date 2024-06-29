@@ -19,7 +19,6 @@ mysql -u root -p"$MYSQL_ROOT_PASSWORD" --execute \
     currency text,
     shop text,
     city text,
-    people text,
     date datetime,
     created_at datetime,
     updated_at datetime,

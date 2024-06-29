@@ -17,6 +17,44 @@ const DEFAULT_DAYS_TO_PARAM = "0" // Now
 const DEFAULT_PSIZE_PARAM = "35"
 const DEFAULT_PNUM_PARAM = "0"
 
+func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		payload := struct {
+			Date       string  `form:"date"`
+			Shop       string  `form:"shop"`
+			Product    string  `form:"product"`
+			CategoryID string  `form:"category"`
+			Amount     float64 `form:"amount"`
+		}{}
+		if err := c.BodyParser(&payload); err != nil {
+			panic("Form parsing error")
+		}
+		inputLayout := "2006-01-02"
+		parsedDate, err := time.Parse(inputLayout, payload.Date)
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Wrong Date",
+				"Msg":   "Error parsing date",
+			})
+		}
+		req := tracking.CreateExpenseReq{
+			Product:    payload.Product,
+			Amount:     payload.Amount,
+			Shop:       payload.Shop,
+			Date:       parsedDate,
+			CategoryID: payload.CategoryID,
+		}
+		_, err = eu.Create(req)
+		if err != nil {
+			panic("Update Error")
+		}
+		return c.Render("alerts/toastOk", fiber.Map{
+			"Title": "Created",
+			"Msg":   "Expense updated.",
+		})
+	}
+}
+
 func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respExpense, err := eq.GetByID(c.Params("id"))
@@ -47,7 +85,6 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			CategoryID: payload.CategoryID,
 			Date:       parsedDate,
 			ExpenseID:  respExpense.Expenses[c.Params("id")].ID,
-			People:     respExpense.Expenses[c.Params("id")].People,
 			Product:    payload.Product,
 			Shop:       payload.Shop,
 		}
@@ -84,6 +121,18 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 		c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
 		return c.Render("sections/expenses/row", fiber.Map{
 			"Expense": respExpense.Expenses[c.Params("id")],
+		})
+	}
+}
+
+func LoadExpensesAddRow(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		respCategories, err := cq.Query()
+		if err != nil {
+			panic("Implement error")
+		}
+		return c.Render("sections/expenses/rowAdd", fiber.Map{
+			"Categories": respCategories.Categories,
 		})
 	}
 }
