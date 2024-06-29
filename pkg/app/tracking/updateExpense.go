@@ -19,7 +19,6 @@ type UpdateExpenseReq struct {
 	CategoryID string
 	Date       time.Time
 	ExpenseID  string
-	People     string
 	Product    string
 	Shop       string
 }
@@ -46,11 +45,10 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		return nil, getErr
 	}
 	// Update the values
-	oldExpense.Price.Amount = req.Amount
-	oldExpense.Place.Shop = req.Shop
+	oldExpense.Amount = req.Amount
+	oldExpense.Shop = req.Shop
 	oldExpense.Product = req.Product
 	oldExpense.Date = req.Date
-	oldExpense.People = req.People
 	newCategory, err := s.expenses.GetCategory(expense.CategoryID(req.CategoryID))
 	switch {
 	case errors.Is(err, expense.ErrNotFound):

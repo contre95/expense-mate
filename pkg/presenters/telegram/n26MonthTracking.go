@@ -81,18 +81,17 @@ func newCreateRequest(record []string, userName string) (*tracking.CreateExpense
 		return nil, err
 	}
 	record[0] = date.Format("2006-01-02") // Replace original record with parsed value
-	price, err := strconv.ParseFloat(record[5], 64)
+	amount, err := strconv.ParseFloat(record[5], 64)
 	if err != nil {
 		return nil, err
 	}
-	record[5] = fmt.Sprintf("%.2f", float64(price*-1)) // Replace original record with parsed value no to be using the request model
+	record[5] = fmt.Sprintf("%.2f", float64(amount*-1)) // Replace original record with parsed value no to be using the request model
 	return &tracking.CreateExpenseReq{
-		Price:    float64(price * -1),
+		Amount:   float64(amount * -1),
 		Currency: "Euro",
 		Shop:     record[1],
 		City:     "Barcelona",
 		Date:     date,
-		People:   globalBotConfig.PeopleUsers[userName],
 	}, nil
 }
 
@@ -136,7 +135,7 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 		// TODO: Maybe handle all these if/else in different function or make a switch case
 		for productUpdate := range *updates {
 			if contains(categories, productUpdate.Message.Text) { // The user has send a category
-				createReq.Category = productUpdate.Message.Text
+				createReq.CategoryID = productUpdate.Message.Text
 				tbot.Send(tgbotapi.NewMessage(chatID, "Category set ✅"))
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, please type the name of the product for %s:", record[1])))
 				for productUpdate := range *updates {
@@ -178,13 +177,13 @@ func importN26Expenses(tbot *tgbotapi.BotAPI, updates *tgbotapi.UpdatesChannel, 
 					if priceUpdate.Message == nil {
 						continue
 					}
-					p, err := strconv.ParseFloat(priceUpdate.Message.Text, 64)
+					a, err := strconv.ParseFloat(priceUpdate.Message.Text, 64)
 					if err != nil {
 						tbot.Send(tgbotapi.NewMessage(chatID, "Invalid price, please send me a float"))
 						continue
 					}
-					createReq.Price = p
-					priceDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Price, createReq.Product))
+					createReq.Amount = a
+					priceDoneMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("New price € %.2f set for %s", createReq.Amount, createReq.Product))
 					priceDoneMsg.ReplyMarkup = setOneTimeKeyBoardMap(allkeys, 4)
 					tbot.Send(priceDoneMsg)
 					tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("Now, I'll need a the category for %s please.", createReq.Product)))

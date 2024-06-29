@@ -12,7 +12,6 @@ type ExpensesBasics struct {
 	CategoryID string
 	Date       time.Time
 	ID         string
-	People     string
 	Product    string
 	Shop       string
 }
@@ -57,14 +56,13 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	resp := ExpenseQuerierResp{
 		Expenses: map[string]ExpensesBasics{
 			string(e.ID): {
-				Amount:     e.Price.Amount,
+				Amount:     e.Amount,
 				Category:   string(e.Category.Name),
 				CategoryID: id,
 				Date:       e.Date,
 				ID:         string(e.ID),
-				People:     e.People,
 				Product:    e.Product,
-				Shop:       e.Place.Shop,
+				Shop:       e.Shop,
 			},
 		},
 		Page:     1,
@@ -82,6 +80,7 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 		s.logger.Err("Could count expenses storage: %v", err)
 		return nil, err
 	}
+	s.logger.Debug("Total Filtered expenses", totalExpenses)
 	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
@@ -95,14 +94,13 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	}
 	for _, exp := range expenses {
 		expBasic := ExpensesBasics{
-			Amount:     exp.Price.Amount,
+			Amount:     exp.Amount,
 			Category:   string(exp.Category.Name),
 			CategoryID: string(exp.Category.ID),
 			Date:       exp.Date,
 			ID:         string(exp.ID),
-			People:     exp.People,
 			Product:    exp.Product,
-			Shop:       exp.Place.Shop,
+			Shop:       exp.Shop,
 		}
 		resp.Expenses[string(expBasic.ID)] = expBasic
 	}

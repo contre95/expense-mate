@@ -1,11 +1,11 @@
 <div class="p-10 items-center justify-center w-1/2">
   <div class="overflow-x-auto">
     <div class="flex">
-      <span class="text-xl w-1/2 text-gray-700">N26</span>
-      <button class="font-medium w-1/2 text-right text-blue-600 hover:text-blue-800"
+      <span class="text-xl w-1/3 pt-2 text-gray-700">N26</span> 
+      <img id="spinner" class="htmx-indicator w-1/3 h-10" src="/assets/img/loader.svg"/>
+      <button class="text-md w-1/3 text-right text-blue-600 hover:text-blue-800"
         hx-include="#n26csv,#spacesTransactions, #externalTransactions" hx-encoding='multipart/form-data'
-        hx-post='/importers/n26' hx-target="#mitoast"> Import </button>
-
+        hx-post='/importers/n26' hx-target="#mitoast"  hx-indicator="#spinner"> Import </button>
     </div>
     <div class="flex items-center justify-center py-5">
       <label for="n26csv" style="border-color:#359E88;"
