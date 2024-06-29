@@ -113,13 +113,13 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 }
 func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ExpensesTrigger": "revealed",
-			})
-		}
+		// if c.Get("HX-Request") != "true" {
+		// 	fmt.Println("No HX-Request refreshing with revealed")
+		// 	// c.Append("hx-trigger", "newPair")  // Not working :(
+		// 	return c.Render("main", fiber.Map{
+		// 		"ExpensesTrigger": "revealed",
+		// 	})
+		// }
 		respCategories, err := cq.Query()
 		if err != nil {
 			panic("Implement error")

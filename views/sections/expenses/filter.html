@@ -44,7 +44,7 @@
     </div>
   </div>
   <div class="mt-4">
-    <button type="button" hx-url-push="true" hx-get="/expenses/table" hx-target="#table"
+    <button type="button" hx-trigger="click" hx-url-push="true" hx-get="/expenses/table" hx-target="#table"
       hx-include="#filters input, #filters select" hx-vals='js:{categories: getSelectedValues()}'
       class="inline-flex items-center px-4 py-2 bg-indigo-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
       Apply Filters
@@ -52,16 +52,31 @@
   </div>
 </div>
 <script>
-  // Initialize the Multi Select dropdown
   var selectedValues = [];
+  // {{range $id, $name:= .Categories}} 
+  // {{ if ne $id "unknown"}}
+  selectedValues.push('{{$id}}')
+  // {{end}}
+  // {{end}}
+
+  // Initialize the Multi Select dropdown from multiselect.js
   new MultiSelect('#categoriesSelect', {
     data: [
       // This can be commented on js but rendered anyway
       // {{range $id, $name:= .Categories}} 
+      // {{ if eq $id "unknown"}}
       {
         value: '{{$id}}',
-        text: '{{$name}}'
+        text: '{{$name}}',
+        selected: false
       },
+      // {{else}}
+      {
+        value: '{{$id}}',
+        text: '{{$name}}',
+        selected: true
+      },
+      // {{end}}
       // {{end}}
     ],
     placeholder: 'Select an option',
@@ -86,8 +101,8 @@
       console.log('Unselected:', value, text, element);
     }
   });
-      function getSelectedValues() {
-            return selectedValues.join(',');
-        }
+  function getSelectedValues() {
+    return selectedValues.join(',');
+  }
 
 </script>

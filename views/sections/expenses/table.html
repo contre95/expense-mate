@@ -20,8 +20,7 @@
           <td class="px-4 py-1">{{.Product }}</td>
           <td class="px-4 py-1">
             {{ $colors := nameToColor .Category }}
-            <span
-              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5  rounded'>{{.Category}}</span>
+            <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5  rounded'>{{.Category}}</span>
           </td>
           <td class="px-4 py-1">${{printf "%.2f" .Amount}}</td>
           <td class="px-4 py-1">
