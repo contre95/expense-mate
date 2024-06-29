@@ -27,7 +27,7 @@ type ExpenseQuerierFilter struct {
 	ByCategoryID []string
 	ByShop       string
 	ByProduct    string
-	ByPrice      [2]uint
+	ByAmount     [2]uint
 	ByTime       [2]time.Time
 }
 
@@ -75,13 +75,13 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 	var expenses []expense.Expense
 	var err error
 	s.logger.Info("Getting all expenses")
-	totalExpenses, err := s.expenses.CountWithFilter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1])
+	totalExpenses, err := s.expenses.CountWithFilter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByAmount[0], req.ExpenseFilter.ByAmount[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1])
 	if err != nil {
 		s.logger.Err("Could count expenses storage: %v", err)
 		return nil, err
 	}
 	s.logger.Debug("Total Filtered expenses", totalExpenses)
-	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByPrice[0], req.ExpenseFilter.ByPrice[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
+	expenses, err = s.expenses.Filter(req.ExpenseFilter.ByCategoryID, req.ExpenseFilter.ByAmount[0], req.ExpenseFilter.ByAmount[1], req.ExpenseFilter.ByShop, req.ExpenseFilter.ByProduct, req.ExpenseFilter.ByTime[0], req.ExpenseFilter.ByTime[1], req.MaxPageSize, req.Page*req.MaxPageSize)
 	if err != nil {
 		s.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err
