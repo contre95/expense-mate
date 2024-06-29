@@ -221,7 +221,7 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				ByCategoryID: categories,
 				ByShop:       c.Query("shop"),
 				ByProduct:    c.Query("product"),
-				ByPrice:      [2]uint{uint(min_price), uint(max_price)},
+				ByAmount:     [2]uint{uint(min_price), uint(max_price)},
 				ByTime:       [2]time.Time{fromDate, toDate},
 			},
 		}
