@@ -71,11 +71,6 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				slog.Debug("Excluiding income", "Income", line[3])
 				continue
 			}
-			// Exclude all incomes (this includes internal transfers between spaces)
-			if line[3] == "Income" {
-				slog.Debug("Excluiding income", "Income", line[3])
-				continue
-			}
 			// Exclude transfers between spaces
 			// Example1: "2024-02-22","From Main to Holidays","","Outgoing Transfer","2x Round-up","-1.0","","",""
 			// Example2: "2024-02-22","From Car to Main","","Income","PAPELERIA Y LLIB LLORE","4.5","","",""
@@ -88,11 +83,18 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			if err != nil {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
 				failedImports = append(failedImports, lineNumber)
+				continue
 			}
+			// Exclude all incomes (i.e price > 0, this includes internal transfers between spaces)
 			price, err := strconv.ParseFloat(line[5], 64)
 			if err != nil {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
 				failedImports = append(failedImports, lineNumber)
+				continue
+			}
+			if price > 0 {
+				slog.Debug("Excluiding income", "Income", line[1])
+				continue
 			}
 			req := tracking.CreateExpenseReq{
 				Product:  line[3],
