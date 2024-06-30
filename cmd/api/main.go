@@ -119,12 +119,6 @@ func main() {
 		},
 	})
 
-	// fiberApp.Use(cors.New(cors.Config{
-	// AllowOrigins: os.Getenv("CORS_ALLOWLIST"),
-	// AllowHeaders: "Origin, Content-Type, Accept",
-	// }))
-
-	// rest.MapRoutes(fiberApp, &healthChecker, &tracker, &querier)
 	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier)
 	rest.Run(fiberApp, 8080)
 
