@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoadCategoriesTable(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+func LoadCategoriesConfig(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		resp, err := cq.Query()
 		if err != nil {

@@ -43,14 +43,15 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator))
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
-	// Categories
-	fi.Get("/categories/table", ui.LoadCategoriesTable(q.CategoryQuerier))
-	fi.Put("/categories/:id", ui.EditCategory(m.CategoryUpdater))
-	fi.Post("/categories", ui.CreateCategory(m.CategoryCreator))
-	fi.Delete("/categories/:id", ui.DeleteCategory(m.CategoryDeleter))
-
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
+	// Categores
+	fi.Get("/settings/categories", ui.LoadCategoriesConfig(q.CategoryQuerier))
+	fi.Put("/settings/categories/:id", ui.EditCategory(m.CategoryUpdater))
+	fi.Post("/settings/categories", ui.CreateCategory(m.CategoryCreator))
+	fi.Delete("/settings/categories/:id", ui.DeleteCategory(m.CategoryDeleter))
+	// Telegram
+	// fi.Get("/settings/telegram/", ui.LoadTelegramConfig(m.CategoryDeleter))
 
 	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
