@@ -13,7 +13,7 @@
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
       {{ $current := .Expense.Category }}
       {{ range $id, $name := .Categories }}
-      {{ if eq $current $name}}
+      {{ if eq $id "unknown"}}
       <option value="{{$id}}" selected>{{$name}}</option>
       {{else}}
       <option value="{{$id}}">{{$name}}</option>
@@ -31,7 +31,7 @@
         class='bx bx-check'></i> </button>
     <div hx-post="/expenses" hx-swap="innerHTML" hx-target="#mitoast" hx-include="#addRow input, #addRow select"
       hx-trigger="click from:#apply"> </div>
-    <button id="cancel" hx-get="/expenses/table" hx-target="#table" 
+    <button id="cancel" hx-get="/empty" hx-target="#addRow" hx-swap="innerHTML"
       class="border border-red-300 p-1 h-full w-full font-medium bg-red-200 text-red-500 hover:text-red-800"><i
         class='bx bx-x'></i></button>
   </td>

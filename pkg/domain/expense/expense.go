@@ -25,8 +25,8 @@ type Expense struct {
 
 var (
 	ErrNotFound      = errors.New("The resource you are trying to get does not exist")
-	ErrAlreadyExists = errors.New("The resource you are trying to get already exists")
-	ErrInvalidEntity = errors.New("The entity you are trying create is not valid")
+	ErrAlreadyExists = errors.New("The resource you are trying to create already exists")
+	ErrInvalidEntity = errors.New("The entity you are trying create has invalid fields.")
 )
 var (
 	ErrInvalidAmount   = errors.New("The amount of the expense is invalid")
@@ -66,9 +66,13 @@ type Expenses interface {
 	Update(Expense) error
 	// Add is used to save a new category for future expenses
 	GetCategories() ([]Category, error)
+	// DeleteCategory is used to remove a category
+	DeleteCategory(id CategoryID) error
+	// UpdateCategory updates a category name
+	UpdateCategory(c Category) error
 	// Creates a new category returns expense.CategoryAlreadyExistsErr if category is duplicated.
 	AddCategory(c Category) error
-	// Validates if a category exists
+	// GetCategory retrieves a category by ID
 	GetCategory(id CategoryID) (*Category, error)
 }
 
@@ -94,7 +98,7 @@ func (c *Category) Validate() (*Category, error) {
 			fmt.Println(err)
 		}
 		fmt.Println(err)
-		return nil, errors.New(fmt.Sprintf("Invalid category data. Please review the fields."))
+		return nil, ErrInvalidEntity
 	}
 	return c, nil
 }

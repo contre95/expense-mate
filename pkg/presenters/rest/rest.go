@@ -23,9 +23,11 @@ func Run(fi *fiber.App, port int) {
 // MapRoutes is where http REST routes are mapped to functions
 // func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *importing.Service, t *tracking.Service, q *querying.Service) {
 func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracking.Service, q *querying.Service) {
-	// UI
+	// Home and others
 	fi.Static("/assets", "./public/assets")
+	fi.Get("/empty", ui.Empty())
 	fi.Get("/", ui.Home)
+	// Expenses
 	fi.Get("/expenses", ui.LoadExpensesSection())
 	fi.Post("/expenses", ui.CreateExpense(t.ExpenseCreator))
 	fi.Get("/expenses/filter", ui.LoadExpenseFilter(q.CategoryQuerier))
@@ -34,13 +36,21 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
-	fi.Get("/empty", ui.Empty())
 	fi.Delete("/expenses/:id", ui.DeleteExpense(t.ExpenseDeleter))
+	// Importers
 	fi.Get("/importers", ui.LoadImporterSection())
 	fi.Get("/importers/n26", ui.LoadN26Importer())
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator))
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
+	// Categories
+	fi.Get("/categories/table", ui.LoadCategoriesTable(q.CategoryQuerier))
+	fi.Put("/categories/:id", ui.EditCategory(m.CategoryUpdater))
+	fi.Post("/categories", ui.CreateCategory(m.CategoryCreator))
+	fi.Delete("/categories/:id", ui.DeleteCategory(m.CategoryDeleter))
+
+	// Settings
+	fi.Get("/settings", ui.LoadSettingsSection())
 
 	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))

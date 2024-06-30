@@ -98,7 +98,8 @@ func main() {
 	// Managing
 	createCategory := managing.NewCategoryCreator(managerLogger, sqlStorage)
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, sqlStorage)
-	manager := managing.NewService(*deleteCategory, *createCategory)
+	updateCategory := managing.NewCategoryUpdater(managerLogger, sqlStorage)
+	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory)
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, sqlStorage)

@@ -13,17 +13,7 @@ import (
 const SQL_DATE_FORMAT = "2006-01-02 15:04:05"
 
 func (sqls *SQLStorage) Add(e expense.Expense) error {
-	exist, err := sqls.CategoryExists(e.Category.ID)
-	if err != nil {
-		return err
-	}
-	if !exist {
-		err := sqls.AddCategory(e.Category)
-		if err != nil {
-			return err
-		}
-	}
-	q := "INSERT INTO `expenses` (id, amount, product, shop, expend_date, category_id) VALUES (?,?,?,?,?,?);"
+	q := "INSERT INTO expenses (id, amount, product, shop, expend_date, category_id) VALUES (?,?,?,?,?,?);"
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
@@ -37,7 +27,7 @@ func (sqls *SQLStorage) Add(e expense.Expense) error {
 }
 
 func (sqls *SQLStorage) Update(e expense.Expense) error {
-	q := "UPDATE `expenses` SET amount=?, product=?, shop=?, expend_date=?, category_id=? WHERE id=?"
+	q := "UPDATE expenses SET amount=?, product=?, shop=?, expend_date=?, category_id=? WHERE id=?"
 	stmt, err := sqls.db.Prepare(q)
 	if err != nil {
 		return err
@@ -64,7 +54,7 @@ func (sqls *SQLStorage) Delete(id expense.ID) error {
 
 // Get retrieves an expense from the db. It returns a valid expense.Expense
 func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
-	q := "SELECT * FROM expenses where id=?"
+	q := "SELECT id, amount, product, shop, expend_date, category_id FROM expenses where id=?"
 	var catID expense.CategoryID
 	var e expense.Expense
 	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &catID)
@@ -82,10 +72,23 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 	return &e, nil
 }
 
-func (sqls *SQLStorage) AddCategory(c expense.Category) error {
-	stmt, err := sqls.db.Prepare("INSERT INTO `categories` (id, name) VALUES (?,?)")
+func (sqls *SQLStorage) UpdateCategory(c expense.Category) error {
+	stmt, err := sqls.db.Prepare("UPDATE categories SET name = ? WHERE id = ?")
 	if err != nil {
 		return err
+	}
+	_, err = stmt.Exec(c.Name, c.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sqls *SQLStorage) AddCategory(c expense.Category) error {
+	stmt, err := sqls.db.Prepare("INSERT INTO categories (id, name) VALUES (?,?)")
+	if err != nil {
+		return err
+
 	}
 	_, err = stmt.Exec(c.ID, c.Name)
 	if err != nil {
@@ -95,7 +98,7 @@ func (sqls *SQLStorage) AddCategory(c expense.Category) error {
 }
 
 func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, error) {
-	q := "SELECT * FROM categories where id=?"
+	q := "SELECT id, name FROM categories where id=?"
 	var category expense.Category
 	err := sqls.db.QueryRow(q, id).Scan(&category.ID, &category.Name)
 	switch {
@@ -133,7 +136,7 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 		categoryConditions := make([]string, len(categories))
 		for i, cat := range categories {
 			// categoryConditions[i] = fmt.Sprintf("c.id LIKE '%%%s%%'", cat)
-			categoryConditions[i] = fmt.Sprintf("c.id ='%%%s%%'", cat)
+			categoryConditions[i] = fmt.Sprintf("c.id ='%s'", cat)
 		}
 		fmt.Println(categoryConditions)
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
@@ -143,6 +146,7 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 		query += " WHERE " + whereClause
 	}
 	var count uint
+	fmt.Println(query)
 	err := sqls.db.QueryRow(query).Scan(&count)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, expense.ErrNotFound
@@ -275,7 +279,7 @@ func (sqls *SQLStorage) GetCategories() ([]expense.Category, error) {
 }
 
 func (sqls *SQLStorage) DeleteCategory(id expense.CategoryID) error {
-	_, err := sqls.db.Exec(fmt.Sprintf("delete from categories where id = %s", id))
+	_, err := sqls.db.Exec(fmt.Sprintf("delete from categories where id='%s'", id))
 	if err != nil {
 		return err
 	}

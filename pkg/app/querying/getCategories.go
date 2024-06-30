@@ -10,7 +10,6 @@ type CategoryQuerierResp struct {
 }
 
 // type GetCategoriesReq struct {
-// 	CategoryID string
 // }
 
 type CategoryQuerier struct {

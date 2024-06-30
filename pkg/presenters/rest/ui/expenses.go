@@ -109,6 +109,7 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				"Msg":   err,
 			})
 		}
+		c.Append("Hx-Trigger", "reloadExpensesTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
 			"Msg":   "Expense created.",
@@ -165,19 +166,6 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			"Title": "Created",
 			"Msg":   "Expense updated.",
 		})
-	}
-}
-
-func LoadExpensesSection() func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ExpensesTrigger": "revealed",
-			})
-		}
-		return c.Render("sections/expenses/index", fiber.Map{})
 	}
 }
 

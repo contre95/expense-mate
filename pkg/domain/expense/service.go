@@ -25,7 +25,7 @@ func NewExpense(amount float64, product string, shop string, date time.Time, cna
 	return newExpense.Validate()
 }
 
-// NewCategory creats a new category and validates the field. Still don't know if this can be created separately or always under an Expense ?
+// NewCategory creates a new category and validates the field. Still don't know if this can be created separately or always under an Expense ?
 func NewCategory(name string) (*Category, error) {
 	newCategory := Category{
 		ID:   CategoryID(strings.ReplaceAll(strings.ToLower(name), " ", "-")),

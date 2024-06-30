@@ -35,3 +35,12 @@ form label {
     font-weight: 500;
     color: #474b50;
 }
+
+[contenteditable=true]:empty:before {
+  content: attr(placeholder);
+  color:gray;
+}
+/* found this online --- it prevents the user from being able to make a (visible) newline */
+[contenteditable=true] br{
+  display:none;
+}
