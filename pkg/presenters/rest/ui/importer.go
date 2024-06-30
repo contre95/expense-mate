@@ -157,16 +157,3 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		})
 	}
 }
-
-func LoadImporterSection() func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			// c.Append("hx-trigger", "newPair")  // Not working :(
-			return c.Render("main", fiber.Map{
-				"ImporterTrigger": "revealed",
-			})
-		}
-		return c.Render("sections/importers/index", fiber.Map{})
-	}
-}

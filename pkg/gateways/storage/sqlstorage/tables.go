@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   category_id VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (id),
   KEY idx_category_id (category_id),
-  CONSTRAINT fk_expenses_category FOREIGN KEY (category_id) REFERENCES categories (id)
+  CONSTRAINT fk_expenses_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Insert into categories table
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   expend_date DATETIME DEFAULT NULL,
   category_id TEXT DEFAULT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (category_id) REFERENCES categories (id)
+  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 -- Insert into categories table

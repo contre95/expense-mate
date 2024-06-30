@@ -27,12 +27,18 @@ func NewCategoryCreator(l app.Logger, e expense.Expenses) *CategoryCreator {
 
 // Create use cases function creates a new category
 func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, error) {
+	s.logger.Debug("Creating category %s", "name", req.Name)
 	newCategory, err := expense.NewCategory(req.Name)
-	if errors.Is(err, expense.ErrInvalidEntity) {
-		s.logger.Debug("Invalid category %s: %v", req, err)
+	if err != nil {
+		s.logger.Debug("Invalid category %s: %v", req.Name, err)
 		return nil, err
 	}
-	if errors.Is(s.expenses.AddCategory(*newCategory), expense.ErrAlreadyExists) {
+	_, err = s.expenses.GetCategory(*&newCategory.ID)
+	if err != nil && !errors.Is(err, expense.ErrNotFound) {
+		s.logger.Debug("Attempt to create an existing category", req.Name, expense.ErrAlreadyExists)
+		return nil, expense.ErrAlreadyExists
+	}
+	if s.expenses.AddCategory(*newCategory) != nil {
 		s.logger.Debug("Couldn't create Category %s: %v", req.Name, expense.ErrAlreadyExists)
 		return nil, expense.ErrAlreadyExists
 	}
