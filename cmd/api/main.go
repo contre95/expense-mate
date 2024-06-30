@@ -11,6 +11,7 @@ import (
 	"expenses-app/pkg/presenters/rest"
 	"expenses-app/pkg/presenters/rest/ui"
 	"expenses-app/pkg/presenters/telegram"
+	"fmt"
 	"os"
 	"strings"
 
@@ -33,7 +34,8 @@ func main() {
 	// importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
-	telergamLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
+	telegramLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
+	commanderLogger := logger.NewSTDLogger("TELEGRAM COMMANDER", logger.BLUE2)
 
 	// SQL storage
 	var err error
@@ -85,7 +87,8 @@ func main() {
 	// authenticator := authenticating.NewService()
 
 	// Healthching
-	healthChecker := health.NewService(healthLogger)
+	var botStatus int32
+	healthChecker := health.NewService(healthLogger, &botStatus)
 
 	// Querying
 	getCategories := querying.NewCategoryQuerier(querierLogger, sqlStorage)
@@ -95,16 +98,45 @@ func main() {
 	// Importing
 	// importExpenses := importing.NewExpenseImporter(importerLogger, sqlStorage)
 
+
 	// Managing
+	telegramCommands := make(chan string)
+	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommands)
 	createCategory := managing.NewCategoryCreator(managerLogger, sqlStorage)
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, sqlStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, sqlStorage)
-	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory)
+	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram)
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, sqlStorage)
 	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, sqlStorage)
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense)
+
+	// startBot := func(commands <-chan string) {
+	// 	atomic.StoreInt32(&botStatus, 1)
+	// 	defer atomic.StoreInt32(&botStatus, 0)
+	// 	for command := range commands {
+	// 		// Bot logic here
+	// 		fmt.Println("Received command:", command)
+	// 		if command == "stop" {
+	// 			return
+	// 		}
+	// 		if command == "start" {
+	// 			telegramLogger.Debug("Command start sent")
+	// 		}
+	// 	}
+	// }
+
+	// Telegram Bot
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	if err != nil {
+		initLogger.Err("%v", err)
+		return
+	}
+	fmt.Print(tgbotapi.NewBotCommandScopeDefault())
+	tgbotapi.SetLogger(telegramLogger)
+	allowedUsers := strings.Split(os.Getenv("TELEGRAM_ALLOWED_USERNAMES"), ",")
+	go telegram.Run(bot, allowedUsers, telegramCommands, &botStatus, &healthChecker, &tracker, &querier)
 
 	// API
 	engine := html.New("./views", ".html")
@@ -118,24 +150,6 @@ func main() {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		},
 	})
-
 	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier)
 	rest.Run(fiberApp, 8080)
-
-	// Telegram Bot
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
-	if err != nil {
-		initLogger.Err("%v", err)
-		return
-	}
-
-	botConfig := telegram.BotConfig{
-		AllowedUsers: []string{"contre", "anouxx"},
-		People:       []string{"Anoux", "Contre", "Anoux / Contre"},
-		PeopleUsers:  map[string]string{"contre": "Contre", "anouxx": "Anoux"},
-		AuthUsers:    []int64{527377846, 751504879},
-	}
-	tgbotapi.SetLogger(telergamLogger)
-	initLogger.Info("Telegram %s running.", bot.Self.FirstName)
-	telegram.Run(bot, botConfig, &healthChecker, &tracker, &querier)
 }
