@@ -2,10 +2,7 @@ package expense
 
 import (
 	"errors"
-	"fmt"
 	"time"
-
-	"github.com/go-playground/validator"
 )
 
 // ID is the unique identifier for the domain objects of type Expense
@@ -45,7 +42,7 @@ type CategoryName string
 // Category is an entity that is supposed to be accessed only from the Expense aggregate
 type Category struct {
 	ID   CategoryID   `validate:"required,min=3"`
-	Name CategoryName `validate:"required,min=3,excludesall=!-@#"`
+	Name CategoryName `validate:"required,min=3,alphanum_space"`
 }
 
 // Expenses is the repository for all the command actions for Expense
@@ -74,31 +71,4 @@ type Expenses interface {
 	AddCategory(c Category) error
 	// GetCategory retrieves a category by ID
 	GetCategory(id CategoryID) (*Category, error)
-}
-
-// Validate
-func (c *Expense) Validate() (*Expense, error) {
-	validate := validator.New()
-	err := validate.Struct(c)
-	if err != nil {
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			fmt.Println(err)
-		}
-		fmt.Println(err)
-		return nil, errors.New(fmt.Sprintf("Invalid expense data. Please review the fields."))
-	}
-	return c, nil
-}
-
-func (c *Category) Validate() (*Category, error) {
-	validate := validator.New()
-	err := validate.Struct(c)
-	if err != nil {
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			fmt.Println(err)
-		}
-		fmt.Println(err)
-		return nil, ErrInvalidEntity
-	}
-	return c, nil
 }

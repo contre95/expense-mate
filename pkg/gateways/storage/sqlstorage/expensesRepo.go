@@ -73,12 +73,14 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 }
 
 func (sqls *SQLStorage) UpdateCategory(c expense.Category) error {
-	stmt, err := sqls.db.Prepare("UPDATE categories SET name = ? WHERE id = ?")
+	stmt, err := sqls.db.Prepare("UPDATE categories SET name=? WHERE id=?")
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	_, err = stmt.Exec(c.Name, c.ID)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
@@ -132,7 +134,7 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 	if product != "" {
 		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
 	}
-	if len(categories) > 0 {
+	if !(len(categories) == 1 && len(categories[0]) == 0) { // This mean they are sending []string{""}.
 		categoryConditions := make([]string, len(categories))
 		for i, cat := range categories {
 			// categoryConditions[i] = fmt.Sprintf("c.id LIKE '%%%s%%'", cat)
