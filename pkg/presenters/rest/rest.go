@@ -51,13 +51,17 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Post("/settings/categories", ui.CreateCategory(m.CategoryCreator))
 	fi.Delete("/settings/categories/:id", ui.DeleteCategory(m.CategoryDeleter))
 	// Telegram
-	// fi.Get("/settings/telegram/", ui.LoadTelegramConfig(m.CategoryDeleter))
+	fi.Get("/settings/telegram", ui.LoadTelegramConfig())
+	fi.Get("/settings/telegram/status", ui.LoadTelegramStatus(*he))
+	fi.Post("/settings/telegram/command", ui.SendTelegramCommand(m.TelegramCommander))
+	fi.Post("/telegram/command", ui.SendTelegramCommandOutput(m.TelegramCommander))
 
+	fi.Get("/api/health/bot", api.BotPing(*he))
+	fi.Get("/api/health/app", api.Ping(*he))
 	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 
 	// fi.Post("/login", login(*a))
-	fi.Get("/api/ping", api.Ping(*he))
 	fi.Get("/api/expenses", api.GetExpenses(q.ExpenseQuerier))
 	fi.Get("/restricted", restricted)
 	// fi.Post("/users", createUsers(m.UserCreator))

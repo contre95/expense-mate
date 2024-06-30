@@ -4,18 +4,22 @@ import (
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"fmt"
+	"strings"
+	"sync"
+	"sync/atomic"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const HELP_MSG string = `
 Check the menu for available commands, please.
-
-/n26importer - Start the N26 tracking importer.
-/categories - Sends you all the categories available
-/ping - Checks bot availability and health 
-/help - Displays this menu
+/categories - Sends you all the categories available.
+/summary - Sends summar of last month's expenses.
+/ping - Checks bot availability and health.
+/help - Displays this menu.
 `
+
 const DEFAULT_MSG string = "I don't get it. I'm no ChatGPT 🤖\n"
 const NOT_ALLOWED_MSG string = "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"
 const WELCOME_MSG string = `
@@ -33,25 +37,9 @@ Let's get started by adding your first expense. Need help with anything? Just ty
 // ping - Check if the bot is working
 // help - Display the help message
 
-type BotConfig struct {
-	AllowedUsers []string
-	People       []string
-	PeopleUsers  map[string]string
-	AuthUsers    []int64
-}
-
-func validConfig(c BotConfig) bool {
-	for _, au := range c.AllowedUsers {
-		if pe, _ := c.PeopleUsers[au]; !contains(c.People, pe) {
-			return false
-		}
-	}
-	return true
-}
-
-var globalBotConfig BotConfig // TODO: Probably this is not the best way. Mayby pass the condig all around or use some ctx
-
-func isAllowed(chatID int64, authorizedUsers []int64) bool {
+func isAllowed(chatID string, authorizedUsers []string, mu *sync.Mutex) bool {
+	mu.Lock()
+	defer mu.Unlock()
 	for _, authorizedID := range authorizedUsers {
 		if chatID == authorizedID {
 			return true
@@ -61,49 +49,61 @@ func isAllowed(chatID int64, authorizedUsers []int64) bool {
 }
 
 // Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, botConfig BotConfig, h *health.Service, t *tracking.Service, q *querying.Service) {
-	if !validConfig(botConfig) {
-		panic("Wrong Telegram configuration")
-	} else {
-		globalBotConfig = botConfig
-	}
+func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
-	for update := range updates {
-		if isAllowed(update.Message.Chat.ID, botConfig.AuthUsers) {
-			if update.Message.IsCommand() {
-				handleCommands(update, &updates, tbot, q, t, h)
+	var mu sync.Mutex
+	for {
+		select {
+		case update := <-updates:
+			if atomic.LoadInt32(botStatus) == 0 {
+				continue
+			}
+			if isAllowed(update.Message.Chat.UserName, allowedUsers, &mu) {
+				switch update.Message.Text {
+				case "/categories":
+					listCategories(tbot, &update, q)
+				// case "n26importer":
+				// 	n26MonthTracking(tbot, &update, &updates, t, q)
+				case "/help":
+					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				case "/summary":
+					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "When implemented, I will send you a report of the past month"))
+				case "/ping":
+					ping(tbot, update, h)
+				default:
+					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				}
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, DEFAULT_MSG)
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				tbot.Send(msg)
 			}
-		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			tbot.Send(msg)
+		case command := <-commands:
+			switch command {
+			case "start":
+				fmt.Println(command)
+				atomic.StoreInt32(botStatus, 1)
+				commands <- string("Started")
+			case "stop":
+				fmt.Println(command)
+				atomic.StoreInt32(botStatus, 0)
+				commands <- string("Stopped")
+			case "getAllowedUsers":
+				mu.Lock()
+				commands <- strings.Join(allowedUsers, ",")
+				mu.Unlock()
+			case "getHelpMessage":
+				// commands <- HELP_MSG
+				commands <- fmt.Sprintf("Hola\nComo\n")
+			default:
+				continue
+			}
 		}
 	}
-}
 
-func handleCommands(update tgbotapi.Update, updates *tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, q *querying.Service, t *tracking.Service, h *health.Service) tgbotapi.Chattable {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-	switch update.Message.Command() {
-	case "categories":
-		listCategories(tbot, &update, q)
-	case "n26importer":
-		n26MonthTracking(tbot, &update, updates, t, q)
-	case "start":
-		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, WELCOME_MSG))
-	case "help":
-		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
-	case "ping":
-		ping(tbot, update, h)
-	default:
-	}
-	return msg
 }
 
 func ping(tbot *tgbotapi.BotAPI, update tgbotapi.Update, h *health.Service) {
