@@ -44,6 +44,7 @@ func CreateCategory(cc managing.CategoryCreator) func(*fiber.Ctx) error {
 
 func EditCategory(cc managing.CategoryUpdater) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		c.Append("Hx-Trigger", "reloadCategoriesTable")
 		id := c.Params("id")
 		newCategoryName := c.FormValue("category_name")
 		req := managing.UpdateCategoryReq{
@@ -56,7 +57,6 @@ func EditCategory(cc managing.CategoryUpdater) func(*fiber.Ctx) error {
 				"Msg": fmt.Sprintf("Could update category: %v", err),
 			})
 		}
-		c.Append("Hx-Trigger", "reloadCategoriesTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Msg": fmt.Sprintf("Category %s updated.", resp.ID),
 		})

@@ -26,7 +26,6 @@ func NewCategoryUpdater(l app.Logger, e expense.Expenses) *CategoryUpdater {
 }
 
 func (s *CategoryUpdater) Update(req UpdateCategoryReq) (*UpdateCategoryResp, error) {
-	s.logger.Debug("Updating category %s", req.ID, "name", req.NewName)
 	cat, err := s.expenses.GetCategory(expense.CategoryID(req.ID))
 	if errors.Is(err, expense.ErrNotFound) {
 		s.logger.Err("Category not found %s", req.ID)
@@ -37,7 +36,12 @@ func (s *CategoryUpdater) Update(req UpdateCategoryReq) (*UpdateCategoryResp, er
 		return nil, errors.New("Could not update category information.")
 	}
 	s.logger.Debug("Updating category id:%s new_name:%s", req.ID, req.NewName)
-	cat.Name = expense.CategoryName(cat.Name)
+	cat.Name = expense.CategoryName(req.NewName)
+	cat, err = cat.Validate()
+	if err != nil {
+		s.logger.Debug("Invalid category new name %s", req.NewName)
+		return nil, err
+	}
 	err = s.expenses.UpdateCategory(*cat)
 	if err != nil {
 		s.logger.Err(fmt.Sprintf("Error updating category %s", req.ID), err)
