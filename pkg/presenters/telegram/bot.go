@@ -16,6 +16,7 @@ const HELP_MSG string = `
 Check the menu for available commands, please.
 /categories - Sends you all the categories available.
 /summary - Sends summar of last month's expenses.
+/new - Creates a new expense
 /ping - Checks bot availability and health.
 /help - Displays this menu.
 `
@@ -65,8 +66,8 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 				switch update.Message.Text {
 				case "/categories":
 					listCategories(tbot, &update, q)
-				// case "n26importer":
-				// 	n26MonthTracking(tbot, &update, &updates, t, q)
+				case "/new":
+					createExpense(tbot, &update, &updates, t, q)
 				case "/help":
 					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 				case "/summary":
@@ -84,7 +85,7 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 		case command := <-commands:
 			switch command {
 			case "start":
-				fmt.Println(command) 
+				fmt.Println(command)
 				atomic.StoreInt32(botStatus, 1)
 				commands <- string("Started")
 			case "stop":
@@ -109,3 +110,32 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 func ping(tbot *tgbotapi.BotAPI, update tgbotapi.Update, h *health.Service) {
 	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, h.Ping()))
 }
+
+func getKeybaordMarkup(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarkup {
+	matrix := [][]tgbotapi.KeyboardButton{}
+	row := []tgbotapi.KeyboardButton{}
+	for _, i := range items {
+		newButton := tgbotapi.NewKeyboardButton(i)
+		row = append(row, newButton)
+		if len(row) == rowsCant || len(items)-len(matrix)*rowsCant == len(row) {
+			matrix = append(matrix, row)
+			row = []tgbotapi.KeyboardButton{}
+		}
+	}
+	return tgbotapi.NewOneTimeReplyKeyboard(matrix...)
+}
+
+var NumberKeyboard = tgbotapi.NewOneTimeReplyKeyboard(
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("1"), tgbotapi.NewKeyboardButton("2"), tgbotapi.NewKeyboardButton("3"),
+	),
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("4"), tgbotapi.NewKeyboardButton("5"), tgbotapi.NewKeyboardButton("6"),
+	),
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("7"), tgbotapi.NewKeyboardButton("8"), tgbotapi.NewKeyboardButton("9"),
+	),
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("0"), tgbotapi.NewKeyboardButton("."), tgbotapi.NewKeyboardButton("00"),
+	),
+)

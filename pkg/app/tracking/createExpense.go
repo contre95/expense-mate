@@ -13,13 +13,11 @@ type CreateExpenseResp struct {
 }
 
 type CreateExpenseReq struct {
-	Product    string
-	Amount     float64
-	Currency   string
-	Shop       string
-	City       string
-	Date       time.Time
-	People     string
+	Product string
+	Amount  float64
+	Shop    string
+	Date    time.Time
+	// People     string
 	CategoryID string
 }
 

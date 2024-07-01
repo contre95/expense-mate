@@ -98,11 +98,8 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			req := tracking.CreateExpenseReq{
 				Product:    line[3],
 				Amount:     amount * -1,
-				Currency:   "Euro",
 				Shop:       line[1],
-				City:       "City",
 				Date:       date,
-				People:     "People",
 				CategoryID: "unknown",
 			}
 			_, err = t.Create(req)

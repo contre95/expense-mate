@@ -29,9 +29,7 @@ func main() {
 	//Loggers
 	initLogger := logger.NewSTDLogger("INIT", logger.VIOLET)
 	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
-	// authLogger := logger.NewSTDLogger("Authenticator", logger.YELLOW)
 	managerLogger := logger.NewSTDLogger("Managing", logger.CYAN)
-	// importerLogger := logger.NewSTDLogger("Importing", logger.BEIGE)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
 	telegramLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
@@ -78,7 +76,6 @@ func main() {
 		initLogger.Info("SQLte storage initialized on %s", path)
 	case "":
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
-		return
 	}
 
 	sqlStorage := sqlstorage.NewStorage(db)
@@ -87,8 +84,8 @@ func main() {
 	// authenticator := authenticating.NewService()
 
 	// Healthching
-	var botStatus int32
-	healthChecker := health.NewService(healthLogger, &botStatus)
+	var botRunning int32 = 1
+	healthChecker := health.NewService(healthLogger, &botRunning)
 
 	// Querying
 	getCategories := querying.NewCategoryQuerier(querierLogger, sqlStorage)
@@ -120,7 +117,7 @@ func main() {
 	fmt.Print(tgbotapi.NewBotCommandScopeDefault())
 	tgbotapi.SetLogger(telegramLogger)
 	allowedUsers := strings.Split(os.Getenv("TELEGRAM_ALLOWED_USERNAMES"), ",")
-	go telegram.Run(bot, allowedUsers, telegramCommands, &botStatus, &healthChecker, &tracker, &querier)
+	go telegram.Run(bot, allowedUsers, telegramCommands, &botRunning, &healthChecker, &tracker, &querier)
 
 	// API
 	engine := html.New("./views", ".html")

@@ -23,11 +23,11 @@
       <tr>
         {{ if ne $id "unknown" }}
         <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-          <span contenteditable="true" id="categoryEdit{{$id}}" class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 rounded'>{{$name}}</span>
+          <span contenteditable="true" id="categoryEdit{{$id}}" class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
         </td>
         {{else}}
         <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-          <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 rounded'>{{$name}}</span>
+          <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
         </td>
         {{end}}
         {{ if ne $id "unknown" }}
