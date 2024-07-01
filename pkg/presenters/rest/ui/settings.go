@@ -26,6 +26,7 @@ func LoadCategoriesConfig(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 
 func CreateCategory(cc managing.CategoryCreator) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		c.Append("Hx-Trigger", "reloadCategoriesConfig")
 		categoryName := c.FormValue("category_name")
 		req := managing.CreateCategoryReq{
 			Name: categoryName,
@@ -36,7 +37,6 @@ func CreateCategory(cc managing.CategoryCreator) func(*fiber.Ctx) error {
 				"Msg": fmt.Sprintf("Could create category: %v", err),
 			})
 		}
-		c.Append("Hx-Trigger", "reloadCategoriesTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Msg": fmt.Sprintf("Category %s created.", resp.ID),
 		})
@@ -110,6 +110,7 @@ func EditCategory(cc managing.CategoryUpdater) func(*fiber.Ctx) error {
 
 func DeleteCategory(cd managing.CategoryDeleter) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		c.Append("Hx-Trigger", "reloadCategoriesConfig")
 		req := managing.DeleteCategoryReq{
 			ID: c.Params("id"),
 		}
@@ -119,7 +120,6 @@ func DeleteCategory(cd managing.CategoryDeleter) func(*fiber.Ctx) error {
 				"Msg": err,
 			})
 		}
-		c.Append("Hx-Trigger", "reloadCategoriesTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Msg": fmt.Sprintf("Category %s deleted.", resp.ID),
 		})
