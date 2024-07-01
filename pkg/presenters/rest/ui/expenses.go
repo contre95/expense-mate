@@ -219,13 +219,6 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 }
 func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		// if c.Get("HX-Request") != "true" {
-		// 	fmt.Println("No HX-Request refreshing with revealed")
-		// 	// c.Append("hx-trigger", "newPair")  // Not working :(
-		// 	return c.Render("main", fiber.Map{
-		// 		"ExpensesTrigger": "revealed",
-		// 	})
-		// }
 		respCategories, err := cq.Query()
 		if err != nil {
 			fmt.Println(err)
@@ -279,10 +272,6 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				ByTime:       [2]time.Time{fromDate, toDate},
 			},
 		}
-		fmt.Println(req)
-		fmt.Println(req)
-		fmt.Println(req)
-		fmt.Println(req)
 		resp, err := eq.Query(req)
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{

@@ -84,7 +84,7 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 		case command := <-commands:
 			switch command {
 			case "start":
-				fmt.Println(command)
+				fmt.Println(command) 
 				atomic.StoreInt32(botStatus, 1)
 				commands <- string("Started")
 			case "stop":

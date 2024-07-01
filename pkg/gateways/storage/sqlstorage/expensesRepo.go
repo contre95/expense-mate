@@ -75,12 +75,10 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 func (sqls *SQLStorage) UpdateCategory(c expense.Category) error {
 	stmt, err := sqls.db.Prepare("UPDATE categories SET name=? WHERE id=?")
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	_, err = stmt.Exec(c.Name, c.ID)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	return nil
@@ -140,7 +138,6 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 			// categoryConditions[i] = fmt.Sprintf("c.id LIKE '%%%s%%'", cat)
 			categoryConditions[i] = fmt.Sprintf("c.id ='%s'", cat)
 		}
-		fmt.Println(categoryConditions)
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
 	if len(conditions) > 0 {
@@ -148,7 +145,6 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 		query += " WHERE " + whereClause
 	}
 	var count uint
-	fmt.Println(query)
 	err := sqls.db.QueryRow(query).Scan(&count)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, expense.ErrNotFound

@@ -77,7 +77,6 @@ func SendTelegramCommand(tc managing.TelegramCommander) func(*fiber.Ctx) error {
 		resp, err := tc.Command(cmd)
 		fmt.Println("Response received: ", resp.Msg)
 		if err != nil {
-			fmt.Println(err)
 			return c.Render("alerts/toastErr", fiber.Map{
 				"Msg": "Failed to send command",
 			})
@@ -90,7 +89,7 @@ func SendTelegramCommand(tc managing.TelegramCommander) func(*fiber.Ctx) error {
 
 func EditCategory(cc managing.CategoryUpdater) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.Append("Hx-Trigger", "reloadCategoriesTable")
+		c.Append("Hx-Trigger", "reloadCategoriesConfig")
 		id := c.Params("id")
 		newCategoryName := c.FormValue("category_name")
 		req := managing.UpdateCategoryReq{
