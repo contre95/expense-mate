@@ -39,8 +39,8 @@ func (c *Category) Validate() (*Category, error) {
 // spaceOrLetter checks that a string contains only ASCII characters and spaces.
 func spaceOrLetter(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
-		// only letters and spaces and numbers
-		if !unicode.IsLetter(char) && !unicode.IsDigit(char) && !unicode.IsSpace(char) {
+		// only letters, spaces, numbers and this: &
+		if !unicode.IsLetter(char) && !unicode.IsDigit(char) && !unicode.IsSpace(char) && char != 38 {
 			return false
 		}
 	}
