@@ -31,7 +31,7 @@ func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, er
 		s.logger.Err(fmt.Sprintf("Could count expenses for category %s", req.ID), err)
 		return nil, errors.New("Could count expenses for category %s.")
 	}
-	fmt.Println(i)
+	s.logger.Debug("Amount of expenses associated with %s : %d", req.ID, i)
 	if i != 0 {
 		return nil, errors.New(fmt.Sprintf("Could not delete category. %d expenses are still associated, please delete them.", i))
 	}

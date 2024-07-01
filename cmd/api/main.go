@@ -98,7 +98,6 @@ func main() {
 	// Importing
 	// importExpenses := importing.NewExpenseImporter(importerLogger, sqlStorage)
 
-
 	// Managing
 	telegramCommands := make(chan string)
 	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommands)
@@ -111,21 +110,6 @@ func main() {
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, sqlStorage)
 	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, sqlStorage)
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense)
-
-	// startBot := func(commands <-chan string) {
-	// 	atomic.StoreInt32(&botStatus, 1)
-	// 	defer atomic.StoreInt32(&botStatus, 0)
-	// 	for command := range commands {
-	// 		// Bot logic here
-	// 		fmt.Println("Received command:", command)
-	// 		if command == "stop" {
-	// 			return
-	// 		}
-	// 		if command == "start" {
-	// 			telegramLogger.Debug("Command start sent")
-	// 		}
-	// 	}
-	// }
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))

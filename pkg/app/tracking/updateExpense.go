@@ -4,7 +4,6 @@ import (
 	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
-	"fmt"
 	"time"
 )
 
@@ -36,7 +35,6 @@ func NewExpenseUpdater(l app.Logger, e expense.Expenses) *ExpenseUpdater {
 func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error) {
 	// Get the oldExpense from the db
 	oldExpense, getErr := s.expenses.Get(expense.ID(req.ExpenseID))
-	fmt.Println(oldExpense)
 	switch {
 	case errors.Is(getErr, expense.ErrNotFound):
 		s.logger.Debug("Expense %s not found in storage: %v", req.ExpenseID, getErr)
@@ -44,7 +42,7 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		s.logger.Debug("Failed to update expense %s: %v", req.ExpenseID, getErr)
 		return nil, getErr
 	}
-	// Update the values
+	s.logger.Debug("Old expense %s", oldExpense)
 	oldExpense.Amount = req.Amount
 	oldExpense.Shop = req.Shop
 	oldExpense.Product = req.Product
@@ -60,6 +58,7 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 	}
 	oldExpense.Category = *newCategory
 	oldExpense, err = oldExpense.Validate()
+	s.logger.Debug("Old expense updated: %s", oldExpense)
 	if err != nil {
 		s.logger.Err("Could not update expense", req, err)
 		return nil, err

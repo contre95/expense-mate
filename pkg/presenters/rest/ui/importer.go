@@ -105,7 +105,6 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				People:     "People",
 				CategoryID: "unknown",
 			}
-			fmt.Println(req)
 			_, err = t.Create(req)
 			if err != nil {
 				failedImports = append(failedImports, lineNumber)
