@@ -19,10 +19,11 @@ type DeleteCategoryReq struct {
 type CategoryDeleter struct {
 	logger   app.Logger
 	expenses expense.Expenses
+	rules    expense.Rules
 }
 
-func NewCategoryDeleter(l app.Logger, e expense.Expenses) *CategoryDeleter {
-	return &CategoryDeleter{l, e}
+func NewCategoryDeleter(l app.Logger, e expense.Expenses, r expense.Rules) *CategoryDeleter {
+	return &CategoryDeleter{l, e, r}
 }
 
 func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
@@ -34,6 +35,18 @@ func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, er
 	s.logger.Debug("Amount of expenses associated with %s : %d", req.ID, i)
 	if i != 0 {
 		return nil, errors.New(fmt.Sprintf("Could not delete category. %d expenses are still associated, please delete them.", i))
+	}
+	// Note: Making this verification cause SQLite ON CASCADE DELETE doesn't work :(
+	// Also a good things, cause it is independent of the storage engine and dependant only on the repository interface
+	rules, err := s.rules.All()
+	if err != nil {
+		s.logger.Err(fmt.Sprintf("Could count rules for category %s", req.ID), err)
+		return nil, errors.New("Could count rules for category %s.")
+	}
+	for _, r := range rules {
+		if r.CategoryID == expense.CategoryID(req.ID) {
+			return nil, errors.New("Could not delete category. Rules are still associated, please delete them.")
+		}
 	}
 	err = s.expenses.DeleteCategory(expense.CategoryID(req.ID))
 	if err != nil {
