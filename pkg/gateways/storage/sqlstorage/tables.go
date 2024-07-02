@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS rules (
   category_id VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (id),
   KEY idx_category_id (category_id),
-  CONSTRAINT fk_rules_category FOREIGN KEY (category_id) REFERENCES categories (id)
+  CONSTRAINT fk_rules_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS expenses (
@@ -46,6 +46,8 @@ INSERT IGNORE INTO expenses (id, amount, product, shop, expend_date, category_id
 `
 
 const SQLiteTables string = ` 
+PRAGMA foreign_keys=ON;
+
 CREATE TABLE IF NOT EXISTS categories (
   id TEXT NOT NULL,
   name TEXT,
@@ -57,7 +59,7 @@ CREATE TABLE IF NOT EXISTS rules (
   pattern TEXT,
   category_id TEXT DEFAULT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (category_id) REFERENCES categories (id)
+  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS expenses (
@@ -70,6 +72,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   PRIMARY KEY (id),
   FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
+
 
 -- Insert into categories table
 INSERT OR IGNORE INTO categories (id, name) VALUES ('unknown', 'Unknown');

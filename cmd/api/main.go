@@ -99,7 +99,7 @@ func main() {
 	telegramCommands := make(chan string)
 	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommands)
 	createCategory := managing.NewCategoryCreator(managerLogger, expensesStorage)
-	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage)
+	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage, ruleStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
 	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager)
