@@ -27,10 +27,11 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 	}
 }
 
-func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
+func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
+		useRules := c.FormValue("useRules") == "checked"
 		file, err := c.FormFile("n26csv")
 		if err != nil || file == nil {
 			slog.Error("error", err)
@@ -96,17 +97,28 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				continue
 			}
 			req := tracking.CreateExpenseReq{
-				Product:    line[3],
-				Amount:     amount * -1,
-				Shop:       line[1],
-				Date:       date,
-				CategoryID: "unknown",
+				Product: line[3],
+				Amount:  amount * -1,
+				Shop:    line[1],
+				Date:    date,
 			}
-			_, err = t.Create(req)
+			req.CategoryID = "unknown"
+			if useRules {
+				resp := eca.Catalog(tracking.CatalogExpenseReq{
+					Product: req.Product,
+					Shop:    req.Shop,
+				})
+				if resp.Matched {
+					fmt.Println(resp.CategoryID)
+					req.CategoryID = resp.CategoryID
+				}
+			}
+			_, err = ec.Create(req)
 			if err != nil {
 				failedImports = append(failedImports, lineNumber)
 				slog.Error("Can't create expense:", err)
 			}
+
 		}
 		c.Append("HX-Trigger", "reloadImportTable")
 		return c.Render("alerts/toastOk", fiber.Map{

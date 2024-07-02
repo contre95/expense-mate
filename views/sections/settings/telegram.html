@@ -1,5 +1,5 @@
 <div id="telegram" class="mx-5 w-full rounded-lg" hx-get="/settings/telegram"
-  hx-trigger="reloadTelegramConfig form:body" hx-target="this">
+  hx-trigger="reloadTelegramConfig from:body" hx-target="this">
   <span class="text-xl block p-2 w-1/3 pt-2" style="color:#1DA1DE;"><i class='bx bxl-telegram'></i> Telegram</span>
   <div class="block border border-gray-300 rounded-lg p-3 flex">
     <div class="w-1/2">
@@ -11,7 +11,7 @@
       <br>
       <br>
       <span class="text-md text-gray-800">Allowed users:</span>
-      <span class='text-indigo-700 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="every 1s"
+      <span class='text-indigo-700 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="revealed"
         hx-swap="innerHTML" hx-target="this" hx-post="/telegram/command"
         hx-vals='{"command": "getAllowedUsers"}'></span>
       <br>
@@ -24,7 +24,7 @@
         hx-vals='{"command": "stop"}'>Stop</button>
     </div>
     <div class="w-1/2 text-sm text-justify">
-      <strong>Available telegram commands:</strong><br><br>
+      Available telegram commands:<br><br>
         <span style="color:#1DA1DE;">/categories</span> - Sends you all the categories available.<br>
         <span style="color:#1DA1DE;">/summary</span> - Sends summar of last month's expenses.<br>
         <span style="color:#1DA1DE;">/new</span> - Create a new Expense <br>

@@ -77,7 +77,8 @@ func main() {
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
 	}
 
-	sqlStorage := sqlstorage.NewStorage(db)
+	expensesStorage := sqlstorage.NewExpensesStorage(db)
+	ruleStorage := sqlstorage.NewRulesStorage(db)
 
 	// Authenticating
 	// authenticator := authenticating.NewService()
@@ -87,8 +88,8 @@ func main() {
 	healthChecker := health.NewService(healthLogger, &botRunning)
 
 	// Querying
-	getCategories := querying.NewCategoryQuerier(querierLogger, sqlStorage)
-	getExpenses := querying.NewExpenseQuerier(querierLogger, sqlStorage)
+	getCategories := querying.NewCategoryQuerier(querierLogger, expensesStorage)
+	getExpenses := querying.NewExpenseQuerier(querierLogger, expensesStorage)
 	querier := querying.NewService(*getCategories, *getExpenses)
 
 	// Importing
@@ -97,15 +98,17 @@ func main() {
 	// Managing
 	telegramCommands := make(chan string)
 	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommands)
-	createCategory := managing.NewCategoryCreator(managerLogger, sqlStorage)
-	deleteCategory := managing.NewCategoryDeleter(managerLogger, sqlStorage)
-	updateCategory := managing.NewCategoryUpdater(managerLogger, sqlStorage)
-	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram)
+	createCategory := managing.NewCategoryCreator(managerLogger, expensesStorage)
+	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage)
+	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
+	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage)
+	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager)
 	// Tracking
-	createExpense := tracking.NewExpenseCreator(trackerLogger, sqlStorage)
-	updateExpense := tracking.NewExpenseUpdater(trackerLogger, sqlStorage)
-	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, sqlStorage)
-	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense)
+	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
+	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)
+	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, expensesStorage)
+	catalogExpense := tracking.NewExpenseCataloger(trackerLogger, ruleStorage)
+	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense, *catalogExpense)
 
 	// Telegram Bot
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))

@@ -7,6 +7,16 @@ CREATE TABLE IF NOT EXISTS categories (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
+CREATE TABLE IF NOT EXISTS rules (
+  id VARCHAR(255) NOT NULL,
+  pattern VARCHAR(255),
+  category_id VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY idx_category_id (category_id),
+  CONSTRAINT fk_rules_category FOREIGN KEY (category_id) REFERENCES categories (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS expenses (
   id VARCHAR(255) NOT NULL,
   amount FLOAT DEFAULT 0.0,
@@ -40,6 +50,14 @@ CREATE TABLE IF NOT EXISTS categories (
   id TEXT NOT NULL,
   name TEXT,
   PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS rules (
+  id TEXT NOT NULL,
+  pattern TEXT,
+  category_id TEXT DEFAULT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (category_id) REFERENCES categories (id)
 );
 
 CREATE TABLE IF NOT EXISTS expenses (

@@ -45,7 +45,7 @@ type Category struct {
 	Name CategoryName `validate:"required,min=3,alphanum_space"`
 }
 
-// Expenses is the repository for all the command actions for Expense
+// Expenses is the expenses repository
 type Expenses interface {
 	// All retrieves all Expenses with pagination
 	Filter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)

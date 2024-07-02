@@ -33,3 +33,9 @@ func NewCategory(name string) (*Category, error) {
 	}
 	return newCategory.Validate()
 }
+
+func NewRule(p string, cid CategoryID) (*Rule, error) {
+	// TODO: Check if it is a valid regex pattern
+	rule := &Rule{uuid.New().String(), p, cid}
+	return rule.Validate()
+}
