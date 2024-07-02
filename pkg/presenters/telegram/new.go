@@ -5,6 +5,7 @@ import (
 	"expenses-app/pkg/app/tracking"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -62,7 +63,7 @@ collectData:
 		if err == nil {
 			break
 		}
-		tbot.Send(tgbotapi.NewMessage(chatID, "Invalid amount. Please provide a valid number."))
+		tbot.Send(tgbotapi.NewMessage(chatID, "Invalid amount. Please provide a valid number. (e.g 0.5, 10)"))
 	}
 
 	// Collect Shop
@@ -81,11 +82,19 @@ collectData:
 		if userInput == "/fix" {
 			goto collectData
 		}
+		if strings.ToLower(userInput) == "today" || strings.ToLower(userInput) == "now" {
+			date = time.Now()
+			break
+		}
+		if strings.ToLower(userInput) == "y" || strings.ToLower(userInput) == "yesterday" {
+			date = time.Now().Add(-24 * time.Hour)
+			break
+		}
 		date, err = time.Parse("2006-01-02", userInput)
 		if err == nil {
 			break
 		}
-		tbot.Send(tgbotapi.NewMessage(chatID, "Invalid date format. Please use YYYY-MM-DD."))
+		tbot.Send(tgbotapi.NewMessage(chatID, "Invalid date format. Please use YYYY-MM-DD, 'today' or 'yesterday' "))
 	}
 
 	// Request category selection
@@ -95,6 +104,7 @@ collectData:
 		reverseMap[v] = k
 		categoryNames = append(categoryNames, v)
 	}
+
 	for {
 		msg = tgbotapi.NewMessage(chatID, "Please choose a category:")
 		msg.ReplyMarkup = getKeybaordMarkup(categoryNames, len(categoryNames)/2)

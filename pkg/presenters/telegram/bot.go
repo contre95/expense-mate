@@ -16,27 +16,13 @@ const HELP_MSG string = `
 Check the menu for available commands, please.
 /categories - Sends you all the categories available.
 /summary - Sends summar of last month's expenses.
-/new - Creates a new expense
+/unknown - Categorize unknown expenses. /done and continue in another moment.
+/new - Creates a new expense. /fix if you made made a mistake.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
 `
 
-const DEFAULT_MSG string = "I don't get it. I'm no ChatGPT 🤖\n"
 const NOT_ALLOWED_MSG string = "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"
-const WELCOME_MSG string = `
-"Hello! I'm your personal expense manager bot 🤖
-I'll help you keep track of your spending and budget, so you can take control of your finances. 
-Let's get started by adding your first expense. Need help with anything? Just type /help to see what I can do for you."
-`
-
-// const PEOPLE []string = []string{"Contre", "Anoux / Contre", "Anoux"}
-
-// Register the following commands in the botfather
-
-// categories - Get a list of categories
-// n26importer - Start the N26 tracking importer.
-// ping - Check if the bot is working
-// help - Display the help message
 
 func isAllowed(chatID string, authorizedUsers []string, mu *sync.Mutex) bool {
 	mu.Lock()
@@ -72,6 +58,8 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 				case "/summary":
 					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "When implemented, I will send you a report of the past month"))
+				case "/unknown":
+					categorizeUnknowns(tbot, &update, &updates, t, q)
 				case "/ping":
 					ping(tbot, update, h)
 				default:
