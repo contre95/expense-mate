@@ -1,11 +1,11 @@
 <div class="p-10 items-center justify-center w-1/2">
   <div class="overflow-x-auto">
     <div class="flex">
-      <span class="text-xl w-1/3 pt-2 text-gray-700">N26</span> 
-      <img id="spinner" class="htmx-indicator w-1/3 h-10" src="/assets/img/loader.svg"/>
+      <span class="text-xl w-1/3 pt-2 text-gray-700">N26</span>
+      <img id="spinner" class="htmx-indicator w-1/3 h-10" src="/assets/img/loader.svg" />
       <button class="text-md w-1/3 text-right text-blue-600 hover:text-blue-800"
-        hx-include="#n26csv,#spacesTransactions, #externalTransactions" hx-encoding='multipart/form-data'
-        hx-post='/importers/n26' hx-target="#mitoast"  hx-indicator="#spinner"> Import </button>
+        hx-include="#n26csv,#spacesTransactions,#externalTransactions,#useRules" hx-encoding='multipart/form-data'
+        hx-post='/importers/n26' hx-target="#mitoast" hx-indicator="#spinner"> Import </button>
     </div>
     <div class="flex items-center justify-center py-5">
       <label for="n26csv" style="border-color:#359E88;"
@@ -35,6 +35,11 @@
       <label for="externalTransactions" class="ms-2  text-sm font-medium text-gray-900 dark:text-gray-300">Include
         outgoing <strong style="color:#359E88;">Bank Transfers</strong> and <strong
           style="color:#359E88;">MoneyBeams</strong></label>
+      <br>
+      <input id="useRules" name="useRules" type="checkbox" value="checked"
+        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+      <label for="useRules" class="ms-2  text-sm font-medium text-gray-900 dark:text-gray-300">
+        User <strong class="text-indigo-500">Rules</strong> to automatically set a category. Go to <a href="/settings">/settings</a> to create a new rule.
     </div>
   </div>
   <br>

@@ -41,7 +41,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/importers", ui.LoadImporterSection())
 	fi.Get("/importers/n26", ui.LoadN26Importer())
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier))
-	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator))
+	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.ExpenseCataloger))
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
@@ -55,6 +55,10 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/settings/telegram/status", ui.LoadTelegramStatus(*he))
 	fi.Post("/settings/telegram/command", ui.SendTelegramCommand(m.TelegramCommander))
 	fi.Post("/telegram/command", ui.SendTelegramCommandOutput(m.TelegramCommander))
+	// Rules
+	fi.Get("/settings/rules", ui.LoadRulesConfig(q.CategoryQuerier, m.RuleManager))
+	fi.Delete("/settings/rules/:id", ui.DeleteRule(m.RuleManager))
+	fi.Post("/settings/rules/", ui.CreateRule(m.RuleManager))
 
 	fi.Get("/api/health/bot", api.BotPing(*he))
 	fi.Get("/api/health/app", api.Ping(*he))

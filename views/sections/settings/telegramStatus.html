@@ -5,5 +5,4 @@
 {{else}}
 <span class='text-red-700 bg-red-100 border border-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
   hx-get="/settings/telegram/status" hx-swap="outerHTML" hx-trigger="every 1s" hx-target="this">{{ .Status }}</span>
-
 {{end}}
