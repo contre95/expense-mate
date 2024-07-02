@@ -187,8 +187,12 @@ func (sqls *SQLStorage) Filter(categories []string, minAmount, maxAmount uint, s
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
-	query += fmt.Sprintf(" ORDER BY e.expend_date DESC LIMIT ? OFFSET ?")
-	rows, err := sqls.db.Query(query, limit, offset)
+	query += fmt.Sprintf(" ORDER BY e.expend_date")
+	rows, err := sqls.db.Query(query)
+	if limit > 0 {
+		query += fmt.Sprintf(" DESC LIMIT ? OFFSET ?")
+		rows, err = sqls.db.Query(query, limit, offset)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
 	} else if err != nil {

@@ -11,7 +11,6 @@ import (
 	"expenses-app/pkg/presenters/rest"
 	"expenses-app/pkg/presenters/rest/ui"
 	"expenses-app/pkg/presenters/telegram"
-	"fmt"
 	"os"
 	"strings"
 
@@ -114,7 +113,6 @@ func main() {
 		initLogger.Err("%v", err)
 		return
 	}
-	fmt.Print(tgbotapi.NewBotCommandScopeDefault())
 	tgbotapi.SetLogger(telegramLogger)
 	allowedUsers := strings.Split(os.Getenv("TELEGRAM_ALLOWED_USERNAMES"), ",")
 	go telegram.Run(bot, allowedUsers, telegramCommands, &botRunning, &healthChecker, &tracker, &querier)
