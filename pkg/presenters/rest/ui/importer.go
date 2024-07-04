@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"io"
 	"log/slog"
@@ -106,7 +107,7 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 				Date:    date,
 			}
 
-			req.CategoryID = "unknown"
+			req.CategoryID = expense.UnkownCategoryID
 			if useRules {
 				resp := eca.Catalog(tracking.CatalogExpenseReq{
 					Product: req.Product,
@@ -147,7 +148,7 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
-				ByCategoryID: []string{"unknown"},
+				ByCategoryID: []string{expense.UnkownCategoryID},
 			},
 		}
 		re, err := eq.Query(req)

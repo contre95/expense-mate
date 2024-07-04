@@ -43,6 +43,7 @@ func (s *CategoryCreator) Create(req CreateCategoryReq) (*CreateCategoryResp, er
 		return nil, expense.ErrAlreadyExists
 	}
 	s.logger.Info("Category %s, created", newCategory.Name)
-	resp := &CreateCategoryResp{ID: string(newCategory.ID), Msg: "Category created"}
+
+	resp := &CreateCategoryResp{ID: newCategory.ID.String(), Msg: "Category created"}
 	return resp, nil
 }

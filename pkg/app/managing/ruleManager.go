@@ -3,6 +3,8 @@ package managing
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+
+	"github.com/google/uuid"
 )
 
 type CreateRuleReq struct {
@@ -53,18 +55,22 @@ func (s *RuleManager) List() (*ListRulesResp, error) {
 	for _, r := range rules {
 		rulesMap[string(r.ID)] = RulesBasic{
 			Pattern:    r.Pattern,
-			CategoryID: string(r.CategoryID),
+			CategoryID: r.CategoryID.String(),
 		}
 	}
 	return &ListRulesResp{Rules: rulesMap}, nil
 }
 
 func (s *RuleManager) Create(req CreateRuleReq) error {
-	newRule, createErr := expense.NewRule(req.Pattern, expense.CategoryID(req.CategoryID))
+	catID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		return expense.ErrInvalidID
+	}
+	newRule, createErr := expense.NewRule(req.Pattern, catID)
 	if createErr != nil {
 		return createErr
 	}
-	err := s.rules.Add(*newRule)
+	err = s.rules.Add(*newRule)
 	if err != nil {
 		s.logger.Err("Failed to create rule:", err)
 		return err

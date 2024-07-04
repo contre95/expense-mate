@@ -6,6 +6,8 @@ import (
 	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type DeleteCategoryResp struct {
@@ -27,6 +29,10 @@ func NewCategoryDeleter(l app.Logger, e expense.Expenses, r expense.Rules) *Cate
 }
 
 func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, error) {
+	catID, err := uuid.Parse(req.ID)
+	if err != nil {
+		return nil, expense.ErrInvalidID
+	}
 	i, err := s.expenses.CountWithFilter([]string{req.ID}, 0, 0, "", "", time.Time{}, time.Time{})
 	if err != nil {
 		s.logger.Err(fmt.Sprintf("Could count expenses for category %s", req.ID), err)
@@ -44,11 +50,12 @@ func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, er
 		return nil, errors.New("Could count rules for category %s.")
 	}
 	for _, r := range rules {
-		if r.CategoryID == expense.CategoryID(req.ID) {
+		// if r.CategoryID.String() == catID.String() {
+		if r.CategoryID == catID {
 			return nil, errors.New("Could not delete category. Rules are still associated, please delete them.")
 		}
 	}
-	err = s.expenses.DeleteCategory(expense.CategoryID(req.ID))
+	err = s.expenses.DeleteCategory(expense.CategoryID(catID))
 	if err != nil {
 		s.logger.Err("Error deleting category", err)
 		return nil, err

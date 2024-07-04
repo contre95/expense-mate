@@ -38,7 +38,7 @@ func (s *ExpenseCataloger) Catalog(req CatalogExpenseReq) *CatalogExpenseResp {
 		if rule.Matches(req.Shop) {
 			s.logger.Info("Shop:%s matched against Pattern: %s", req.Shop, rule.Pattern)
 			return &CatalogExpenseResp{
-				CategoryID: string(rule.CategoryID),
+				CategoryID: rule.CategoryID.String(),
 				RuleID:     rule.ID,
 				Matched:    true,
 			}

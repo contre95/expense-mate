@@ -5,6 +5,8 @@ import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type DeleteExpenseResp struct {
@@ -28,8 +30,12 @@ func NewExpenseDeleter(l app.Logger, e expense.Expenses) *ExpenseDeleter {
 func (s *ExpenseDeleter) Delete(req DeleteExpenseReq) (*DeleteExpenseResp, error) {
 	resp := &DeleteExpenseResp{}
 	for _, id := range req.IDS {
+		uuid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, expense.ErrInvalidID
+		}
 		s.logger.Debug("Attempting to delte Expense ", string(id))
-		err := s.expenses.Delete(expense.ID(id))
+		err = s.expenses.Delete(uuid)
 		if err != nil {
 			s.logger.Err("Error updating client", err)
 			resp.FailedDeletes[id] = err

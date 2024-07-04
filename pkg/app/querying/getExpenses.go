@@ -4,16 +4,20 @@ import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ExpensesBasics struct {
-	Amount     float64
-	Category   string
-	CategoryID string
-	Date       time.Time
-	ID         string
-	Product    string
-	Shop       string
+	Amount   float64
+	Category struct {
+		Name string
+		ID   string
+	}
+	Date    time.Time
+	ID      string
+	Product string
+	Shop    string
 }
 
 type ExpenseQuerierResp struct {
@@ -48,21 +52,32 @@ func NewExpenseQuerier(l app.Logger, e expense.Expenses) *ExpenseQuerier {
 
 func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	s.logger.Info("Getting expense " + id)
-	e, err := s.expenses.Get(expense.ID(id))
+	idE, err := uuid.Parse(id)
+	if err != nil {
+		return nil, expense.ErrInvalidID
+	}
+	e, err := s.expenses.Get(idE)
 	if err != nil {
 		s.logger.Err("Could not get expense from storage: %v", err)
 		return nil, expense.ErrNotFound
 	}
+	// Get users as well
+
 	resp := ExpenseQuerierResp{
 		Expenses: map[string]ExpensesBasics{
-			string(e.ID): {
-				Amount:     e.Amount,
-				Category:   string(e.Category.Name),
-				CategoryID: id,
-				Date:       e.Date,
-				ID:         string(e.ID),
-				Product:    e.Product,
-				Shop:       e.Shop,
+			e.ID.String(): {
+				Amount: e.Amount,
+				Category: struct {
+					Name string
+					ID   string
+				}{
+					e.Category.Name,
+					e.Category.ID.String(),
+				},
+				Date:    e.Date,
+				ID:      e.ID.String(),
+				Product: e.Product,
+				Shop:    e.Shop,
 			},
 		},
 		Page:     1,
@@ -92,15 +107,21 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 		ExpensesCount: totalExpenses,
 		PageSize:      uint(len(expenses)),
 	}
-	for _, exp := range expenses {
+	for _, e := range expenses {
 		expBasic := ExpensesBasics{
-			Amount:     exp.Amount,
-			Category:   string(exp.Category.Name),
-			CategoryID: string(exp.Category.ID),
-			Date:       exp.Date,
-			ID:         string(exp.ID),
-			Product:    exp.Product,
-			Shop:       exp.Shop,
+			Amount: e.Amount,
+			Category: struct {
+				Name string
+				ID   string
+			}{
+				e.Category.Name,
+				e.Category.ID.String(),
+			},
+
+			Date:    e.Date,
+			ID:      e.ID.String(),
+			Product: e.Product,
+			Shop:    e.Shop,
 		}
 		resp.Expenses[string(expBasic.ID)] = expBasic
 	}

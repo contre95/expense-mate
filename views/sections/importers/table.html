@@ -41,9 +41,9 @@
           <td class="py-0 px-4">
             <select id="category" name="category"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
-              {{ $current := .Category }}
+              {{ $current := .Category.ID }}
               {{ range $id, $name := $categories }}
-              {{ if eq $current $name}}
+              {{ if eq $current $id}}
               <option value="{{$id}}" selected>{{$name}}</option>
               {{else}}
               <option value="{{$id}}">{{$name}}</option>

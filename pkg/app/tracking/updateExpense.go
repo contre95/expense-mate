@@ -5,6 +5,8 @@ import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Same as createExpense.go, but for updating expenses
@@ -34,7 +36,11 @@ func NewExpenseUpdater(l app.Logger, e expense.Expenses) *ExpenseUpdater {
 // Update use case function retrieves an expense from the db and updates it with the new values
 func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error) {
 	// Get the oldExpense from the db
-	oldExpense, getErr := s.expenses.Get(expense.ID(req.ExpenseID))
+	pidE, err := uuid.Parse(req.ExpenseID)
+	if err != nil {
+		return nil, expense.ErrInvalidID
+	}
+	oldExpense, getErr := s.expenses.Get(pidE)
 	switch {
 	case errors.Is(getErr, expense.ErrNotFound):
 		s.logger.Debug("Expense %s not found in storage: %v", req.ExpenseID, getErr)
@@ -47,7 +53,11 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 	oldExpense.Shop = req.Shop
 	oldExpense.Product = req.Product
 	oldExpense.Date = req.Date
-	newCategory, err := s.expenses.GetCategory(expense.CategoryID(req.CategoryID))
+	pidC, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		return nil, expense.ErrInvalidID
+	}
+	newCategory, err := s.expenses.GetCategory(pidC)
 	switch {
 	case errors.Is(err, expense.ErrNotFound):
 		s.logger.Err("The category you are trying to reach doesn't exists", req, err)
