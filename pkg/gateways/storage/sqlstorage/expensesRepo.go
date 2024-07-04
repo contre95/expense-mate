@@ -39,7 +39,7 @@ func (sqls *ExpensesStorage) Update(e expense.Expense) error {
 	return nil
 }
 
-func (sqls *ExpensesStorage) Delete(id expense.ID) error {
+func (sqls *ExpensesStorage) Delete(id expense.ExpenseID) error {
 	stmt, err := sqls.db.Prepare("DELETE FROM expenses WHERE id=?")
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (sqls *ExpensesStorage) Delete(id expense.ID) error {
 }
 
 // Get retrieves an expense from the db. It returns a valid expense.Expense
-func (sqls *ExpensesStorage) Get(id expense.ID) (*expense.Expense, error) {
+func (sqls *ExpensesStorage) Get(id expense.ExpenseID) (*expense.Expense, error) {
 	q := "SELECT id, amount, product, shop, expend_date, category_id FROM expenses where id=?"
 	var catID expense.CategoryID
 	var e expense.Expense
@@ -88,7 +88,6 @@ func (sqls *ExpensesStorage) AddCategory(c expense.Category) error {
 	stmt, err := sqls.db.Prepare("INSERT INTO categories (id, name) VALUES (?,?)")
 	if err != nil {
 		return err
-
 	}
 	_, err = stmt.Exec(c.ID, c.Name)
 	if err != nil {

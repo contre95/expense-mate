@@ -1,10 +1,13 @@
 package tracking
 
 import (
+	"errors"
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type CreateExpenseResp struct {
@@ -33,19 +36,27 @@ func NewExpenseCreator(l app.Logger, e expense.Expenses) *ExpenseCreator {
 
 // Create use cases function creates a new expense
 func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error) {
-	newExpense, createErr := expense.NewExpense(req.Amount, req.Product, req.Shop, req.Date, req.CategoryID)
+	idC, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		return nil, expense.ErrInvalidID
+	}
+	category, err := s.expenses.GetCategory(idC)
+	if err != nil {
+		return nil, errors.New("Couldn't fetch the category %s" + req.CategoryID)
+	}
+	newExpense, createErr := expense.NewExpense(req.Amount, req.Product, req.Shop, req.Date, *category)
 	if createErr != nil {
 		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)
 		return nil, createErr
 	}
-	err := s.expenses.Add(*newExpense)
+	err = s.expenses.Add(*newExpense)
 	if err != nil {
 		s.logger.Err("Could add expense: %s", err)
 		return nil, err
 	}
 	s.logger.Info("Expense %s created: %s", newExpense.ID, newExpense)
 	return &CreateExpenseResp{
-		ID:  string(newExpense.ID),
+		ID:  newExpense.ID.String(),
 		Msg: fmt.Sprintf("Expense %s created: %v", newExpense.ID, newExpense),
 	}, nil
 }
