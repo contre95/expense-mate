@@ -59,6 +59,10 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/settings/rules", ui.LoadRulesConfig(q.CategoryQuerier, m.RuleManager))
 	fi.Delete("/settings/rules/:id", ui.DeleteRule(m.RuleManager))
 	fi.Post("/settings/rules/", ui.CreateRule(m.RuleManager))
+	// Users
+	fi.Get("/settings/users", ui.LoadUsersConfig(m.UserManager))
+	fi.Delete("/settings/users/:id", ui.DeleteUser(m.UserManager))
+	fi.Post("/settings/users", ui.CreateUser(m.UserManager))
 
 	fi.Get("/api/health/bot", api.BotPing(*he))
 	fi.Get("/api/health/app", api.Ping(*he))

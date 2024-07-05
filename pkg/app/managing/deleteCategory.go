@@ -33,7 +33,7 @@ func (s *CategoryDeleter) Delete(req DeleteCategoryReq) (*DeleteCategoryResp, er
 	if err != nil {
 		return nil, expense.ErrInvalidID
 	}
-	i, err := s.expenses.CountWithFilter([]string{req.ID}, 0, 0, "", "", time.Time{}, time.Time{})
+	i, err := s.expenses.CountWithFilter([]string{}, []string{req.ID}, 0, 0, "", "", time.Time{}, time.Time{})
 	if err != nil {
 		s.logger.Err(fmt.Sprintf("Could count expenses for category %s", req.ID), err)
 		return nil, errors.New("Could count expenses for category %s.")

@@ -8,22 +8,24 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserID uuid.UUID
+type UserID = uuid.UUID
 
 type User struct {
-	ID               UserID
-	Name             string
-	TelegramUsername string
+	ID               UserID `json:"id"`
+	DisplayName      string `json:"display_name"`
+	TelegramUsername string `json:"telegram_username"`
 }
 
 type Users interface {
 	All() ([]User, error)
+	Add(User) error
+	Delete(UserID) error
 }
 
 func NewUser(name, telegram string) (*User, error) {
 	u := User{
 		ID:               UserID(uuid.New()),
-		Name:             name,
+		DisplayName:      name,
 		TelegramUsername: telegram,
 	}
 	return u.Validate()

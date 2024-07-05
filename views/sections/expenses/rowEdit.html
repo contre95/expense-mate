@@ -14,7 +14,7 @@
       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
       {{ $current := .Expense.Category.ID }}
       {{ range $id, $name := .Categories }}
-      {{ if eq $current $name}}
+      {{ if eq $current $id}}
       <option value="{{$id}}" selected>{{$name}}</option>
       {{else}}
       <option value="{{$id}}">{{$name}}</option>
@@ -22,6 +22,7 @@
       {{end}}
     </select>
   </td>
+  <td class="py-1 px-4">{{.Expense.Users }}</td>
   <td class="p-0 px-4">
     $ <input class="w-20 px-1 border border-gray-300 rounded-md" type="number" min="0" id="amount" name="amount"
       value='{{printf "%.2f" .Expense.Amount}}'>

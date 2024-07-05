@@ -8,9 +8,10 @@ type Service struct {
 	CategoryUpdater   CategoryUpdater
 	TelegramCommander TelegramCommander
 	RuleManager       RuleManager
+	UserManager       UserManager
 }
 
 // NewService is the interctor for all Managing Use cases
-func NewService(cd CategoryDeleter, cc CategoryCreator, cu CategoryUpdater, tc TelegramCommander, rm RuleManager) Service {
-	return Service{cd, cc, cu, tc, rm}
+func NewService(cd CategoryDeleter, cc CategoryCreator, cu CategoryUpdater, tc TelegramCommander, rm RuleManager, um UserManager) Service {
+	return Service{cd, cc, cu, tc, rm, um}
 }

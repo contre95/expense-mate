@@ -34,8 +34,7 @@ type Expense struct {
 	Product string    `validate:"required,min=3"`
 	Shop    string    `validate:"min=2,max=64"`
 	Date    time.Time `validate:"required"`
-
-	UserID   []UserID
+	UserIDS  []UserID
 	Category Category
 }
 
@@ -53,11 +52,11 @@ type Category struct {
 // Expenses is the expenses repository
 type Expenses interface {
 	// All retrieves all Expenses with pagination
-	Filter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)
+	Filter(users_ids, categories_ids []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]Expense, error)
 	// All retrieves all Expenses with pagination
 	All(limit, offset uint) ([]Expense, error)
 	// Get retrieves an Expense from storage
-	CountWithFilter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time) (uint, error)
+	CountWithFilter(users_ids, categories_ids []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time) (uint, error)
 	// Get retrieves an Expense from storage
 	Get(id ExpenseID) (*Expense, error)
 	// // Add is used to add a new Expense to the system
