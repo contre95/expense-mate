@@ -7,6 +7,7 @@ import (
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"expenses-app/pkg/gateways/logger"
+	"expenses-app/pkg/gateways/storage/jsonstorage"
 	"expenses-app/pkg/gateways/storage/sqlstorage"
 	"expenses-app/pkg/presenters/rest"
 	"expenses-app/pkg/presenters/rest/ui"
@@ -78,10 +79,13 @@ func main() {
 	}
 
 	expensesStorage := sqlstorage.NewExpensesStorage(db)
+	path := os.Getenv("JSON_STORAGE_PATH")
 	ruleStorage := sqlstorage.NewRulesStorage(db)
-
-	// Authenticating
-	// authenticator := authenticating.NewService()
+	if path == "" {
+		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
+		return
+	}
+	userStorage := jsonstorage.NewStorage(path)
 
 	// Healthching
 	var botRunning int32 = 1
@@ -89,7 +93,7 @@ func main() {
 
 	// Querying
 	getCategories := querying.NewCategoryQuerier(querierLogger, expensesStorage)
-	getExpenses := querying.NewExpenseQuerier(querierLogger, expensesStorage)
+	getExpenses := querying.NewExpenseQuerier(querierLogger, expensesStorage, userStorage)
 	querier := querying.NewService(*getCategories, *getExpenses)
 
 	// Importing
@@ -102,7 +106,8 @@ func main() {
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage, ruleStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
 	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage)
-	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager)
+	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
+	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)

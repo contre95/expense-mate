@@ -1,49 +1,56 @@
-<div id="categories" class="mx-5 w-full rounded-lg" hx-get="/settings/categories" hx-trigger="reloadCategoriesConfig from:body" hx-target="this" hx-swap="outerHTML">
-  <span class="text-xl block p-2 w-1/3 pt-2 text-orange-700"><i class='bx bx-category-alt' ></i> Categories</span>
-  <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider float-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="categories-list" class="bg-white divide-y divide-gray-200">
-      <tr clas="flex">
-        <td class='pl-6 py-2 w-2/3 text-sm font-medium text-gray-900'>
-          <input type="text" id="category_name" name="category_name" value="" placeholder="New category name"
-            class="mt-1 pl-1 w-full rounded-sm border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-        </td>
-        <td class="px-6 py-2 w-1/3 whitespace-nowrap text-right text-sm font-medium">
-          <button hx-post="/settings/categories" hx-target="#mitoast" hx-swap="innerHTML" hx-include="#category_name"
-            class="text-indigo-600 hover:text-indigo-900">Add</button>
-        </td>
-      </tr>
-      {{ range $id, $name := .Categories }}
-      {{ $colors := nameToColor $name }}
-      <tr>
-        {{ if ne $id "unknown" }}
-        <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-          <span contenteditable="true" id="categoryEdit{{$id}}" class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
-        </td>
-        {{else}}
-        <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-          <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
-        </td>
-        {{end}}
-        {{ if ne $id "unknown" }}
-        <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
-          <button hx-put="/settings/categories/{{ $id }}"  hx-vals='js:{category_name: document.getElementById("categoryEdit{{$id}}").innerHTML }' hx-target="#mitoast" hx-swap="innerHTML"
-            class="text-indigo-600 hover:text-indigo-900">Edit</button>
-          <button hx-delete="/settings/categories/{{$id}}" hx-target="#mitoast" hx-swap="innerHTML"
-            class="text-red-600 hover:text-red-900 ml-4">Delete</button>
-        </td>
-        {{ else }}
-        <td class="px-6 py-2 whitespace-nowrap text-right text-lg text-gray-500 font-medium">
-          <small><i class='bx bx-info-circle'></i> Restricted. Used for imported expenses. </small>
-        </td>
-      </tr>
-      {{ end }}
-      {{ end }}
-    </tbody>
-  </table>
+<div id="categories" class="mx-5 w-full rounded-lg" hx-get="/settings/categories"
+  hx-trigger="reloadCategoriesConfig from:body" hx-target="this" hx-swap="outerHTML">
+  <span class="text-xl block p-2 w-1/3 pt-2 text-orange-700"><i class='bx bx-category-alt'></i> Categories</span>
+  <div class="min-w-[750px] min-h-[200px] border border-gray-300 rounded-lg p-3 flex">
+    <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider float-right">Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="categories-list" class="bg-white divide-y divide-gray-200 w-full">
+        <tr clas="flex">
+          <td class='pl-6 py-2 w-2/3 text-sm font-medium text-gray-900'>
+            <input type="text" id="category_name" name="category_name" value="" placeholder="New category name"
+              class="mt-1 pl-1 w-full rounded-sm border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+          </td>
+          <td class="px-6 py-2 w-1/3 whitespace-nowrap text-right text-sm font-medium">
+            <button hx-post="/settings/categories" hx-target="#mitoast" hx-swap="innerHTML" hx-include="#category_name"
+              class="text-indigo-600 hover:text-indigo-900">Add</button>
+          </td>
+        </tr>
+        {{ range $id, $name := .Categories }}
+        {{ $colors := nameToColor $name }}
+        <tr>
+          {{ if ne $name "Unknown" }}
+          <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
+            <span contenteditable="true" id="categoryEdit{{$id}}"
+              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
+          </td>
+          {{else}}
+          <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
+            <span
+              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{$name}}</span>
+          </td>
+          {{end}}
+          {{ if ne $name "Unknown" }}
+          <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
+            <button hx-put="/settings/categories/{{ $id }}"
+              hx-vals='js:{category_name: document.getElementById("categoryEdit{{$id}}").innerHTML }'
+              hx-target="#mitoast" hx-swap="innerHTML" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+            <button hx-delete="/settings/categories/{{$id}}" hx-target="#mitoast" hx-swap="innerHTML"
+              class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+          </td>
+          {{ else }}
+          <td class="px-6 py-2 whitespace-nowrap text-right text-lg text-gray-500 font-medium">
+            <small><i class='bx bx-info-circle'></i> Restricted. Used for imported expenses. </small>
+          </td>
+        </tr>
+        {{ end }}
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
 </div>

@@ -13,6 +13,7 @@
           <th class="px-4 py-3 text-left">Shop</th>
           <th class="px-4 py-3 text-left">Product</th>
           <th class="px-4 py-3 text-left">Category</th>
+          <th class="px-4 py-3 text-left">Users</th>
           <th class="px-4 py-3 text-left">Amount</th>
           <th class="px-4 py-3 text-left">Action</th>
         </tr>
@@ -28,6 +29,11 @@
             {{ $colors := nameToColor .Category.Name }}
             <span
               class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Category.Name}}</span>
+          </td>
+          <td class="px-4 py-1">
+            {{ range .Users}}
+            {{.DisplayName}} | 
+            {{end}}
           </td>
           <td class="px-4 py-1">${{printf "%.2f" .Amount}}</td>
           <td class="px-4 py-1">
