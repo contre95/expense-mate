@@ -30,34 +30,42 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	// Expenses
 	fi.Get("/expenses", ui.LoadExpensesSection())
 	fi.Post("/expenses", ui.CreateExpense(t.ExpenseCreator))
-	fi.Get("/expenses/filter", ui.LoadExpenseFilter(q.CategoryQuerier))
-	fi.Get("/expenses/table", ui.LoadExpensesTable(q.ExpenseQuerier))
-	fi.Get("/expenses/add", ui.LoadExpensesAddRow(q.CategoryQuerier))
-	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier))
-	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
-	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
 	fi.Delete("/expenses/:id", ui.DeleteExpense(t.ExpenseDeleter))
+	fi.Get("/expenses/table", ui.LoadExpensesTable(q.ExpenseQuerier))
+	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
+	fi.Get("/expenses/add", ui.LoadAddExpensesRow(q.CategoryQuerier, m.UserManager))
+	fi.Get("/expenses/filter", ui.LoadExpenseFilter(q.CategoryQuerier, m.UserManager))
+	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
+	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	// Importers
+	fi.Get("/importers/n26", ui.LoadN26Importer(m.UserManager))
 	fi.Get("/importers", ui.LoadImporterSection())
-	fi.Get("/importers/n26", ui.LoadN26Importer())
-	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier))
-	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator))
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
+	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.ExpenseCataloger))
+	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
+	// Users
+	fi.Post("/settings/users", ui.CreateUser(m.UserManager))
+	fi.Get("/settings/users", ui.LoadUsersConfig(m.UserManager))
+	fi.Delete("/settings/users/:id", ui.DeleteUser(m.UserManager))
 	// Categores
-	fi.Get("/settings/categories", ui.LoadCategoriesConfig(q.CategoryQuerier))
-	fi.Put("/settings/categories/:id", ui.EditCategory(m.CategoryUpdater))
 	fi.Post("/settings/categories", ui.CreateCategory(m.CategoryCreator))
+	fi.Put("/settings/categories/:id", ui.EditCategory(m.CategoryUpdater))
+	fi.Get("/settings/categories", ui.LoadCategoriesConfig(q.CategoryQuerier))
 	fi.Delete("/settings/categories/:id", ui.DeleteCategory(m.CategoryDeleter))
+	// Rules
+	fi.Post("/settings/rules/", ui.CreateRule(m.RuleManager))
+	fi.Delete("/settings/rules/:id", ui.DeleteRule(m.RuleManager))
+	fi.Get("/settings/rules", ui.LoadRulesConfig(q.CategoryQuerier, m.RuleManager))
 	// Telegram
 	fi.Get("/settings/telegram", ui.LoadTelegramConfig())
 	fi.Get("/settings/telegram/status", ui.LoadTelegramStatus(*he))
-	fi.Post("/settings/telegram/command", ui.SendTelegramCommand(m.TelegramCommander))
 	fi.Post("/telegram/command", ui.SendTelegramCommandOutput(m.TelegramCommander))
+	fi.Post("/settings/telegram/command", ui.SendTelegramCommand(m.TelegramCommander))
 
-	fi.Get("/api/health/bot", api.BotPing(*he))
 	fi.Get("/api/health/app", api.Ping(*he))
+	fi.Get("/api/health/bot", api.BotPing(*he))
 	// Restricted endpoints below
 	fi.Use(jwtware.New(jwtware.Config{SigningKey: []byte(os.Getenv("JWT_SECRET_SEED"))}))
 

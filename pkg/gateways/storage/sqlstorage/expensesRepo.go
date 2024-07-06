@@ -8,38 +8,106 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const SQL_DATE_FORMAT = "2006-01-02 15:04:05"
 
-func (sqls *SQLStorage) Add(e expense.Expense) error {
-	q := "INSERT INTO expenses (id, amount, product, shop, expend_date, category_id) VALUES (?,?,?,?,?,?);"
-	stmt, err := sqls.db.Prepare(q)
+func (sqls *ExpensesStorage) Add(e expense.Expense) error {
+	// Start a transaction to ensure atomicity
+	tx, err := sqls.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback() // Rollback transaction on error
+	// Insert into expenses table
+	q := "INSERT INTO expenses (id, amount, product, shop, expend_date, category_id) VALUES (?,?,?,?,?,?);"
+	stmt, err := tx.Prepare(q)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 	_, err = stmt.Exec(e.ID, e.Amount, e.Product, e.Shop, e.Date, e.Category.ID)
-	stmt.Close()
+	if err != nil {
+		return err
+	}
+	// Insert into expense_users table for each user_id
+	if len(e.UserIDS) > 0 {
+		q := "INSERT INTO expense_users (expense_id, user_id) VALUES (?,?);"
+		stmt, err := tx.Prepare(q)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+		for _, userID := range e.UserIDS {
+			_, err := stmt.Exec(e.ID, userID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// Commit the transaction
+	err = tx.Commit()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (sqls *SQLStorage) Update(e expense.Expense) error {
-	q := "UPDATE expenses SET amount=?, product=?, shop=?, expend_date=?, category_id=? WHERE id=?"
-	stmt, err := sqls.db.Prepare(q)
+func (sqls *ExpensesStorage) Update(e expense.Expense) error {
+	// Start a transaction to ensure atomicity
+	tx, err := sqls.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback() // Rollback transaction on error
+	// Update expenses table
+	q := "UPDATE expenses SET amount=?, product=?, shop=?, expend_date=?, category_id=? WHERE id=?"
+	stmt, err := tx.Prepare(q)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 	_, err = stmt.Exec(e.Amount, e.Product, e.Shop, e.Date, e.Category.ID, e.ID)
 	if err != nil {
 		return err
 	}
+	// Delete existing records in expense_users table for this expense
+	q = "DELETE FROM expense_users WHERE expense_id=?"
+	stmt, err = tx.Prepare(q)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(e.ID)
+	if err != nil {
+		return err
+	}
+	// Insert into expense_users table for each user_id
+	if len(e.UserIDS) > 0 {
+		q := "INSERT INTO expense_users (expense_id, user_id) VALUES (?,?);"
+		stmt, err := tx.Prepare(q)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+		for _, userID := range e.UserIDS {
+			_, err := stmt.Exec(e.ID, userID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (sqls *SQLStorage) Delete(id expense.ID) error {
+func (sqls *ExpensesStorage) Delete(id expense.ExpenseID) error {
 	stmt, err := sqls.db.Prepare("DELETE FROM expenses WHERE id=?")
 	if err != nil {
 		return err
@@ -52,9 +120,8 @@ func (sqls *SQLStorage) Delete(id expense.ID) error {
 
 }
 
-// Get retrieves an expense from the db. It returns a valid expense.Expense
-func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
-	q := "SELECT id, amount, product, shop, expend_date, category_id FROM expenses where id=?"
+func (sqls *ExpensesStorage) Get(id expense.ExpenseID) (*expense.Expense, error) {
+	q := "SELECT id, amount, product, shop, expend_date, category_id FROM expenses WHERE id=?"
 	var catID expense.CategoryID
 	var e expense.Expense
 	err := sqls.db.QueryRow(q, id).Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &catID)
@@ -69,10 +136,31 @@ func (sqls *SQLStorage) Get(id expense.ID) (*expense.Expense, error) {
 		return nil, err
 	}
 	e.Category = *category
+	// Retrieve associated user IDs
+	userQuery := "SELECT user_id FROM expense_users WHERE expense_id=?"
+	rows, err := sqls.db.Query(userQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var userIDs []uuid.UUID
+	for rows.Next() {
+		var userID uuid.UUID // What is this magic and why am I scanning directly into a uuid.UUID ?
+		// Maybe adding a vlidation here should be the best thing to do. Like.. what if someone gets to store "not-uuid" into the DB ? :O
+		if err := rows.Scan(&userID); err != nil { // Read the Scan docu. Try to change uuid.UUID to uint64 and see what happens.
+			return nil, err
+		}
+		userIDs = append(userIDs, userID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	e.UserIDS = userIDs
+	fmt.Println(e)
 	return &e, nil
 }
 
-func (sqls *SQLStorage) UpdateCategory(c expense.Category) error {
+func (sqls *ExpensesStorage) UpdateCategory(c expense.Category) error {
 	stmt, err := sqls.db.Prepare("UPDATE categories SET name=? WHERE id=?")
 	if err != nil {
 		return err
@@ -84,11 +172,10 @@ func (sqls *SQLStorage) UpdateCategory(c expense.Category) error {
 	return nil
 }
 
-func (sqls *SQLStorage) AddCategory(c expense.Category) error {
+func (sqls *ExpensesStorage) AddCategory(c expense.Category) error {
 	stmt, err := sqls.db.Prepare("INSERT INTO categories (id, name) VALUES (?,?)")
 	if err != nil {
 		return err
-
 	}
 	_, err = stmt.Exec(c.ID, c.Name)
 	if err != nil {
@@ -97,7 +184,7 @@ func (sqls *SQLStorage) AddCategory(c expense.Category) error {
 	return nil
 }
 
-func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, error) {
+func (sqls *ExpensesStorage) GetCategory(id expense.CategoryID) (*expense.Category, error) {
 	q := "SELECT id, name FROM categories where id=?"
 	var category expense.Category
 	err := sqls.db.QueryRow(q, id).Scan(&category.ID, &category.Name)
@@ -111,9 +198,14 @@ func (sqls *SQLStorage) GetCategory(id expense.CategoryID) (*expense.Category, e
 }
 
 // CountWithFilter
-func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmount uint, shop, product string, from, to time.Time) (uint, error) {
+func (sqls *ExpensesStorage) CountWithFilter(user_ids, categories_ids []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time) (uint, error) {
 	var conditions []string
-	query := "SELECT COUNT(*) FROM expenses e JOIN categories c ON e.category_id = c.id"
+	query := `
+		SELECT COUNT(e.id)
+		FROM expenses e
+		JOIN categories c ON e.category_id = c.id
+		LEFT JOIN expense_users eu ON e.id = eu.expense_id
+	`
 	if !from.IsZero() {
 		conditions = append(conditions, fmt.Sprintf("expend_date >= '%s'", from.Format("2006-01-02")))
 	}
@@ -132,20 +224,32 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 	if product != "" {
 		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
 	}
-	if !(len(categories) == 1 && len(categories[0]) == 0) { // This mean they are sending []string{""}.
-		categoryConditions := make([]string, len(categories))
-		for i, cat := range categories {
-			// categoryConditions[i] = fmt.Sprintf("c.id LIKE '%%%s%%'", cat)
+	if len(categories_ids) > 0 && !(len(categories_ids) == 1 && len(categories_ids[0]) == 0) { // This means they are sending []string{""}.
+		categoryConditions := make([]string, len(categories_ids))
+		for i, cat := range categories_ids {
 			categoryConditions[i] = fmt.Sprintf("c.id ='%s'", cat)
 		}
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
+	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(user_ids[0]) == 0) { // This means they are sending []string{""}.
+		userConditions := make([]string, len(user_ids))
+		for i, uid := range user_ids {
+			if uid == expense.NoUserID {
+				userConditions[i] = fmt.Sprintf("eu.user_id IS NULL")
+			} else {
+				userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			}
+		}
+		conditions = append(conditions, "("+strings.Join(userConditions, " OR ")+")")
+	}
 	if len(conditions) > 0 {
-		whereClause := strings.Join(conditions, " AND ")
+		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
+	fmt.Println(query)
+	row := sqls.db.QueryRow(query)
 	var count uint
-	err := sqls.db.QueryRow(query).Scan(&count)
+	err := row.Scan(&count)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, expense.ErrNotFound
 	} else if err != nil {
@@ -154,10 +258,14 @@ func (sqls *SQLStorage) CountWithFilter(categories []string, minAmount, maxAmoun
 	return count, nil
 }
 
-// Filter retrieves expenses from the db based on the given filters. It skips the filter parameters with zero value
-func (sqls *SQLStorage) Filter(categories []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]expense.Expense, error) {
+func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount, maxAmount uint, shop, product string, from time.Time, to time.Time, limit, offset uint) ([]expense.Expense, error) {
 	var conditions []string
-	query := "SELECT e.id, e.amount, e.product, e.shop, e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id"
+	query := `
+		SELECT e.id, e.amount, e.product, e.shop, e.expend_date, c.id, c.name, eu.user_id
+		FROM expenses e
+		JOIN categories c ON e.category_id = c.id
+		LEFT JOIN expense_users eu ON e.id = eu.expense_id
+	`
 	if !from.IsZero() {
 		conditions = append(conditions, fmt.Sprintf("expend_date >= '%s'", from.Format("2006-01-02")))
 	}
@@ -176,47 +284,82 @@ func (sqls *SQLStorage) Filter(categories []string, minAmount, maxAmount uint, s
 	if product != "" {
 		conditions = append(conditions, fmt.Sprintf("product LIKE '%%%s%%'", product))
 	}
-	if !(len(categories) == 1 && len(categories[0]) == 0) { // This mean they are sending []string{""}.
-		categoryConditions := make([]string, len(categories))
-		for i, cat := range categories {
+	if len(categories_ids) > 0 && !(len(categories_ids) == 1 && len(categories_ids[0]) == 0) { // This means they are sending []string{""}.
+		categoryConditions := make([]string, len(categories_ids))
+		for i, cat := range categories_ids {
 			categoryConditions[i] = fmt.Sprintf("c.id ='%s'", cat)
 		}
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
+	}
+	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(user_ids[0]) == 0) { // This means they are sending []string{""}.
+		userConditions := make([]string, len(user_ids))
+		for i, uid := range user_ids {
+			if uid == expense.NoUserID {
+				userConditions[i] = fmt.Sprintf("eu.user_id IS NULL")
+			} else {
+				userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			}
+		}
+		conditions = append(conditions, "("+strings.Join(userConditions, " OR ")+")")
 	}
 	if len(conditions) > 0 {
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
-	query += fmt.Sprintf(" ORDER BY e.expend_date")
-	rows, err := sqls.db.Query(query)
+	query += " ORDER BY e.expend_date"
 	if limit > 0 {
-		query += fmt.Sprintf(" DESC LIMIT ? OFFSET ?")
-		rows, err = sqls.db.Query(query, limit, offset)
+		query += fmt.Sprintf(" DESC LIMIT %d OFFSET %d", limit, offset)
 	}
+	fmt.Println(query)
+	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var expenses []expense.Expense
+	expenseMap := make(map[string]*expense.Expense)
 	for rows.Next() {
 		var e expense.Expense
 		var cat expense.Category
-		err := rows.Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &cat.ID, &cat.Name)
+		var userID sql.NullString
+		err := rows.Scan(&e.ID, &e.Amount, &e.Product, &e.Shop, &e.Date, &cat.ID, &cat.Name, &userID)
 		if err != nil {
 			return nil, err
 		}
 		e.Category = cat
+		if existingExpense, exists := expenseMap[e.ID.String()]; exists {
+			if userID.Valid {
+				uid, err := uuid.Parse(userID.String)
+				if err != nil {
+					return nil, err
+				}
+				existingExpense.UserIDS = append(existingExpense.UserIDS, uid)
+			}
+		} else {
+			if userID.Valid {
+				uid, err := uuid.Parse(userID.String)
+				if err != nil {
+					return nil, err
+				}
+				e.UserIDS = []expense.UserID{uid}
+			} else {
+				e.UserIDS = []expense.UserID{}
+			}
+			expenseMap[e.ID.String()] = &e
+		}
+	}
+	var expenses []expense.Expense
+	for _, e := range expenseMap {
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}
-		expenses = append(expenses, e)
+		expenses = append(expenses, *e)
 	}
 	return expenses, nil
 }
 
-func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
+func (sqls *ExpensesStorage) All(limit, offset uint) ([]expense.Expense, error) {
 	query := `
 		SELECT e.id, e.amount, e.product, e.shop,  e.expend_date, c.id, c.name FROM expenses e JOIN categories c ON e.category_id = c.id
 		ORDER BY e.expend_date DESC
@@ -246,7 +389,7 @@ func (sqls *SQLStorage) All(limit, offset uint) ([]expense.Expense, error) {
 	return expenses, nil
 }
 
-func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {
+func (sqls *ExpensesStorage) CategoryExists(id expense.CategoryID) (bool, error) {
 	q := "SELECT id FROM categories where id=?"
 	var cat_id string
 	err := sqls.db.QueryRow(q, id).Scan(&cat_id)
@@ -258,7 +401,7 @@ func (sqls *SQLStorage) CategoryExists(id expense.CategoryID) (bool, error) {
 	return true, err
 }
 
-func (sqls *SQLStorage) GetCategories() ([]expense.Category, error) {
+func (sqls *ExpensesStorage) GetCategories() ([]expense.Category, error) {
 	rows, err := sqls.db.Query("select * from categories")
 	if err != nil {
 		return nil, err
@@ -280,7 +423,7 @@ func (sqls *SQLStorage) GetCategories() ([]expense.Category, error) {
 	return categories, nil
 }
 
-func (sqls *SQLStorage) DeleteCategory(id expense.CategoryID) error {
+func (sqls *ExpensesStorage) DeleteCategory(id expense.CategoryID) error {
 	_, err := sqls.db.Exec(fmt.Sprintf("delete from categories where id='%s'", id))
 	if err != nil {
 		return err

@@ -2,8 +2,8 @@
 <div id="table" hx-get="/expenses/table" hx-trigger="reloadExpensesTable from:body" hx-target="this"
   hx-swap="outerHTML">
   <div class="overflow-x-auto">
-    <button class="float-right m-2 mb-3 font-medium text-blue-600 hover:text-blue-800"
-      hx-get="/expenses/add" hx-target="#addRow" hx-swap="outerHTML">
+    <button class="float-right m-2 mb-3 font-medium text-blue-600 hover:text-blue-800" hx-get="/expenses/add"
+      hx-target="#addRow" hx-swap="outerHTML">
       New Expense
     </button>
     <table class="min-w-full bg-white border shadow-md rounded-xl border-gray-200">
@@ -13,6 +13,7 @@
           <th class="px-4 py-3 text-left">Shop</th>
           <th class="px-4 py-3 text-left">Product</th>
           <th class="px-4 py-3 text-left">Category</th>
+          <th class="px-4 py-3 text-left">Users</th>
           <th class="px-4 py-3 text-left">Amount</th>
           <th class="px-4 py-3 text-left">Action</th>
         </tr>
@@ -25,18 +26,24 @@
           <td class="px-4 py-1">{{.Shop}}</td>
           <td class="px-4 py-1">{{.Product }}</td>
           <td class="px-4 py-1">
-            {{ $colors := nameToColor .Category }}
+            {{ $colors := nameToColor .Category.Name }}
             <span
-              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Category}}</span>
+              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Category.Name}}</span>
+          </td>
+          <td class="px-4 py-1">
+            {{range .Users}}
+            {{ $userColor := nameToColor .TelegramUsername }}
+            <span class='{{index $userColor "txt" }}'>{{.DisplayName}}</span>
+            {{end}}
           </td>
           <td class="px-4 py-1">${{printf "%.2f" .Amount}}</td>
           <td class="px-4 py-1">
-            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-push-url="true"
-              hx-swap="outerHTML" class="font-medium fade-me-out text-blue-600 hover:text-blue-800">
+            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-swap="outerHTML"
+              class="font-medium fade-me-out text-blue-600 hover:text-blue-800">
               Edit
             </button>
-            <button id="deleteButton{{.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800" hx-swap="innerHTML"
-             hx-delete="/expenses/{{.ID}}" hx-target="#mitoast" _="on htmx:confirm(issueRequest)
+            <button id="deleteButton{{.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800"
+              hx-swap="innerHTML" hx-delete="/expenses/{{.ID}}" hx-target="#mitoast" _="on htmx:confirm(issueRequest)
              halt the event
              call Swal.fire({title: 'Confirm', text:'Delete expense. Are you sure ?'})
              if result.isConfirmed toggle .animate__fadeOut on #expenseRow{{.ID}} then wait 1s then issueRequest()">

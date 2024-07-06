@@ -4,10 +4,18 @@ import (
 	"database/sql"
 )
 
-type SQLStorage struct {
+type ExpensesStorage struct {
 	db *sql.DB
 }
 
-func NewStorage(db *sql.DB) *SQLStorage {
-	return &SQLStorage{db}
+func NewExpensesStorage(db *sql.DB) *ExpensesStorage {
+	return &ExpensesStorage{db}
+}
+
+type RulesStorage struct {
+	db *sql.DB
+}
+
+func NewRulesStorage(db *sql.DB) *RulesStorage {
+	return &RulesStorage{db}
 }

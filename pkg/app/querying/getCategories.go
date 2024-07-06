@@ -31,7 +31,7 @@ func (s *CategoryQuerier) Query() (*CategoryQuerierResp, error) {
 	resp := CategoryQuerierResp{}
 	resp.Categories = make(map[string]string)
 	for _, c := range categories {
-		resp.Categories[string(c.ID)] = string(c.Name)
+		resp.Categories[c.ID.String()] = string(c.Name)
 	}
 	return &resp, nil
 }

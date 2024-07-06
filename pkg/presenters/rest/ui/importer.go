@@ -2,22 +2,35 @@ package ui
 
 import (
 	"encoding/csv"
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/domain/expense"
 	"fmt"
 	"io"
 	"log/slog"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoadN26Importer() func(*fiber.Ctx) error {
+func LoadN26Importer(mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		return c.Render("sections/importers/n26", fiber.Map{})
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+		return c.Render("sections/importers/n26", fiber.Map{
+			"Users": respUsers.Users,
+		})
 	}
 }
 
@@ -27,10 +40,14 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 	}
 }
 
-func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
+func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
+		useRules := c.FormValue("useRules") == "checked"
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
+		var matched, skipped, total uint = 0, 0, 0
+		failedLines := []uint{}
 		file, err := c.FormFile("n26csv")
 		if err != nil || file == nil {
 			slog.Error("error", err)
@@ -51,8 +68,6 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 		csvReader := csv.NewReader(uploadedFile)
 		// Iterate over the CSV records
 		csvReader.Read() // Skip column
-		failedImports := []uint{}
-		var lineNumber uint
 		for {
 			line, err := csvReader.Read()
 			if err == io.EOF { // Finished processing CSV
@@ -61,13 +76,14 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			if err != nil {
 				return c.Render("toastErr", fiber.Map{"Title": "Error", "Msg": fmt.Sprintln("Error reading CSV req:", err)})
 			}
-			lineNumber++
+			total++
 			// Exclude outgoing transactions (Direct Debit not included)
 			// Example1: "2024-03-02","Esteban","ES6315636852323267845001","MoneyBeam","MoneyBeam","-25.2","","",""
 			// Example2: "2024-01-29","PEDRO GONZALES","ES0355491146272210003281","Income","Sin concepto","7.6","","",""
 			if !includeTransfers && line[2] != "" && line[3] == "Outgoing Transfer" { // Extenal transfers conaint IBAN of the recipients in the 3rd col of csv
 				// Example:
 				slog.Debug("Excluiding income", "Income", line[3])
+				skipped++
 				continue
 			}
 			// Exclude transfers between spaces
@@ -76,23 +92,25 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			internalTransferPattern := regexp.MustCompile(`^From \S+ to \S+$`)
 			if !includeSpaces && internalTransferPattern.MatchString(line[1]) {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
+				skipped++
 				continue
 			}
 			date, err := time.Parse("2006-01-02", line[0])
 			if err != nil {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
-				failedImports = append(failedImports, lineNumber)
+				failedLines = append(failedLines, total)
 				continue
 			}
 			// Exclude all incomes (i.e amount > 0, this includes internal transfers between spaces)
 			amount, err := strconv.ParseFloat(line[5], 64)
 			if err != nil {
 				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
-				failedImports = append(failedImports, lineNumber)
+				failedLines = append(failedLines, total)
 				continue
 			}
 			if amount > 0 {
 				slog.Debug("Excluiding income", "Income", line[1])
+				skipped++
 				continue
 			}
 			req := tracking.CreateExpenseReq{
@@ -100,23 +118,35 @@ func ImportN26CSV(t tracking.ExpenseCreator) func(*fiber.Ctx) error {
 				Amount:     amount * -1,
 				Shop:       line[1],
 				Date:       date,
-				CategoryID: "unknown",
+				UserIDS:    selectedUsers,
+				CategoryID: expense.UnkownCategoryID,
 			}
-			_, err = t.Create(req)
+			if useRules {
+				resp := eca.Catalog(tracking.CatalogExpenseReq{
+					Product: req.Product,
+					Shop:    req.Shop,
+				})
+				if resp.Matched {
+					matched++
+					fmt.Println(resp.CategoryID)
+					req.CategoryID = resp.CategoryID
+				}
+			}
+			_, err = ec.Create(req)
 			if err != nil {
-				failedImports = append(failedImports, lineNumber)
+				failedLines = append(failedLines, total)
 				slog.Error("Can't create expense:", err)
 			}
 		}
 		c.Append("HX-Trigger", "reloadImportTable")
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
-			"Msg":   fmt.Sprintf("%d Expenses imported successfully. %d failed", int(lineNumber)-len(failedImports), len(failedImports)),
+			"Msg":   fmt.Sprintf("Success: %d\nFailed: %d\nSkipped:%d\nAutomatically categorized:%d\nFailed lines:%v", total, len(failedLines), skipped, matched, failedLines),
 		})
 	}
 }
 
-func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
@@ -130,7 +160,7 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
-				ByCategoryID: []string{"unknown"},
+				ByCategoryID: []string{expense.UnkownCategoryID},
 			},
 		}
 		re, err := eq.Query(req)
@@ -141,8 +171,18 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		if err != nil {
 			panic("Implement error")
 		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+
 		return c.Render("sections/importers/table", fiber.Map{
 			"Expenses":      re.Expenses,
+			"NoUserID":      querying.NoUserID,
+			"Users":         respUsers.Users,
 			"Categories":    rc.Categories,
 			"CurrentPage":   req.Page,    // Add this line
 			"NextPage":      re.Page + 1, // Add this line
