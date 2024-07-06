@@ -8,7 +8,12 @@
     <span
       class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Expense.Category.Name}}</span>
   </td>
-  <td class="py-1 px-4">{{.Expense.Users }}</td>
+  <td class="py-1 px-4">
+    {{range .Expense.Users}}
+    {{ $userColor := nameToColor .TelegramUsername }}
+    <span class='{{index $userColor "txt" }}'>{{.DisplayName}}</span>
+    {{end}}
+  </td>
   <td class="py-1 px-4">${{ printf "%.2f" .Expense.Amount }}</td>
   <td class="py-1 px-4">
     <button hx-get="/expenses/{{ .Expense.ID }}/edit" hx-target="#expenseRow{{.Expense.ID}}" hx-push-url="true"

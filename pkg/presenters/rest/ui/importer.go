@@ -2,6 +2,7 @@ package ui
 
 import (
 	"encoding/csv"
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"expenses-app/pkg/domain/expense"
@@ -10,15 +11,26 @@ import (
 	"log/slog"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoadN26Importer() func(*fiber.Ctx) error {
+func LoadN26Importer(mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		return c.Render("sections/importers/n26", fiber.Map{})
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+		return c.Render("sections/importers/n26", fiber.Map{
+			"Users": respUsers.Users,
+		})
 	}
 }
 
@@ -33,6 +45,7 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
 		useRules := c.FormValue("useRules") == "checked"
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		var matched, skipped, total uint = 0, 0, 0
 		failedLines := []uint{}
 		file, err := c.FormFile("n26csv")
@@ -101,13 +114,13 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 				continue
 			}
 			req := tracking.CreateExpenseReq{
-				Product: line[3],
-				Amount:  amount * -1,
-				Shop:    line[1],
-				Date:    date,
+				Product:    line[3],
+				Amount:     amount * -1,
+				Shop:       line[1],
+				Date:       date,
+				UserIDS:    selectedUsers,
+				CategoryID: expense.UnkownCategoryID,
 			}
-
-			req.CategoryID = expense.UnkownCategoryID
 			if useRules {
 				resp := eca.Catalog(tracking.CatalogExpenseReq{
 					Product: req.Product,
@@ -124,7 +137,6 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 				failedLines = append(failedLines, total)
 				slog.Error("Can't create expense:", err)
 			}
-
 		}
 		c.Append("HX-Trigger", "reloadImportTable")
 		return c.Render("alerts/toastOk", fiber.Map{
@@ -134,7 +146,7 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 	}
 }
 
-func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
 		if err != nil {
@@ -159,8 +171,18 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier)
 		if err != nil {
 			panic("Implement error")
 		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+
 		return c.Render("sections/importers/table", fiber.Map{
 			"Expenses":      re.Expenses,
+			"NoUserID":      querying.NoUserID,
+			"Users":         respUsers.Users,
 			"Categories":    rc.Categories,
 			"CurrentPage":   req.Page,    // Add this line
 			"NextPage":      re.Page + 1, // Add this line

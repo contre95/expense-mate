@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -84,6 +86,7 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			CategoryID string  `form:"category"`
 			Amount     float64 `form:"amount"`
 		}{}
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		if err := c.BodyParser(&payload); err != nil {
 			panic("Form parsing error")
 		}
@@ -100,6 +103,7 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			Amount:     payload.Amount,
 			Shop:       payload.Shop,
 			Date:       parsedDate,
+			UserIDS:    selectedUsers,
 			CategoryID: payload.CategoryID,
 		}
 		_, err = eu.Create(req)
@@ -113,6 +117,41 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
 			"Msg":   "Expense created.",
+		})
+	}
+}
+
+func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		respExpense, err := eq.GetByID(c.Params("id"))
+		if err != nil {
+			panic("Implement error")
+		}
+		// c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
+		return c.Render("sections/expenses/row", fiber.Map{
+			"Expense": respExpense.Expenses[c.Params("id")],
+		})
+	}
+}
+
+func LoadExpensesAddRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		respCategories, err := cq.Query()
+		if err != nil {
+			panic("Implement error")
+		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+		fmt.Println(respUsers)
+		return c.Render("sections/expenses/rowAdd", fiber.Map{
+			"Categories": respCategories.Categories,
+			"NoUserID":   querying.NoUserID,
+			"Users":      respUsers.Users,
 		})
 	}
 }
@@ -136,8 +175,8 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 				"Title": "Form",
 				"Msg":   "Error parsing form",
 			})
-
 		}
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		inputLayout := "2006-01-02"
 		parsedDate, err := time.Parse(inputLayout, payload.Date)
 		if err != nil {
@@ -148,6 +187,7 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		}
 		req := tracking.UpdateExpenseReq{
 			Amount:     payload.Amount,
+			UserIDS:    selectedUsers,
 			CategoryID: payload.CategoryID,
 			Date:       parsedDate,
 			ExpenseID:  respExpense.Expenses[c.Params("id")].ID,
@@ -169,66 +209,58 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 	}
 }
 
-func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		respExpense, err := eq.GetByID(c.Params("id"))
-		if err != nil {
-			panic("Implement error")
-		}
-		c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
-		return c.Render("sections/expenses/row", fiber.Map{
-			"Expense": respExpense.Expenses[c.Params("id")],
-		})
-	}
-}
-
-func LoadExpensesAddRow(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
+		// if c.Get("HX-Request") != "true" {
+		// 	fmt.Println("No HX-Request refreshing with revealed")
+		// 	return c.Render("main", fiber.Map{
+		// 		"ExpensesTrigger": "revealed",
+		// 	})
+		// }
 		respCategories, err := cq.Query()
 		if err != nil {
 			panic("Implement error")
 		}
-		return c.Render("sections/expenses/rowAdd", fiber.Map{
-			"Categories": respCategories.Categories,
-		})
-	}
-}
-
-func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		if c.Get("HX-Request") != "true" {
-			fmt.Println("No HX-Request refreshing with revealed")
-			return c.Render("main", fiber.Map{
-				"ExpensesTrigger": "revealed",
+		respExpense, err := eq.GetByID(c.Params("id"))
+		if err != nil {
+			panic("Implement error")
+		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
 			})
-		}
-		respCategories, err := cq.Query()
-		if err != nil {
-			panic("Implement error")
-		}
-		respExpense, err := eq.GetByID(c.Params("id"))
-		if err != nil {
-			panic("Implement error")
 		}
 		return c.Render("sections/expenses/rowEdit", fiber.Map{
 			"Expense":    respExpense.Expenses[c.Params("id")],
 			"Categories": respCategories.Categories,
+			"NoUserID":   querying.NoUserID,
+			"Users":      respUsers.Users,
 		})
 	}
 
 }
-func LoadExpenseFilter(cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+func LoadExpenseFilter(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()
 		if err != nil {
-			fmt.Println(err)
 			return c.Render("alerts/toastErr", fiber.Map{
 				"Title": "Expense filter",
 				"Msg":   "Could not load the expense filter.",
 			})
 		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
 		return c.Render("sections/expenses/filter", fiber.Map{
 			"Categories": respCategories.Categories,
+			"NoUserID":   querying.NoUserID,
+			"Users":      respUsers.Users,
 		})
 	}
 }
@@ -260,12 +292,14 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		categories := strings.Split(c.Query("categories"), ",")
+		users := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
+		categories := slices.DeleteFunc(strings.Split(c.Query("categories"), ","), func(s string) bool { return s == "" })
 		req := querying.ExpenseQuerierReq{
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
 				ByCategoryID: categories,
+				ByUsers:      users,
 				ByShop:       c.Query("shop"),
 				ByProduct:    c.Query("product"),
 				ByAmount:     [2]uint{uint(min_amount), uint(max_amount)},

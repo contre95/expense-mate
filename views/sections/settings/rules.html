@@ -31,13 +31,13 @@
           </td>
         </tr>
         {{ range $rid, $rule := .Rules }}
-        {{ $colors := nameToColor $rid}}
+        {{ $colors := nameToColor $rule.Category.Name}}
         <tr>
           <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
             <span class='text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $rule.Pattern }}</span>
           </td>
           <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-            <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $rule.CategoryID }}</span>
+            <span class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $rule.Category.Name }}</span>
           </td>
           <td class="px-6 py-2 whitespace-nowrap text-sm font-medium float-right">
             <button hx-delete="/settings/rules/{{$rid}}" hx-target="#mitoast" hx-swap="innerHTML"

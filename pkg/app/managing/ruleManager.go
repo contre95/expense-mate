@@ -17,8 +17,11 @@ type DeleteRuleReq struct {
 }
 
 type RulesBasic struct {
-	Pattern    string
-	CategoryID string
+	Pattern  string
+	Category struct {
+		ID   string
+		Name string
+	}
 }
 
 type ListRulesResp struct {
@@ -26,12 +29,13 @@ type ListRulesResp struct {
 }
 
 type RuleManager struct {
-	logger app.Logger
-	rules  expense.Rules
+	logger   app.Logger
+	rules    expense.Rules
+	expenses expense.Expenses
 }
 
-func NewRuleManager(l app.Logger, r expense.Rules) *RuleManager {
-	return &RuleManager{l, r}
+func NewRuleManager(l app.Logger, r expense.Rules, e expense.Expenses) *RuleManager {
+	return &RuleManager{l, r, e}
 }
 
 func (s *RuleManager) Delete(req DeleteRuleReq) error {
@@ -53,9 +57,17 @@ func (s *RuleManager) List() (*ListRulesResp, error) {
 	s.logger.Info("Rules listed successfully")
 	rulesMap := map[string]RulesBasic{}
 	for _, r := range rules {
+		category, err := s.expenses.GetCategory(r.CategoryID)
+		if err != nil {
+			s.logger.Err("Failed to retrievecategory:", err)
+			return nil, err
+		}
 		rulesMap[string(r.ID)] = RulesBasic{
-			Pattern:    r.Pattern,
-			CategoryID: r.CategoryID.String(),
+			Pattern: r.Pattern,
+			Category: struct {
+				ID   string
+				Name string
+			}{category.ID.String(), category.Name},
 		}
 	}
 	return &ListRulesResp{Rules: rulesMap}, nil

@@ -29,11 +29,11 @@ type ExpenseID = uuid.UUID
 
 // Expense is the aggregate root for other entities such as Category
 type Expense struct {
-	ID      ExpenseID `validate:"required"`
-	Amount  float64   `validate:"required"`
-	Product string    `validate:"required,min=3"`
-	Shop    string    `validate:"min=2,max=64"`
-	Date    time.Time `validate:"required"`
+	ID       ExpenseID `validate:"required"`
+	Amount   float64   `validate:"required"`
+	Product  string    `validate:"required,min=3"`
+	Shop     string    `validate:"min=2,max=64"`
+	Date     time.Time `validate:"required"`
 	UserIDS  []UserID
 	Category Category
 }

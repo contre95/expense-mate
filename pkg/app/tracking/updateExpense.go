@@ -17,6 +17,7 @@ type UpdateExpenseResp struct {
 
 type UpdateExpenseReq struct {
 	Amount     float64
+	UserIDS    []string
 	CategoryID string
 	Date       time.Time
 	ExpenseID  string
@@ -38,23 +39,35 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 	// Get the oldExpense from the db
 	pidE, err := uuid.Parse(req.ExpenseID)
 	if err != nil {
+		s.logger.Err("Failed parse expense ID: %s", err.Error())
 		return nil, expense.ErrInvalidID
 	}
 	oldExpense, getErr := s.expenses.Get(pidE)
 	switch {
 	case errors.Is(getErr, expense.ErrNotFound):
-		s.logger.Debug("Expense %s not found in storage: %v", req.ExpenseID, getErr)
+		s.logger.Err("Expense %s not found in storage: %v", req.ExpenseID, getErr)
+		return nil, getErr
 	case getErr != nil:
-		s.logger.Debug("Failed to update expense %s: %v", req.ExpenseID, getErr)
+		s.logger.Err("Failed to update expense %s: %v", req.ExpenseID, getErr)
 		return nil, getErr
 	}
-	s.logger.Debug("Old expense %s", oldExpense)
+	s.logger.Debug("Old expense to update: %s", oldExpense)
 	oldExpense.Amount = req.Amount
 	oldExpense.Shop = req.Shop
 	oldExpense.Product = req.Product
 	oldExpense.Date = req.Date
+	oldExpense.UserIDS = []uuid.UUID{}
+	for _, sid := range req.UserIDS {
+		pid, err := uuid.Parse(sid)
+		if err != nil {
+			s.logger.Err("Failed to parse UUID %s", err.Error())
+			return nil, errors.New("Failed to parse UUID %s" + sid)
+		}
+		oldExpense.UserIDS = append(oldExpense.UserIDS, pid)
+	}
 	pidC, err := uuid.Parse(req.CategoryID)
 	if err != nil {
+		s.logger.Err("Failed to parse UUID %s", err.Error())
 		return nil, expense.ErrInvalidID
 	}
 	newCategory, err := s.expenses.GetCategory(pidC)
@@ -63,7 +76,7 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 		s.logger.Err("The category you are trying to reach doesn't exists", req, err)
 		return nil, err
 	case err != nil:
-		s.logger.Err("Could not get category.", req, err)
+		s.logger.Err("Failed to retrieve category from storage.", req, err)
 		return nil, err
 	}
 	oldExpense.Category = *newCategory
