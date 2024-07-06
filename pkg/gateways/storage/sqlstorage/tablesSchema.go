@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS rules (
   KEY idx_category_id (category_id),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS expenses (
+// CREATE TABLE IF NOT EXISTS expenses (
   id VARCHAR(255) NOT NULL,
   amount FLOAT DEFAULT 0.0,
   product VARCHAR(255),
