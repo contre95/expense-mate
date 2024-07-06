@@ -120,10 +120,10 @@
 <script>
   // Users
   var filteredUsers = [];
-  filteredUsers.push('{{.NoUserID}}')
   // {{range $id, $value:= .Users}} 
   filteredUsers.push('{{$id}}')
   // {{end}}
+  filteredUsers.push('{{.NoUserID}}')
   // Initialize the Multi Select dropdown from multiselect.js
   new MultiSelect('#userSelect', {
     data: [
@@ -136,7 +136,7 @@
       },
       // {{end}}
       {
-        value: '{{.NoUderID}}',
+        value: '{{.NoUserID}}',
         text: 'No User',
         selected: true
       },
@@ -158,6 +158,7 @@
     },
     onUnselect: function (value, text, element) {
       // Remove unselected value from the array
+      console.log(value)
       filteredUsers = filteredUsers.filter(item => item !== value);
     }
   });
