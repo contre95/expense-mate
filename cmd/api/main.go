@@ -105,7 +105,7 @@ func main() {
 	createCategory := managing.NewCategoryCreator(managerLogger, expensesStorage)
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage, ruleStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
-	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage)
+	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage, expensesStorage)
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
 	// Tracking
@@ -128,6 +128,7 @@ func main() {
 	// API
 	engine := html.New("./views", ".html")
 	engine.AddFunc("nameToColor", ui.NameToColor)
+	engine.AddFunc("userInMap", ui.UserInMap)
 	engine.AddFunc("unescape", ui.Unescape)
 	engine.Debug(true)
 

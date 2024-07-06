@@ -8,6 +8,15 @@ import (
 func Unescape(s string) template.HTML {
 	return template.HTML(s)
 }
+
+func UserInMap(expenseUsers map[string]struct {
+	DisplayName      string
+	TelegramUsername string
+}, userID string) bool {
+	_, exists := expenseUsers[userID]
+	return exists
+}
+
 func NameToColor(s string) map[string]string {
 	if s == "Unknown" {
 		return map[string]string{

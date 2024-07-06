@@ -8,15 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+const NoUserID = "00000000-0000-0000-0000-000000000000"
+
 type ExpensesBasics struct {
 	Amount   float64
 	Category struct {
 		Name string
 		ID   string
 	}
-	Users []struct {
-		ID          string
-		DisplayName string
+	Users map[string]struct {
+		DisplayName      string
+		TelegramUsername string
 	}
 	Date    time.Time
 	ID      string
@@ -74,9 +76,9 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 				Name string
 				ID   string
 			}{e.Category.Name, e.Category.ID.String()},
-			Users: []struct {
-				ID          string
-				DisplayName string
+			Users: map[string]struct {
+				DisplayName      string
+				TelegramUsername string
 			}{},
 			Date:    e.Date,
 			ID:      e.ID.String(),
@@ -94,14 +96,10 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	for _, uid := range e.UserIDS {
 		for _, u := range users {
 			if u.ID == uid {
-				user := struct {
-					ID          string
-					DisplayName string
-				}{u.ID.String(), u.DisplayName}
-				if value, ok := resp.Expenses[e.ID.String()]; ok { // Can't assign directly https://stackoverflow.com/a/69006398
-					value.Users = append(value.Users, user)
-					resp.Expenses[e.ID.String()] = value
-				}
+				resp.Expenses[e.ID.String()].Users[uid.String()] = struct {
+					DisplayName      string
+					TelegramUsername string
+				}{u.DisplayName, u.TelegramUsername}
 			}
 		}
 	}
@@ -140,28 +138,23 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 				Name string
 				ID   string
 			}{e.Category.Name, e.Category.ID.String()},
-			Users: []struct {
-				ID          string
-				DisplayName string
-			}{}, // I want the map here so then I can start adding Users
+			Users: map[string]struct {
+				DisplayName      string
+				TelegramUsername string
+			}{},
 			Date:    e.Date,
 			ID:      e.ID.String(),
 			Product: e.Product,
 			Shop:    e.Shop,
 		}
 		resp.Expenses[e.ID.String()] = expBasic
-		// TODO: Split this two for into a separate function and reuse it on GetByID(...)
 		for _, u := range users {
 			for _, uid := range e.UserIDS {
 				if u.ID == uid {
-					user := struct {
-						ID          string
-						DisplayName string
-					}{uid.String(), u.DisplayName}
-					if value, ok := resp.Expenses[e.ID.String()]; ok { // Can't assign directly https://stackoverflow.com/a/69006398
-						value.Users = append(value.Users, user)
-						resp.Expenses[e.ID.String()] = value
-					}
+					resp.Expenses[e.ID.String()].Users[uid.String()] = struct {
+						DisplayName      string
+						TelegramUsername string
+					}{u.DisplayName, u.TelegramUsername}
 				}
 			}
 		}

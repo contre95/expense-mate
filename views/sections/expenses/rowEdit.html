@@ -22,16 +22,41 @@
       {{end}}
     </select>
   </td>
-  <td class="py-1 px-4">{{.Expense.Users }}</td>
+  <td class="py-1 px-4">
+    {{ $allUsers := .Users}}
+    {{ $expenseID := .Expense.ID }}
+    {{ $expenseUsers := .Expense.Users}}
+    <select id="usersEdit{{.Expense.ID}}" style="width: 75%"
+      class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+      name="users[]" multiple="multiple">
+      {{ range $id, $user := $allUsers }}
+      <option value="{{$id}}" {{ if userInMap $expenseUsers $id}}selected{{end}}>{{$user.DisplayName}}</option>
+      {{end}}
+    </select>
+    <script>
+      $(document).ready(function () {
+        $('#usersEdit{{.Expense.ID}}').select2({
+          theme: "classic"
+        });
+      });
+    </script>
+  </td>
   <td class="p-0 px-4">
     $ <input class="w-20 px-1 border border-gray-300 rounded-md" type="number" min="0" id="amount" name="amount"
       value='{{printf "%.2f" .Expense.Amount}}'>
   </td>
-  <td class="py-0 px-0 pb-0 mb-0 h-full flex float justify-center items-center">
-    <button id="apply{{.Expense.ID}}" hx-trigger="click" class="border border-green-300 p-1 w-full font-medium bg-green-200 text-green-500 hover:text-green-800"><i class='bx bx-check'></i> </button>
-    <div hx-put="/expenses/{{.Expense.ID}}" hx-swap="innerHTML" hx-target="#mitoast" hx-include="#editRow{{.Expense.ID}} input, #editRow{{.Expense.ID}} select" hx-trigger="click from:#apply{{.Expense.ID}}"> </div>
-    <div hx-get="/expenses/{{.Expense.ID}}/row" hx-swap="outerHTML" hx-target="#editRow{{.Expense.ID}}" hx-trigger="reloadRow-{{.Expense.ID}} from:body"> </div>
-    <button id="cancel" hx-get="/expenses/{{ .Expense.ID }}/row" hx-swap="outerHTML" hx-target="#editRow{{.Expense.ID}}" hx-trigger="click" 
-      class="border border-red-300 p-1 h-full w-full font-medium bg-red-200 text-red-500 hover:text-red-800"><i class='bx bx-x'></i></button>
+  <td class="p-2 mb-0 h-full flex float justify-center items-center">
+    <button hx-put="/expenses/{{.Expense.ID}}" hx-swap="innerHTML" hx-target="#mitoast"
+      hx-include="#editRow{{.Expense.ID}} input, #editRow{{.Expense.ID}} select"
+      hx-vals="js:{users: $('#usersEdit{{.Expense.ID}}').select2('data').map(function(item){return item.id}).join(',')}"
+      hx-trigger="click"
+      class="border border-green-300 p-1 w-full font-medium bg-green-200 text-green-500 hover:text-green-800"><i
+        class='bx bx-check'></i> </button>
+    <button id="cancel" hx-get="/expenses/{{ .Expense.ID }}/row" hx-swap="outerHTML" hx-target="#editRow{{.Expense.ID}}"
+      hx-trigger="click, reloadRow-{{.Expense.ID}} from:body"
+      class="border border-red-300 p-1 h-full w-full font-medium bg-red-200 text-red-500 hover:text-red-800"><i
+        class='bx bx-x'></i></button>
   </td>
 </tr>
+<script>
+</script>
