@@ -10,6 +10,8 @@ import (
 
 type UserID = uuid.UUID
 
+const NoUserID = "00000000-0000-0000-0000-000000000000"
+
 type User struct {
 	ID               UserID `json:"id"`
 	DisplayName      string `json:"display_name"`

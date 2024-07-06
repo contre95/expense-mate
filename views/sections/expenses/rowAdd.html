@@ -30,13 +30,6 @@
       <option value="{{$id}}">{{$user.DisplayName}}</option>
       {{end}}
     </select>
-    <script>
-      $(document).ready(function () {
-        $('#usersAdd').select2({
-          theme: "classic"
-        });
-      });
-    </script>
   </td>
   <td class="p-0 px-4">
     $ <input class="w-20 px-1 border border-gray-300 rounded-md" type="number" min="0" id="amount" name="amount"
@@ -54,52 +47,3 @@
         class='bx bx-x'></i></button>
   </td>
 </tr>
-<script>
-  // Users
-  var selectedUsers = [];
-  selectedUsers.push('{{.NoUserID}}')
-  // {{range .Expense.Users}} 
-  selectedUsers.push('{{.ID}}')
-  // {{end}}
-  console.log(selectedUsers)
-  // Initialize the Multi Select dropdown from multiselect.js
-  new MultiSelect('#userSelect', {
-    data: [
-      // This can be commented on js but rendered anyway
-      // {{range .Expense.Users}} 
-      {
-        value: '{{.ID}}',
-        text: '{{.DisplayName}}',
-        selected: true
-      },
-      // {{end}}
-      {
-        value: '{{.NoUderID}}',
-        text: 'No User',
-        selected: true
-      },
-    ],
-    placeholder: 'Select an option',
-    search: true,
-    selectAll: true,
-    listAll: false,
-    max: 0,
-    onChange: function (value, text, element) {
-      console.log('Change:', value, text, element);
-    },
-    onSelect: function (value, text, element) {
-      // Add selected value to the array
-      if (!selectedUsers.includes(value)) {
-        selectedUsers.push(value);
-      }
-      console.log('Selected:', value, text, element);
-    },
-    onUnselect: function (value, text, element) {
-      // Remove unselected value from the array
-      selectedUsers = selectedUsers.filter(item => item !== value);
-    }
-  });
-  function getSelectedUsers() {
-    return selectedUsers.join(',');
-  }
-</script>

@@ -16,7 +16,7 @@ import (
 
 const DEFAULT_DAYS_FROM_PARAM = "190"
 const DEFAULT_DAYS_TO_PARAM = "0" // Now
-const DEFAULT_PSIZE_PARAM = "35"
+const DEFAULT_PSIZE_PARAM = "15"
 const DEFAULT_PNUM_PARAM = "0"
 
 func DeleteExpense(ed tracking.ExpenseDeleter) func(*fiber.Ctx) error {
@@ -134,7 +134,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 	}
 }
 
-func LoadExpensesAddRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
+func LoadAddExpensesRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()
 		if err != nil {
@@ -292,14 +292,15 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		users := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
+		selectedUsers := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
+		fmt.Println("selected users --> ", selectedUsers)
 		categories := slices.DeleteFunc(strings.Split(c.Query("categories"), ","), func(s string) bool { return s == "" })
 		req := querying.ExpenseQuerierReq{
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
 				ByCategoryID: categories,
-				ByUsers:      users,
+				ByUsers:      selectedUsers,
 				ByShop:       c.Query("shop"),
 				ByProduct:    c.Query("product"),
 				ByAmount:     [2]uint{uint(min_amount), uint(max_amount)},

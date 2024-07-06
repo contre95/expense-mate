@@ -232,13 +232,15 @@ func (sqls *ExpensesStorage) CountWithFilter(user_ids, categories_ids []string, 
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
 	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(user_ids[0]) == 0) { // This means they are sending []string{""}.
-		fmt.Println(conditions)
 		userConditions := make([]string, len(user_ids))
 		for i, uid := range user_ids {
-			userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			if uid == expense.NoUserID {
+				userConditions[i] = fmt.Sprintf("eu.user_id IS NULL")
+			} else {
+				userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			}
 		}
 		conditions = append(conditions, "("+strings.Join(userConditions, " OR ")+")")
-		fmt.Println(conditions)
 	}
 	if len(conditions) > 0 {
 		whereClause := " " + strings.Join(conditions, " AND ")
@@ -289,10 +291,14 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 		}
 		conditions = append(conditions, "("+strings.Join(categoryConditions, " OR ")+")")
 	}
-	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(categories_ids[0]) == 0) { // This means they are sending []string{""}.
+	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(user_ids[0]) == 0) { // This means they are sending []string{""}.
 		userConditions := make([]string, len(user_ids))
 		for i, uid := range user_ids {
-			userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			if uid == expense.NoUserID {
+				userConditions[i] = fmt.Sprintf("eu.user_id IS NULL")
+			} else {
+				userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
+			}
 		}
 		conditions = append(conditions, "("+strings.Join(userConditions, " OR ")+")")
 	}
@@ -304,7 +310,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf(" DESC LIMIT %d OFFSET %d", limit, offset)
 	}
-	// fmt.Println(query)
+	fmt.Println(query)
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
