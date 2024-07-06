@@ -1,0 +1,45 @@
+<div id="users" class="mx-5 w-full rounded-lg" hx-get="/settings/users" hx-trigger="reloadUsersConfig from:body" hx-target="this">
+  <span class="text-xl block p-2 pt-2 text-indigo-500"><i class='bx bx-user'></i> Users</span>
+  <div class="min-w-[750px] min-h-[200px] block border border-gray-300 rounded-lg p-3">
+    <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telegram Username</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider float-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-list" class="bg-white divide-y divide-gray-200 w-full">
+        <tr>
+          <td class='pl-6 py-2 text-sm font-medium text-gray-900'>
+            <input type="text" id="display_name" name="display_name" value="" placeholder="Display Name"
+              class="mt-1 px-1 border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+          </td>
+          <td class='pl-6 py-2 text-sm font-medium text-gray-900'>
+            <input type="text" id="telegram_username" name="telegram_username" value="" placeholder="Telegram Username"
+              class="mt-1 px-1 border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+          </td>
+          <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
+            <button hx-post="/settings/users" hx-target="#mitoast" hx-swap="innerHTML"
+              hx-include="#display_name, #telegram_username" class="text-indigo-600 hover:text-indigo-900">Add</button>
+          </td>
+        </tr>
+        {{ range $uid, $user := .Users }}
+        <tr>
+          <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
+            <span class='text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $user.DisplayName }}</span>
+          </td>
+          <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
+            <span class='text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $user.TelegramUsername }}</span>
+          </td>
+          <td class="px-6 py-2 whitespace-nowrap text-sm font-medium float-right">
+            <button hx-delete="/settings/users/{{$uid}}" hx-target="#mitoast" hx-swap="innerHTML"
+              class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+          </td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+</div>
+

@@ -36,6 +36,19 @@ func (c *Category) Validate() (*Category, error) {
 	return c, nil
 }
 
+func (r *Rule) Validate() (*Rule, error) {
+	validate := validator.New()
+	err := validate.Struct(r)
+	if err != nil {
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+		return nil, ErrInvalidEntity
+	}
+	return r, nil
+}
+
 // spaceOrLetter checks that a string contains only ASCII characters and spaces.
 func spaceOrLetter(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
