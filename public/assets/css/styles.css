@@ -11,6 +11,9 @@
 
 .user-display-name{ color: red;}
 
+body {
+  background-color=#fff7ed;
+}
 /**/
 /* * { */
 /*     box-sizing: border-box; */

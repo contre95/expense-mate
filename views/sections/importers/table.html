@@ -5,7 +5,7 @@
     <span class="ml-2 text-md text-gray-500">Expenses will appear in this section when imported for you to manually set
       a
       category.</span>
-    <button id="applyAll" class="float-right m-2 mb-3 font-medium text-blue-600 hover:text-blue-800">
+    <button id="applyAll" class="float-right m-2 mb-3 font-medium text-green-600 hover:text-green-800">
       Apply visible
     </button>
     <!-- This is behaving really weird -->
@@ -13,7 +13,7 @@
     <!--   class="float-right m-2 mb-3 font-medium text-pink-600 hover:text-pink-800"> -->
     <!--   Refresh -->
     <!-- </button> -->
-    <table class="min-w-full bg-white border shadow-md rounded-xl border-gray-200">
+    <table class="min-w-full border shadow-md rounded-xl border-gray-200">
       <thead class="rounded-full">
         <tr class="bg-slate-100 text-gray-700 rounded-lg ">
           <th class="px-4 py-3 text-left">Date</th>
@@ -25,13 +25,13 @@
           <th class="px-4 py-3 text-left">Action</th>
         </tr>
       </thead>
-      <tbody class="text-blue-gray-900 animate__headShake animate__animated">
+      <tbody class="text-green-gray-900 animate__headShake animate__animated">
         {{ $categories := .Categories }}
         {{ $allUsers := .Users}}
         {{range .Expenses}}
         {{ $expenseUsers := .Users}}
         <tr id="editRow{{.ID}}"
-          class="border-b border-blue-gray-100 bg-blue-100 bg-gray-100 fade-me-out animate__animated">
+          class="border-b border-blue-gray-200 p-0 animate__animated">
           <td class="py-0 px-2">
             <input class="bg-gray-50 px-2 rounded-md" type="date" id="date" name="date"
               value='{{ .Date.Format "2006-01-02" }}'>
@@ -44,7 +44,7 @@
           </td>
           <td class="py-0 px-4">
             <select id="category" name="category"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-600 border-gray-500 block w-full p-1">
               {{ $current := .Category.ID }}
               {{ range $id, $name := $categories }}
               {{ if eq $current $id}}
@@ -57,7 +57,7 @@
           </td>
           <td class="py-1 px-4">
             <select id="usersImport{{.ID}}" style="width: 75%"
-              class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+              class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 border-green-500 block w-full"
               name="users[]" multiple="multiple">
               {{ range $id, $user := $allUsers }}
               <option value="{{$id}}" {{ if userInMap $expenseUsers $id}}selected{{end}}>{{$user.DisplayName}}</option>
