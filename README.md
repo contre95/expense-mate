@@ -22,46 +22,14 @@ A Grafana dashboard is automatically created and can be accesses from [localhost
 All configurations are set in the `.env` file and passed as environment variables
 
 ```sh
-# Set the .env
-mv .env.example .env
 # Install the dependencies
 go mod tidy
+# Set the .env
+mv .env.example .env
 # Source the env variables
 . <(cat .env | grep -v -e '^$' | grep -v "#" | awk '{print "export " $1}')
 ```
 # Endpoints
-
-### Login
-
-```sh
-# Request /login
-curl -d "user=admin&pass=secretpass" -X POST http://localhost:3000/login | jq
-# Response
-#   {
-#     "token": "<jwt>"
-#   }
-```
-
-### Google Sheets Importer
-
-```sh
-# Request /importers/:importer_id
-JWT=$(curl -d "user=admin&pass=secretpass" -X POST http://localhost:3000/login | jq ".token" | tr -d '"')
-curl -H "Authorization: Bearer $JWT" \
-     -d '{ "bypass_wrong_expenses": true }' \
-     -H "Content-Type: application/json" \
-     -X POST http://localhost:3000/importers/sheets | jq
-# Response
-#   {
-#     "err": null,
-#     "msg": {
-#       "Msg": "All the expenses where imported",
-#       "SuccesfullImports": 206,
-#       "FailedImports": 0
-#     },
-#     "success": true
-#   }
-```
 
 ### Healthcheck
 
