@@ -45,6 +45,9 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
 		useRules := c.FormValue("useRules") == "checked"
+		fmt.Println(includeSpaces)
+		fmt.Println(includeTransfers)
+		fmt.Println(useRules)
 		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		var matched, skipped, total uint = 0, 0, 0
 		failedLines := []uint{}
@@ -80,7 +83,7 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 			// Exclude outgoing transactions (Direct Debit not included)
 			// Example1: "2024-03-02","Esteban","ES6315636852323267845001","MoneyBeam","MoneyBeam","-25.2","","",""
 			// Example2: "2024-01-29","PEDRO GONZALES","ES0355491146272210003281","Income","Sin concepto","7.6","","",""
-			if !includeTransfers && line[2] != "" && line[3] == "Outgoing Transfer" { // Extenal transfers conaint IBAN of the recipients in the 3rd col of csv
+			if !includeTransfers && line[2] != "" && slices.Contains([]string{"Outgoing Transfer", "MoneyBeam"}, line[3]) { // Extenal transfers conaint IBAN of the recipients in the 3rd col of csv
 				// Example:
 				slog.Debug("Excluiding income", "Income", line[3])
 				skipped++
