@@ -128,4 +128,6 @@ What category does it belong ?
 		count++
 	skip:
 	}
+	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("We are done for now. You categorized %d/%d expenses.", count, len(expensesResp.Expenses))))
+
 }

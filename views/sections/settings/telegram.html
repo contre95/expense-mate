@@ -3,38 +3,42 @@
   <span class="text-xl block p-2 w-1/3 pt-2" style="color:#1DA1DE;"><i class='bx bxl-telegram'></i> Telegram</span>
   <div class="min-w-[750px] min-h-[200px] block border border-gray-300 rounded-lg p-3 ">
     <div id="telegram-not-table" class=" border border-blue-300 rounded-lg p-3 flex">
-    <div class="w-1/2 ">
-      <span class="text-md text-gray-800">Bot status:</span>
-      <span class='text-gray-700 bg-gray-100 border border-gray-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-        hx-get="/settings/telegram/status" hx-swap="outerHTML" hx-trigger="revealed delay:1s, every 5s, click from:#startstop" hx-target="this">
-        Unknown
-      </span>
-      <br>
-      <br>
-      <span class="text-md text-gray-800">Allowed users:</span>
-      <span class='text-indigo-700 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="revealed, click from:#updateUsers delay:1s"
-        hx-swap="innerHTML" hx-target="this" hx-post="/telegram/command"
-        hx-vals='{"command": "getAllowedUsers"}'>-</span>
-      <br>
-      <br>
-      <button id="startstop" class='text-green-700 bg-green-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
-        hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
-        hx-vals='{"command": "start"}'>Start</button>
-      <button id="startstop" class='text-red-700 bg-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
-        hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
-        hx-vals='{"command": "stop"}'>Stop</button>
-      <br>
-      <button id="updateUsers" class='mt-5 text-indigo-500 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
-        hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
-        hx-vals='{"command": "updateAllowedUsers"}'>Update allowed users</button>
-    </div>
-    <div class="w-1/2 text-sm text-justify overflwo-x-auto"> 
-      Available telegram commands:<br><br>
-        <span style="color:#1DA1DE;">/categories</span> - Sends you all the categories available.<br>
+      <div class="w-1/2 ">
+        <span class="text-md text-gray-800">Bot status:</span>
+        <span class='text-gray-700 bg-gray-100 border border-gray-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
+          hx-get="/settings/telegram/status" hx-swap="outerHTML"
+          hx-trigger="revealed delay:1s, every 5s, click from:#startstop" hx-target="this">
+          Unknown
+        </span>
+        <br>
+        <br>
+        <span class="text-md text-gray-800">Allowed users:</span>
+        <span class='text-indigo-700 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
+          hx-trigger="revealed, click from:#updateUsers delay:1s" hx-swap="innerHTML" hx-target="this"
+          hx-post="/telegram/command" hx-vals='{"command": "getAllowedUsers"}'>-</span>
+        <br>
+        <br>
+        <button id="startstop" class='text-green-700 bg-green-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
+          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-vals='{"command": "start"}'>Start</button>
+        <button id="startstop" class='text-red-700 bg-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
+          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-vals='{"command": "stop"}'>Stop</button>
+        <br>
+        <button id="updateUsers"
+          class='mt-5 text-indigo-500 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
+          hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-vals='{"command": "updateAllowedUsers"}'>Update allowed users</button>
+      </div>
+      <div class="w-1/2 text-sm text-justify overflwo-x-auto">
+        Available telegram commands:<br><br>
+        <span style="color:#1DA1DE;">/categories </span> - Sends you all the categories available.<br>
         <span style="color:#1DA1DE;">/summary</span> - Sends summar of last month's expenses.<br>
-        <span style="color:#1DA1DE;">/new</span> - Create a new Expense <br>
+        <span style="color:#1DA1DE;">/unknown</span> - Categorize unknown expenses. <span style="color:#1DA1DE;">/done</span> and continue in another moment.<br>
+        <span style="color:#1DA1DE;">/new</span>- Creates a new expense. <span style="color:#1DA1DE;">/fix</span> if you made made a mistake.<br>
         <span style="color:#1DA1DE;">/ping</span> - Checks bot availability and health.<br>
-        <span style="color:#1DA1DE;">/help</span> - Displays this menu.
+        <span style="color:#1DA1DE;">/help</span> - Displays this menu.<br>
+
+      </div>
     </div>
   </div>
-</div>
