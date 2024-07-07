@@ -1,52 +1,56 @@
-<div id="filters" class="mb-4 p-4 bg-white border rounded-xl shadow-md">
+<div id="filters" class="mb-4 p-4  border bg-neutral-50 shadow-md border-teal-600">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     <div class="flex flex-col">
       <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
       <input type="text" id="product" name="product"
-        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        class="mt-1 mx-1 block w-full p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
         placeholder="Product name">
     </div>
     <div class="flex flex-col">
       <label for="from-date" class="block text-sm font-medium text-gray-700">From</label>
       <input type="date" id="from-date" name="from-date"
-        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        class="mt-1 block w-full p-2 border border-gray-300   hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm">
     </div>
     <div class="flex flex-col">
       <label for="to-date" class="block text-sm font-medium text-gray-700">To</label>
       <input type="date" id="to-date" name="to-date"
-        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        class="mt-1 block w-full p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm">
     </div>
     <div class="flex flex-row">
       <div class="flex flex-col w-1/2 mx-1">
         <label for="usersSelect" class="block text-sm font-medium text-gray-700">Users</label>
+        <div class="border hover:text-teal-600 hover:border-teal-500">
         <select id="usersSelect" name="usersSelect"
-          class="mt-1 mx-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 mx-1 block w-full p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500  shadow-sm focus:outlimt-1 block w-full p-2 booder border-gray-300  shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-smne-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm">
         </select>
+        </div>
       </div>
       <div class="flex flex-col w-1/2 mx-1">
         <label for="categoriesSelect" class="block text-sm font-medium text-gray-700">Category</label>
+        <div class="border hover:text-teal-600 hover:border-teal-500">
         <select id="categoriesSelect" name="categoriesSelect"
-          class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm">
         </select>
+      </div>
       </div>
     </div>
     <div class="flex flex-col">
       <label for="shop" class="block text-sm font-medium text-gray-700">Shop</label>
       <input type="text" id="shop" name="shop"
-        class="mt-1 mx-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        class="mt-1 mx-1 block w-full p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
         placeholder="Shop name">
     </div>
     <div class="flex flex-row">
       <div class="flex flex-col w-1/2">
         <label for="min_amount" class="block text-sm font-medium text-gray-700">Min Amount</label>
         <input type="number" id="min_amount" name="min_amount"
-          class="mt-1 mx-1 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          class="mt-1 mx-1 p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500  shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
           placeholder="e.g., 10">
       </div>
       <div class="flex flex-col  w-1/2">
         <label for="max_amount" class="block text-sm font-medium text-gray-700">Max Amount</label>
         <input type="number" id="max_amount" name="max_amount"
-          class="mt-1 mx-1 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          class="mt-1 mx-1 p-2 border border-gray-300  hover:text-teal-600 hover:border-teal-500 shadow-sm focus:outline-none focus:ring-teal-600 focus:border-teal-600 sm:text-sm"
           placeholder="e.g., 50">
       </div>
     </div>
@@ -55,7 +59,7 @@
     <button type="button" hx-trigger="click" hx-url-push="true" hx-get="/expenses/table" hx-target="#table"
       hx-include="#filters input, #filters select"
       hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
-      class="inline-flex items-center px-4 py-2 bg-indigo-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      class="inline-flex items-center px-4 py-2 border border-teal-600 shadow-sm text-sm text-teal-800 hover:text-teal-600 hover:border-teal-500 font-medium hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-600">
       Apply Filters
     </button>
   </div>

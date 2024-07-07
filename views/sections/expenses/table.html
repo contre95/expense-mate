@@ -2,19 +2,19 @@
 <div id="table" hx-get="/expenses/table" hx-trigger="reloadExpensesTable from:body" hx-target="this"
   hx-swap="outerHTML">
   <div class="overflow-x-auto">
-    <button class="float-right m-2 mb-3 font-medium text-blue-600 hover:text-blue-800" hx-get="/expenses/add"
+    <button class="float-right m-2 mb-3 font-medium text-blue-500 hover:text-blue-400" hx-get="/expenses/add"
       hx-target="#addRow" hx-swap="outerHTML">
       <i class='bx bx-plus-medical'></i>New Expense
     </button>
-    <button id="applyAll" class="float-right m-2 mb-3 font-medium text-green-600 hover:text-green-800" hx-trigger="click">
+    <button id="applyAll" class="float-right m-2 mb-3 font-medium text-indigo-600 hover:text-indigo-500" hx-trigger="click">
       <i class='bx bx-edit-alt' ></i>Apply all
     </button>
-    <button id="editAll" class="float-right m-2 mb-3 font-medium text-orange-600 hover:text-orange-800" hx-trigger="click">
+    <button id="editAll" class="float-right m-2 mb-3 font-medium text-teal-600 hover:text-teal-500" hx-trigger="click">
       <i class='bx bx-edit-alt' ></i>Edit all
     </button>
-    <table class="min-w-full bg-white border shadow-md rounded-xl border-gray-200">
+    <table class="min-w-full bg-stone-50 border border-gray-300">
       <thead class="rounded-full">
-        <tr class="bg-slate-100 text-gray-700 rounded-lg ">
+        <tr class="bg-gray-100 border border-gray-300 text-gray-700 rounded-lg ">
           <th class="px-4 py-3 text-left">Date</th>
           <th class="px-4 py-3 text-left">Shop</th>
           <th class="px-4 py-3 text-left">Product</th>
@@ -24,7 +24,7 @@
           <th class="px-4 py-3 text-left">Action</th>
         </tr>
       </thead>
-      <tbody class="text-blue-gray-900 animate__headShake animate__animated">
+      <tbody class="text-blue-gray-900 animate__headShake animate__animated">expenta
         <tr id="addRow"></tr>
         {{range .Expenses}}
         <tr id="expenseRow{{ .ID }}" class="border-b border-blue-gray-200 p-0 animate__animated">
@@ -46,7 +46,7 @@
           <td class="px-4 py-1">
             <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-swap="outerHTML" 
               hx-push-url="true" hx-trigger="click, click from:#editAll"
-              class="font-medium fade-me-out text-blue-600 hover:text-blue-800">
+              class="font-small text-cyan-700 hover:text-cyan-500">
               Edit
             </button>
             <button id="deleteButton{{.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800"
