@@ -122,9 +122,7 @@ func main() {
 		return
 	}
 	tgbotapi.SetLogger(telegramLogger)
-	allowedUsers := strings.Split(os.Getenv("TELEGRAM_ALLOWED_USERNAMES"), ",")
-	go telegram.Run(bot, allowedUsers, telegramCommands, &botRunning, &healthChecker, &tracker, &querier)
-
+	go telegram.Run(bot, telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
 	// API
 	engine := html.New("./views", ".html")
 	engine.AddFunc("nameToColor", ui.NameToColor)

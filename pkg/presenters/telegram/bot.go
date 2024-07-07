@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"expenses-app/pkg/app/health"
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"fmt"
@@ -24,10 +25,10 @@ Check the menu for available commands, please.
 
 const NOT_ALLOWED_MSG string = "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"
 
-func isAllowed(chatID string, authorizedUsers []string, mu *sync.Mutex) bool {
+func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
 	mu.Lock()
 	defer mu.Unlock()
-	for _, authorizedID := range authorizedUsers {
+	for _, authorizedID := range *allowedUsernames {
 		if chatID == authorizedID {
 			return true
 		}
@@ -36,24 +37,29 @@ func isAllowed(chatID string, authorizedUsers []string, mu *sync.Mutex) bool {
 }
 
 // Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service) {
+func Run(tbot *tgbotapi.BotAPI, commands chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 	var mu sync.Mutex
+	allowedUsernames := []string{}
+	err := updateAllowedUsers(&allowedUsernames, m)
+	if err != nil {
+		fmt.Println("Couldn't get allowed users")
+	}
 	for {
 		select {
 		case update := <-updates:
 			if atomic.LoadInt32(botStatus) == 0 {
 				continue
 			}
-			if isAllowed(update.Message.Chat.UserName, allowedUsers, &mu) {
+			if isAllowed(update.Message.Chat.UserName, &allowedUsernames, &mu) {
 				switch update.Message.Text {
 				case "/categories":
 					listCategories(tbot, &update, q)
 				case "/new":
-					createExpense(tbot, &update, &updates, t, q)
+					createExpense(tbot, &update, &updates, t, q, m)
 				case "/help":
 					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 				case "/summary":
@@ -80,13 +86,19 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 				fmt.Println(command)
 				atomic.StoreInt32(botStatus, 0)
 				commands <- string("Stopped")
+			case "updateAllowedUsers":
+				mu.Lock()
+				err = updateAllowedUsers(&allowedUsernames, m)
+				mu.Unlock()
+				if err != nil {
+					fmt.Println(err)
+					commands <- err.Error()
+				}
+				commands <- "Users updated."
 			case "getAllowedUsers":
 				mu.Lock()
-				commands <- strings.Join(allowedUsers, ",")
+				commands <- strings.Join(allowedUsernames, ",") // I'm passing a copy here
 				mu.Unlock()
-			case "getHelpMessage":
-				// commands <- HELP_MSG
-				commands <- fmt.Sprintf("Hola\nComo\n")
 			default:
 				continue
 			}
@@ -97,6 +109,19 @@ func Run(tbot *tgbotapi.BotAPI, allowedUsers []string, commands chan string, bot
 
 func ping(tbot *tgbotapi.BotAPI, update tgbotapi.Update, h *health.Service) {
 	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, h.Ping()))
+}
+
+func updateAllowedUsers(allowedUsernames *[]string, m *managing.Service) error {
+	resp, err := m.UserManager.List()
+	if err != nil {
+		return err
+	}
+	*allowedUsernames = []string{}
+	for _, u := range resp.Users {
+		*allowedUsernames = append(*allowedUsernames, u.TelegramUsername)
+	}
+	fmt.Println("Usernames updated -----------------------------------------> ", resp.Users)
+	return nil
 }
 
 func getKeybaordMarkup(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarkup {

@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func createExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service) {
+func createExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service, m *managing.Service) {
 	chatID := u.Message.Chat.ID
 
 	var msg tgbotapi.MessageConfig
@@ -120,15 +121,29 @@ collectData:
 		tbot.Send(tgbotapi.NewMessage(chatID, "Invalid category ID. Please try again."))
 	}
 
+	// Get user from Chat username
+	respUsers, err := m.UserManager.List()
+	if err != nil {
+		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("Failed retrieve user: %v", err))
+		tbot.Send(msg)
+		return
+	}
+
+	var uid string
+	for k, v := range respUsers.Users {
+		if v.TelegramUsername == update.Message.Chat.UserName {
+			uid = k
+		}
+	}
 	// Create the request object
 	req := tracking.CreateExpenseReq{
 		Product:    product,
 		Amount:     amount,
 		Shop:       shop,
 		Date:       date,
+		UserIDS:    []string{uid},
 		CategoryID: categoryID,
 	}
-
 	// Create the expense
 	resp, err := t.ExpenseCreator.Create(req)
 	if err != nil {

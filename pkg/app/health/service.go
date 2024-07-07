@@ -21,7 +21,7 @@ func (s *Service) Ping() string {
 }
 
 func (s *Service) CheckBotHealth() string {
-	s.logger.Debug("Bot status requested")
+	// s.logger.Debug("Bot status requested")
 	if atomic.LoadInt32(s.botStatus) == 1 {
 		return "running"
 	}
