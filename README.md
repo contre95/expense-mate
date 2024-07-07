@@ -1,5 +1,4 @@
-<img src="./public/assets/img/logos.png)">
-# ExpenseMate
+# 📊 ExpenseMate :mate:
 
 ## Expenses dashboard [Refactoring]
 
