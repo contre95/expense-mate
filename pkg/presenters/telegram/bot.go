@@ -120,7 +120,6 @@ func updateAllowedUsers(allowedUsernames *[]string, m *managing.Service) error {
 	for _, u := range resp.Users {
 		*allowedUsernames = append(*allowedUsernames, u.TelegramUsername)
 	}
-	fmt.Println("Usernames updated -----------------------------------------> ", resp.Users)
 	return nil
 }
 
