@@ -246,7 +246,6 @@ func (sqls *ExpensesStorage) CountWithFilter(user_ids, categories_ids []string, 
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
-	fmt.Println(query)
 	row := sqls.db.QueryRow(query)
 	var count uint
 	err := row.Scan(&count)
@@ -310,7 +309,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf(" DESC LIMIT %d OFFSET %d", limit, offset)
 	}
-	fmt.Println(query)
+	// fmt.Println(query)
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
