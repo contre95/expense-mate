@@ -17,7 +17,7 @@ const HELP_MSG string = `
 Check the menu for available commands, please.
 /categories - Sends you all the categories available.
 /summary - Sends summar of last month's expenses.
-/unknown - Categorize unknown expenses. /done and continue in another moment.
+/unknown - Categorize imported expenses. /done and continue in another moment.
 /new - Creates a new expense. /fix if you made made a mistake.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
