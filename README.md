@@ -1,9 +1,9 @@
 # 📊 ExpenseMate :mate:
-
-## Expenses dashboard [Refactoring]
-
-A Grafana dashboard is automatically created and can be accesses from [localhost:8080](http://localhost:8080)
-
+ExpenseMate is an expense tracking app with a handy telegram bot and a front end. It uses Go, MySQL, SQLite, Fiber, Tailwindcss and HTMX.
+```
+### Frontend
+![image](https://github.com/contre95/expenses-app/assets/15664513/df1d0fc1-12a8-488e-940c-d950c1916948)
+### Grafana (`refactoring`)
 ![image](https://user-images.githubusercontent.com/15664513/216789116-86d3cf33-5535-4bb9-b30c-8196c5ef1696.png)
 
 # Run locally
@@ -19,3 +19,13 @@ mv .env.example .env
 # Run with air
 air -c air.toml
 ```
+
+### Telegram `/help`
+```
+Check the menu for available commands, please.
+/categories - Sends you all the categories available.
+/summary - Sends summar of last month's expenses.
+/unknown - Categorize unknown expenses. /done and continue in another moment.
+/new - Creates a new expense. /fix if you made made a mistake.
+/ping - Checks bot availability and health.
+/help - Displays this menu.
