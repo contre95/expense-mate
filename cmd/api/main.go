@@ -59,6 +59,13 @@ func main() {
 			if err != nil {
 				initLogger.Err("Error creating mysql tables: %v", err)
 			}
+			if os.Getenv("LOAD_SAMPLE_DATA") == "true" {
+				_, err = db.Exec(sqlstorage.MySQLInserts)
+				if err != nil {
+					initLogger.Err("Error creating sqlite tables: %v", err)
+					return
+				}
+			}
 		}
 		initLogger.Info("MySQL storage initialized on %s", mysqlUrl)
 	case "sqlite":
@@ -73,17 +80,32 @@ func main() {
 			initLogger.Err("Error creating sqlite tables: %v", err)
 			return
 		}
+		if os.Getenv("LOAD_SAMPLE_DATA") == "true" {
+			_, err = db.Exec(sqlstorage.SQLiteInserts)
+			if err != nil {
+				initLogger.Err("Error creating sqlite tables: %v", err)
+				return
+			}
+		}
 		initLogger.Info("SQLte storage initialized on %s", path)
 	case "":
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
 	}
-
 	expensesStorage := sqlstorage.NewExpensesStorage(db)
-	path := os.Getenv("JSON_STORAGE_PATH")
 	ruleStorage := sqlstorage.NewRulesStorage(db)
+	// JSON Storage
+	path := os.Getenv("JSON_STORAGE_PATH")
 	if path == "" {
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
 		return
+	}
+	initLogger.Info("LOAD_SAMPLE_DATA=%s", os.Getenv("LOAD_SAMPLE_DATA"))
+	if os.Getenv("LOAD_SAMPLE_DATA") == "true" {
+		err := jsonstorage.CreateFileIfNotExists(path, jsonstorage.SampleUsers)
+		if err != nil {
+			initLogger.Err("Couldn't create sample file: %v", err)
+			return
+		}
 	}
 	userStorage := jsonstorage.NewStorage(path)
 
