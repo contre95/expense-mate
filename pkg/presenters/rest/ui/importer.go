@@ -128,8 +128,9 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 				})
 				if resp.Matched {
 					matched++
-					fmt.Println(resp.CategoryID)
 					req.CategoryID = resp.CategoryID
+					// Remove Users
+					req.UserIDS = []string{}
 				}
 			}
 			_, err = ec.Create(req)

@@ -147,7 +147,6 @@ func LoadAddExpensesRow(cq querying.CategoryQuerier, mu managing.UserManager) fu
 				"Msg":   "Could not load users.",
 			})
 		}
-		fmt.Println(respUsers)
 		return c.Render("sections/expenses/rowAdd", fiber.Map{
 			"Categories": respCategories.Categories,
 			"NoUserID":   querying.NoUserID,
@@ -211,12 +210,12 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 
 func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		// if c.Get("HX-Request") != "true" {
-		// 	fmt.Println("No HX-Request refreshing with revealed")
-		// 	return c.Render("main", fiber.Map{
-		// 		"ExpensesTrigger": "revealed",
-		// 	})
-		// }
+		if c.Get("HX-Request") != "true" {
+			fmt.Println("No HX-Request refreshing with revealed")
+			return c.Render("main", fiber.Map{
+				"ExpensesTrigger": "revealed",
+			})
+		}
 		respCategories, err := cq.Query()
 		if err != nil {
 			panic("Implement error")
@@ -294,7 +293,6 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 			panic("Atoi parse error")
 		}
 		selectedUsers := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
-		fmt.Println("selected users --> ", selectedUsers)
 		categories := slices.DeleteFunc(strings.Split(c.Query("categories"), ","), func(s string) bool { return s == "" })
 		req := querying.ExpenseQuerierReq{
 			Page:        uint(pageNum),
@@ -308,6 +306,7 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				ByTime:       [2]time.Time{fromDate, toDate},
 			},
 		}
+		fmt.Println(req.ExpenseFilter.ByUsers)
 		resp, err := eq.Query(req)
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{

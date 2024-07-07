@@ -36,14 +36,12 @@ func (s *UserStorage) All() ([]expense.User, error) {
 
 // Add adds a new user to the JSON storage.
 func (s *UserStorage) Add(user expense.User) error {
-	fmt.Println(user)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users, err := s.all()
 	if err != nil {
 		return err
 	}
-	fmt.Println("hi", users)
 	for _, u := range users {
 		if u.ID == user.ID {
 			return errors.New("user already exists")
