@@ -45,9 +45,6 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
 		useRules := c.FormValue("useRules") == "checked"
-		fmt.Println(includeSpaces)
-		fmt.Println(includeTransfers)
-		fmt.Println(useRules)
 		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		var matched, skipped, total uint = 0, 0, 0
 		failedLines := []uint{}
