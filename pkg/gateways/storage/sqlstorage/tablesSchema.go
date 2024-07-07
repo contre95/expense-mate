@@ -102,7 +102,7 @@ INSERT OR IGNORE INTO categories VALUES('2b0e8ddf-29b6-4b0f-b15e-7a7c68520583','
 
 INSERT OR IGNORE INTO rules VALUES('4df66260-5457-4eae-805f-b42bfaa9cdff','BadaBing','40373de2-de1f-449d-92ef-29da67322efd');
 INSERT OR IGNORE INTO rules VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','Gardener','3b325284-e437-49c1-b311-9dae17c47eed');
-INSERT INTO rules VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','Nuovo Vesuvio S.R.L','12e78baa-8785-419b-aca0-b625d5fb0b49');
+INSERT OR IGNORE INTO rules VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','Nuovo Vesuvio S.R.L','12e78baa-8785-419b-aca0-b625d5fb0b49');
 INSERT OR IGNORE INTO rules VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','Transfer to Phil Intintola','2b0e8ddf-29b6-4b0f-b15e-7a7c68520583');
 
 INSERT OR IGNORE INTO expenses VALUES('1f37f2b2-2df0-4774-b52c-3c7cfd5ad7f3',45.2999999999999971,'Groceries','Walmart','2024-06-01 00:00:00+00:00','3b325284-e437-49c1-b311-9dae17c47eed');

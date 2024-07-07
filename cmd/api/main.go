@@ -93,6 +93,7 @@ func main() {
 	}
 	expensesStorage := sqlstorage.NewExpensesStorage(db)
 	ruleStorage := sqlstorage.NewRulesStorage(db)
+
 	// JSON Storage
 	path := os.Getenv("JSON_STORAGE_PATH")
 	if path == "" {
@@ -111,15 +112,15 @@ func main() {
 
 	// Healthching
 	var botRunning int32 = 1
+	if os.Getenv("TELEGRAM_APITOKEN") == "" {
+		botRunning = 3
+	}
 	healthChecker := health.NewService(healthLogger, &botRunning)
 
 	// Querying
 	getCategories := querying.NewCategoryQuerier(querierLogger, expensesStorage)
 	getExpenses := querying.NewExpenseQuerier(querierLogger, expensesStorage, userStorage)
 	querier := querying.NewService(*getCategories, *getExpenses)
-
-	// Importing
-	// importExpenses := importing.NewExpenseImporter(importerLogger, sqlStorage)
 
 	// Managing
 	telegramCommands := make(chan string)
@@ -138,13 +139,18 @@ func main() {
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense, *catalogExpense)
 
 	// Telegram Bot
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
-	if err != nil {
-		initLogger.Err("%v", err)
-		return
+	token := os.Getenv("TELEGRAM_APITOKEN")
+	initLogger.Info("TELEGRAM_APITOKEN=%s", token)
+	if token != "" {
+		bot, err := tgbotapi.NewBotAPI(token)
+		if err != nil {
+			initLogger.Err("%v", err)
+			return
+		}
+		tgbotapi.SetLogger(telegramLogger)
+		go telegram.Run(bot, telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
 	}
-	tgbotapi.SetLogger(telegramLogger)
-	go telegram.Run(bot, telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
+
 	// API
 	engine := html.New("./views", ".html")
 	engine.AddFunc("nameToColor", ui.NameToColor)
