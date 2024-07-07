@@ -1,8 +1,8 @@
 # 📊 ExpenseMate :mate:
 ExpenseMate is an expense tracking app with a handy telegram bot and a front end. It uses Go, MySQL, SQLite, Fiber, Tailwindcss and HTMX.
-```
-### Frontend
+
 ![image](https://github.com/contre95/expenses-app/assets/15664513/df1d0fc1-12a8-488e-940c-d950c1916948)
+
 ### Grafana (`refactoring`)
 ![image](https://user-images.githubusercontent.com/15664513/216789116-86d3cf33-5535-4bb9-b30c-8196c5ef1696.png)
 
