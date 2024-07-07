@@ -44,4 +44,14 @@
     </ul>
   </div>
 </div>
+<script>
+  // Function to initialize select2
+  function initializeSelect2() {
+    $('.js-example-basic-multiple').select2({
+      theme: "classic"
+    });
+  }
+  // Initialize select2 after htmx from:body load
+  document.body.addEventListener('htmx:load', function (event) {initializeSelect2();});
+</script>
 {{end}}

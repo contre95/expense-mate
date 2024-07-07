@@ -4,7 +4,13 @@
   <div class="overflow-x-auto">
     <button class="float-right m-2 mb-3 font-medium text-blue-600 hover:text-blue-800" hx-get="/expenses/add"
       hx-target="#addRow" hx-swap="outerHTML">
-      New Expense
+      <i class='bx bx-plus-medical'></i>New Expense
+    </button>
+    <button id="applyAll" class="float-right m-2 mb-3 font-medium text-green-600 hover:text-green-800" hx-trigger="click">
+      <i class='bx bx-edit-alt' ></i>Apply all
+    </button>
+    <button id="editAll" class="float-right m-2 mb-3 font-medium text-orange-600 hover:text-orange-800" hx-trigger="click">
+      <i class='bx bx-edit-alt' ></i>Edit all
     </button>
     <table class="min-w-full bg-white border shadow-md rounded-xl border-gray-200">
       <thead class="rounded-full">
@@ -38,7 +44,8 @@
           </td>
           <td class="px-4 py-1">${{printf "%.2f" .Amount}}</td>
           <td class="px-4 py-1">
-            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-swap="outerHTML" hx-push-url="true"
+            <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-swap="outerHTML" 
+              hx-push-url="true" hx-trigger="click, click from:#editAll"
               class="font-medium fade-me-out text-blue-600 hover:text-blue-800">
               Edit
             </button>

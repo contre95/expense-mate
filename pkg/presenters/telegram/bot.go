@@ -65,7 +65,7 @@ func Run(tbot *tgbotapi.BotAPI, commands chan string, botStatus *int32, h *healt
 				case "/summary":
 					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "When implemented, I will send you a report of the past month"))
 				case "/unknown":
-					categorizeUnknowns(tbot, &update, &updates, t, q)
+					categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
 				case "/ping":
 					ping(tbot, update, h)
 				default:

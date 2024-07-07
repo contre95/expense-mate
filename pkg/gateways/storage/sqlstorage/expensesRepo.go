@@ -245,7 +245,6 @@ func (sqls *ExpensesStorage) CountWithFilter(user_ids, categories_ids []string, 
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
-	// fmt.Println(query)
 	row := sqls.db.QueryRow(query)
 	var count uint
 	err := row.Scan(&count)
@@ -309,7 +308,6 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	}
-	// fmt.Println(query)
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
@@ -318,7 +316,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	}
 	defer rows.Close()
 	expenseMap := make(map[string]*expense.Expense)
-	expenseSlice := []*expense.Expense{} // Using slice to to loose order
+	expenseSlice := []*expense.Expense{} // Using slice to preserve order
 	for rows.Next() {
 		var e expense.Expense
 		var cat expense.Category
@@ -348,6 +346,41 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 			}
 			expenseMap[e.ID.String()] = &e
 			expenseSlice = append(expenseSlice, &e)
+		}
+	}
+
+	// Fetch all users associated with filtered expenses
+	// I'm updaeting the pointer used by the slice :p
+	expenseIDs := make([]string, 0, len(expenseMap))
+	for id := range expenseMap {
+		expenseIDs = append(expenseIDs, id)
+	}
+	if len(expenseIDs) > 0 {
+		// Build query to get all user associations for the filtered expenses
+		queryUsers := `
+			SELECT eu.expense_id, eu.user_id
+			FROM expense_users eu
+			WHERE eu.expense_id IN ('` + strings.Join(expenseIDs, "','") + `')
+		`
+		userRows, err := sqls.db.Query(queryUsers)
+		if err != nil {
+			return nil, err
+		}
+		defer userRows.Close()
+		for userRows.Next() {
+			var expenseID string
+			var userID string
+			err := userRows.Scan(&expenseID, &userID)
+			if err != nil {
+				return nil, err
+			}
+			if e, exists := expenseMap[expenseID]; exists {
+				uid, err := uuid.Parse(userID)
+				if err != nil {
+					return nil, err
+				}
+				e.UsersID = append(e.UsersID, uid)
+			}
 		}
 	}
 	var expenses []expense.Expense

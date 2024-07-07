@@ -4,3 +4,5 @@ secrets.json
 db/mysql-secrets.json
 secrets.json
 .env
+exp.db
+users.json
