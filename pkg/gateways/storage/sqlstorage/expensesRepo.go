@@ -318,6 +318,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	}
 	defer rows.Close()
 	expenseMap := make(map[string]*expense.Expense)
+	expenseSlice := []*expense.Expense{} // Using slice to to loose order
 	for rows.Next() {
 		var e expense.Expense
 		var cat expense.Category
@@ -346,10 +347,12 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 				e.UserIDS = []expense.UserID{}
 			}
 			expenseMap[e.ID.String()] = &e
+			expenseSlice = append(expenseSlice, &e)
 		}
 	}
 	var expenses []expense.Expense
-	for _, e := range expenseMap {
+	for _, e := range expenseSlice {
+		fmt.Println("->", e.Date)
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}

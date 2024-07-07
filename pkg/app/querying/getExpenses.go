@@ -27,7 +27,7 @@ type ExpensesBasics struct {
 }
 
 type ExpenseQuerierResp struct {
-	Expenses      map[string]ExpensesBasics
+	Expenses      []ExpensesBasics
 	Page          uint
 	PageSize      uint
 	ExpensesCount uint
@@ -62,29 +62,32 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	s.logger.Info("Getting expense " + id)
 	idE, err := uuid.Parse(id)
 	if err != nil {
+		s.logger.Err("Failed parsing id: %v", err)
 		return nil, expense.ErrInvalidID
 	}
 	e, err := s.expenses.Get(idE)
 	if err != nil {
-		s.logger.Err("Could not get expense from storage: %v", err)
+		s.logger.Err("Could not get expense %s from storage: %v", idE, err)
 		return nil, expense.ErrNotFound
 	}
+	expBasic := ExpensesBasics{
+		Amount: e.Amount,
+		Category: struct {
+			Name string
+			ID   string
+		}{e.Category.Name, e.Category.ID.String()},
+		Users: map[string]struct {
+			DisplayName      string
+			TelegramUsername string
+		}{},
+		Date:    e.Date,
+		ID:      e.ID.String(),
+		Product: e.Product,
+		Shop:    e.Shop,
+	}
+	expenseMap := map[string]ExpensesBasics{e.ID.String(): expBasic}
 	resp := ExpenseQuerierResp{
-		Expenses: map[string]ExpensesBasics{e.ID.String(): {
-			Amount: e.Amount,
-			Category: struct {
-				Name string
-				ID   string
-			}{e.Category.Name, e.Category.ID.String()},
-			Users: map[string]struct {
-				DisplayName      string
-				TelegramUsername string
-			}{},
-			Date:    e.Date,
-			ID:      e.ID.String(),
-			Product: e.Product,
-			Shop:    e.Shop,
-		}},
+		Expenses:      []ExpensesBasics{expBasic},
 		Page:          1,
 		PageSize:      1,
 		ExpensesCount: 1,
@@ -96,10 +99,12 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	for _, uid := range e.UserIDS {
 		for _, u := range users {
 			if u.ID == uid {
-				resp.Expenses[e.ID.String()].Users[uid.String()] = struct {
+				user := struct {
 					DisplayName      string
 					TelegramUsername string
 				}{u.DisplayName, u.TelegramUsername}
+				expenseMap[e.ID.String()].Users[uid.String()] = user
+				resp.Expenses = append(resp.Expenses, expenseMap[u.ID.String()])
 			}
 		}
 	}
@@ -126,11 +131,12 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 		return nil, err
 	}
 	resp := ExpenseQuerierResp{
-		Expenses:      map[string]ExpensesBasics{},
+		Expenses:      []ExpensesBasics{},
 		Page:          req.Page,
 		ExpensesCount: totalExpenses,
 		PageSize:      uint(len(expenses)),
 	}
+	expenseMap := map[string]ExpensesBasics{}
 	for _, e := range expenses {
 		expBasic := ExpensesBasics{
 			Amount: e.Amount,
@@ -147,14 +153,16 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 			Product: e.Product,
 			Shop:    e.Shop,
 		}
-		resp.Expenses[e.ID.String()] = expBasic
+		expenseMap[e.ID.String()] = expBasic
 		for _, u := range users {
 			for _, uid := range e.UserIDS {
 				if u.ID == uid {
-					resp.Expenses[e.ID.String()].Users[uid.String()] = struct {
+					user := struct {
 						DisplayName      string
 						TelegramUsername string
 					}{u.DisplayName, u.TelegramUsername}
+					expenseMap[e.ID.String()].Users[uid.String()] = user
+					resp.Expenses = append(resp.Expenses, expenseMap[e.ID.String()])
 				}
 			}
 		}
