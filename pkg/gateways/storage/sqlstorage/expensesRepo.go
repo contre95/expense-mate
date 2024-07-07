@@ -305,11 +305,11 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
-	query += " ORDER BY e.expend_date"
+	query += " ORDER BY e.expend_date DESC "
 	if limit > 0 {
-		query += fmt.Sprintf(" DESC LIMIT %d OFFSET %d", limit, offset)
+		query += fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	}
-	// fmt.Println(query)
+	fmt.Println(query)
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
