@@ -125,11 +125,11 @@ INSERT OR IGNORE INTO expense_users VALUES('996b8883-4270-4deb-8dce-e14d8d9e5e58
 INSERT OR IGNORE INTO expense_users VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4','af657517-64d2-44e3-865b-142bb18296ab');
 INSERT OR IGNORE INTO expense_users VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4','efc7d7a8-aeb5-4a8a-aa38-350ca18a8873');
 
-INSERT INTO rule_users VALUES('4df66260-5457-4eae-805f-b42bfaa9cdff','9e10c58f-adb3-419b-9e20-f4fbb075661e');
-INSERT INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','9e10c58f-adb3-419b-9e20-f4fbb075661e');
-INSERT INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
-INSERT INTO rule_users VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','9e10c58f-adb3-419b-9e20-f4fbb075661e');
-INSERT INTO rule_users VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
+INSERT OR IGNORE INTO rule_users VALUES('4df66260-5457-4eae-805f-b42bfaa9cdff','9e10c58f-adb3-419b-9e20-f4fbb075661e');
+INSERT OR IGNORE INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','9e10c58f-adb3-419b-9e20-f4fbb075661e');
+INSERT OR IGNORE INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
+INSERT OR IGNORE INTO rule_users VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','9e10c58f-adb3-419b-9e20-f4fbb075661e');
+INSERT OR IGNORE INTO rule_users VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
 `
 const SQLiteTables string = ` 
 PRAGMA foreign_keys=ON;
