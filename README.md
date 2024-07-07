@@ -1,4 +1,4 @@
-<img src="./public/assets/img/logo.png)">
+<img src="./public/assets/img/logos.png)">
 # ExpenseMate
 
 ## Expenses dashboard [Refactoring]
