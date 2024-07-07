@@ -49,7 +49,7 @@
     <button hx-put="/expenses/{{.Expense.ID}}" hx-swap="innerHTML" hx-target="#mitoast"
       hx-include="#editRow{{.Expense.ID}} input, #editRow{{.Expense.ID}} select"
       hx-vals="js:{users: $('#usersEdit{{.Expense.ID}}').select2('data').map(function(item){return item.id}).join(',')}"
-      hx-trigger="click"
+      hx-trigger="click, click from:#applyAll"
       class="border border-green-300 p-1 w-full font-medium bg-green-200 text-green-500 hover:text-green-800"><i
         class='bx bx-check'></i> </button>
     <button id="cancel" hx-get="/expenses/{{ .Expense.ID }}/row" hx-swap="outerHTML" hx-target="#editRow{{.Expense.ID}}"

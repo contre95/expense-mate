@@ -1,9 +1,12 @@
 package telegram
 
 import (
+	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/domain/expense"
 	"fmt"
+	"slices"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -19,7 +22,7 @@ import (
 // </code>
 // What category does it belong ?`,
 
-func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service) {
+func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service, m *managing.Service, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
 	var update tgbotapi.Update
@@ -32,11 +35,29 @@ func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.
 		tbot.Send(msg)
 		return
 	}
-
+	userID := ""
+	usersResp, err := m.UserManager.List()
+	if err != nil {
+		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("Failed to fetch users: %v", err))
+		tbot.Send(msg)
+	}
+	for id, u := range usersResp.Users {
+		if username == u.TelegramUsername {
+			userID = id
+			break
+		}
+	}
 	expensesReq := querying.ExpenseQuerierReq{
-		Page:          0,
-		MaxPageSize:   0,
-		ExpenseFilter: querying.ExpenseQuerierFilter{ByCategoryID: []string{"unknown"}, ByShop: "", ByProduct: "", ByAmount: [2]uint{}, ByTime: [2]time.Time{}},
+		Page:        0,
+		MaxPageSize: 0,
+		ExpenseFilter: querying.ExpenseQuerierFilter{
+			ByCategoryID: []string{expense.UnkownCategoryID},
+			ByUsers:      []string{userID, expense.NoUserID},
+			ByShop:       "",
+			ByProduct:    "",
+			ByAmount:     [2]uint{},
+			ByTime:       [2]time.Time{},
+		},
 	}
 	expensesResp, err := q.ExpenseQuerier.Query(expensesReq)
 	if err != nil {
@@ -48,6 +69,7 @@ func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.
 	// Request category selection
 	var reverseMap = map[string]string{}
 	var categoryNames = []string{}
+	categoryNames = append(categoryNames, "Skip")
 	for k, v := range categoryResp.Categories {
 		reverseMap[v] = k
 		categoryNames = append(categoryNames, v)
@@ -61,11 +83,15 @@ func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("You have a total of %d expenes.\n Send /done when tired of categorizing and continue in another moment.", len(expensesResp.Expenses))))
 	for _, e := range expensesResp.Expenses {
 		updateReq := tracking.UpdateExpenseReq{
-			Amount:    e.Amount,
-			Date:      e.Date,
-			ExpenseID: e.ID,
-			Product:   e.Product,
-			Shop:      e.Shop,
+			Amount:     e.Amount,
+			CategoryID: categoryID,
+			Date:       e.Date,
+			ExpenseID:  e.ID,
+			Product:    e.Product,
+			Shop:       e.Shop,
+		}
+		for id := range e.Users {
+			updateReq.UsersID = append(updateReq.UsersID, id)
 		}
 		for {
 			expenseText := fmt.Sprintf(` %d ) Expense 💶:
@@ -88,6 +114,9 @@ What category does it belong ?
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("We are done for now. You categorized %d/%d expenses.", count, len(expensesResp.Expenses))))
 				return
 			}
+			if slices.Contains([]string{"s", "S", "skip", "Skip"}, update.Message.Text) {
+				goto skip
+			}
 			categoryID = reverseMap[update.Message.Text]
 			if _, exists := categoryResp.Categories[categoryID]; exists {
 				updateReq.CategoryID = categoryID
@@ -97,6 +126,6 @@ What category does it belong ?
 		}
 		t.ExpenseUpdater.Update(updateReq)
 		count++
+	skip:
 	}
-
 }

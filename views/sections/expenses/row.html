@@ -17,16 +17,18 @@
   <td class="py-1 px-4">${{ printf "%.2f" .Expense.Amount }}</td>
   <td class="py-1 px-4">
     <button hx-get="/expenses/{{ .Expense.ID }}/edit" hx-target="#expenseRow{{.Expense.ID}}" hx-push-url="true"
-      hx-swap="outerHTML" class="font-medium text-blue-600 hover:text-blue-800">
+      hx-trigger="click, click from:#editAll" hx-swap="outerHTML" class="font-medium text-blue-600 hover:text-blue-800">
       Edit
     </button>
-    <button id="deleteButton{{.Expense.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800" hx-swap="innerHTML"
-      hx-delete="/expenses/{{.Expense.ID}}" hx-target="#mitoast" _="on htmx:confirm(issueRequest)
+    <button id="deleteButton{{.Expense.ID}}" class="font-medium fade-me-out text-red-600 hover:text-red-800"
+      hx-swap="innerHTML" hx-delete="/expenses/{{.Expense.ID}}" hx-target="#mitoast"
+      _="on htmx:confirm(issueRequest)
              halt the event
              call Swal.fire({title: 'Confirm', text:'Delete expense. Are you sure ?'})
              if result.isConfirmed toggle .animate__fadeOut on #expenseRow{{.Expense.ID}} then wait 1s then issueRequest()">
       <i class='bx bx-trash'></i>
     </button>
-    <div hx-trigger="deletedExpense-{{.Expense.ID}} from:body" hx-get="/empty" hx-target="#expenseRow{{.Expense.ID}}"></div>
+    <div hx-trigger="deletedExpense-{{.Expense.ID}} from:body" hx-get="/empty" hx-target="#expenseRow{{.Expense.ID}}">
+    </div>
   </td>
 </tr>
