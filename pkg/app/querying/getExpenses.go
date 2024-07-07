@@ -104,10 +104,10 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 					TelegramUsername string
 				}{u.DisplayName, u.TelegramUsername}
 				expenseMap[e.ID.String()].Users[uid.String()] = user
-				resp.Expenses = append(resp.Expenses, expenseMap[u.ID.String()])
 			}
 		}
 	}
+	resp.Expenses = append(resp.Expenses, expenseMap[e.ID.String()])
 	return &resp, nil
 }
 
@@ -162,10 +162,10 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 						TelegramUsername string
 					}{u.DisplayName, u.TelegramUsername}
 					expenseMap[e.ID.String()].Users[uid.String()] = user
-					resp.Expenses = append(resp.Expenses, expenseMap[e.ID.String()])
 				}
 			}
 		}
+		resp.Expenses = append(resp.Expenses, expenseMap[e.ID.String()])
 	}
 	resp.PageSize = uint(len(resp.Expenses))
 	return &resp, nil

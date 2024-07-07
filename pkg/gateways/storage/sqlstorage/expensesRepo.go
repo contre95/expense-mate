@@ -156,7 +156,6 @@ func (sqls *ExpensesStorage) Get(id expense.ExpenseID) (*expense.Expense, error)
 		return nil, err
 	}
 	e.UserIDS = userIDs
-	fmt.Println(e)
 	return &e, nil
 }
 
@@ -246,6 +245,7 @@ func (sqls *ExpensesStorage) CountWithFilter(user_ids, categories_ids []string, 
 		whereClause := " " + strings.Join(conditions, " AND ")
 		query += " WHERE " + whereClause
 	}
+	// fmt.Println(query)
 	row := sqls.db.QueryRow(query)
 	var count uint
 	err := row.Scan(&count)
@@ -309,7 +309,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	}
-	fmt.Println(query)
+	// fmt.Println(query)
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
@@ -352,7 +352,6 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	}
 	var expenses []expense.Expense
 	for _, e := range expenseSlice {
-		fmt.Println("->", e.Date)
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}

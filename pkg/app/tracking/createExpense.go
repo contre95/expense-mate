@@ -53,7 +53,6 @@ func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error
 		}
 		newExpense.UserIDS = append(newExpense.UserIDS, pid)
 	}
-	fmt.Println(newExpense.UserIDS)
 	if createErr != nil {
 		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)
 		return nil, createErr

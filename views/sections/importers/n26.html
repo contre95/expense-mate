@@ -38,17 +38,20 @@
           style="color:#359E88;">MoneyBeams</strong></label>
       <br>
       <input id="useRules" name="useRules" type="checkbox" value="checked"
+        _="on click toggle .hidden on #rulesWarn"
         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
       <label for="useRules" class="ms-2  text-sm font-medium text-gray-900 dark:text-gray-300">
         User <strong class="text-indigo-500">Rules</strong> to automatically set a category. Go to <a class="text-blue-600" href="/settings">/settings</a> to create a new rule.
     </div>
     <br>
     <div class="flex">
-      <span class="ms-2 mt-2 text-sm font-medium text-gray-900 dark:text-gray-300 w-1/2">
+      <span class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 w-1/2">
         <span class="text-indigo-500">
           <i class='bx bx-user'></i>
         </span>
         Import all transactions with users: 
+        <br>
+        <small id="rulesWarn" class="hidden text-red-400">Transactions that matches a rule won't be assign people.</small>
       </span>
       <select id="usersImport"
         class="js-example-basic-multiple w-1/2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"

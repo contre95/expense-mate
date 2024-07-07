@@ -1,12 +1,17 @@
-<div class="p-5 m-0 flex w-full">
-  <div id="rules" hx-get="/settings/rules" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+<div class="flex my-5 mr-8">
+  <div class="p-2 m-0 w-1/2">
+    <div id="categories" hx-get="/settings/categories" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+    </div>
   </div>
-  <div id="telegram" hx-get="/settings/telegram" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
-  </div>
-</div>
-<div class="p-5 m-0 flex w-full">
-  <div id="categories" hx-get="/settings/categories" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
-  </div>
-  <div id="users" hx-get="/settings/users" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+  <div class="p-2 m-0 w-1/2">
+    <div id="telegram" hx-get="/settings/telegram" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+    </div>
+    <br>
+    <div id="users" hx-get="/settings/users" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+    </div>
+    <br>
+    <div id="rules" hx-get="/settings/rules" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+    </div>
+    <br>
   </div>
 </div>
