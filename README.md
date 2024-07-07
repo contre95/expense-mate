@@ -1,4 +1,4 @@
-![logo](./public/assets/img/logo.png
+![logo](./public/assets/img/logo.png)
 # ExpenseMate
 
 ## Expenses dashboard [Refactoring]
