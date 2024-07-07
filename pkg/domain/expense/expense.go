@@ -34,7 +34,7 @@ type Expense struct {
 	Product  string    `validate:"required,min=3"`
 	Shop     string    `validate:"min=2,max=64"`
 	Date     time.Time `validate:"required"`
-	UserIDS  []UserID
+	UsersID  []UserID
 	Category Category
 }
 

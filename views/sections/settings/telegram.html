@@ -6,7 +6,7 @@
     <div class="w-1/2 ">
       <span class="text-md text-gray-800">Bot status:</span>
       <span class='text-gray-700 bg-gray-100 border border-gray-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-        hx-get="/settings/telegram/status" hx-swap="outerHTML" hx-trigger="every 1s" hx-target="this">
+        hx-get="/settings/telegram/status" hx-swap="outerHTML" hx-trigger="every 5s, click from:#startstop" hx-target="this">
         Unknown
       </span>
       <br>
@@ -17,10 +17,10 @@
         hx-vals='{"command": "getAllowedUsers"}'></span>
       <br>
       <br>
-      <button class='text-green-700 bg-green-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
+      <button id="startstop" class='text-green-700 bg-green-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
         hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
         hx-vals='{"command": "start"}'>Start</button>
-      <button class='text-red-700 bg-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
+      <button id="startstop" class='text-red-700 bg-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded' hx-trigger="click"
         hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
         hx-vals='{"command": "stop"}'>Stop</button>
       <br>

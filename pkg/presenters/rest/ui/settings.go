@@ -5,30 +5,40 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 // Rules handlers
-func LoadRulesConfig(cq querying.CategoryQuerier, rm managing.RuleManager) func(*fiber.Ctx) error {
+func LoadRulesConfig(cq querying.CategoryQuerier, rm managing.RuleManager, um managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		categoriesResp, err := cq.Query()
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{
 				"Title": "Error",
-				"Msg":   "Could not load categories",
+				"Msg":   "Could not load categories.",
+			})
+		}
+		usersResp, err := um.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   "Could not load users.",
 			})
 		}
 		rulesResp, err := rm.List()
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{
 				"Title": "Error",
-				"Msg":   "Could not load categories",
+				"Msg":   "Could not load rules.",
 			})
 		}
 		return c.Render("sections/settings/rules", fiber.Map{
 			"Categories": categoriesResp.Categories,
 			"Rules":      rulesResp.Rules,
+			"Users":      usersResp.Users,
 		})
 	}
 }
@@ -38,9 +48,11 @@ func CreateRule(rm managing.RuleManager) func(*fiber.Ctx) error {
 		c.Append("Hx-Trigger", "reloadRulesConfig")
 		pattern := c.FormValue("rule_pattern")
 		categoryID := c.FormValue("category_id")
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		req := managing.CreateRuleReq{
 			Pattern:    pattern,
 			CategoryID: categoryID,
+			UsersID:    selectedUsers,
 		}
 		err := rm.Create(req)
 		if err != nil {

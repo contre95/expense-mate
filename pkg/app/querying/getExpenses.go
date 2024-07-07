@@ -96,7 +96,7 @@ func (s *ExpenseQuerier) GetByID(id string) (*ExpenseQuerierResp, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, uid := range e.UserIDS {
+	for _, uid := range e.UsersID {
 		for _, u := range users {
 			if u.ID == uid {
 				user := struct {
@@ -155,7 +155,7 @@ func (s *ExpenseQuerier) Query(req ExpenseQuerierReq) (*ExpenseQuerierResp, erro
 		}
 		expenseMap[e.ID.String()] = expBasic
 		for _, u := range users {
-			for _, uid := range e.UserIDS {
+			for _, uid := range e.UsersID {
 				if u.ID == uid {
 					user := struct {
 						DisplayName      string

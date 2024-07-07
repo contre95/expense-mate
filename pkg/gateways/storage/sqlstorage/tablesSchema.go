@@ -29,6 +29,13 @@ CREATE TABLE IF NOT EXISTS expenses (
   CONSTRAINT fk_expenses_category FOREIGN KEY (category_id) REFERENCES categories (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE IF NOT EXISTS rule_users (
+  rule_id VARCHAR(255) NOT NULL,
+  user_id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (rule_id, user_id),
+  FOREIGN KEY (rule_id) REFERENCES rules (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS expense_users (
   expense_id VARCHAR(255) NOT NULL,
   user_id VARCHAR(255) NOT NULL,
@@ -65,6 +72,13 @@ CREATE TABLE IF NOT EXISTS expenses (
   category_id TEXT DEFAULT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS rule_users (
+  rule_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  PRIMARY KEY (rule_id, user_id),
+  FOREIGN KEY (rule_id) REFERENCES rules (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS expense_users (

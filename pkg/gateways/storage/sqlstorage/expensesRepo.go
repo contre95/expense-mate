@@ -33,14 +33,14 @@ func (sqls *ExpensesStorage) Add(e expense.Expense) error {
 		return err
 	}
 	// Insert into expense_users table for each user_id
-	if len(e.UserIDS) > 0 {
+	if len(e.UsersID) > 0 {
 		q := "INSERT INTO expense_users (expense_id, user_id) VALUES (?,?);"
 		stmt, err := tx.Prepare(q)
 		if err != nil {
 			return err
 		}
 		defer stmt.Close()
-		for _, userID := range e.UserIDS {
+		for _, userID := range e.UsersID {
 			_, err := stmt.Exec(e.ID, userID)
 			if err != nil {
 				return err
@@ -85,14 +85,14 @@ func (sqls *ExpensesStorage) Update(e expense.Expense) error {
 		return err
 	}
 	// Insert into expense_users table for each user_id
-	if len(e.UserIDS) > 0 {
+	if len(e.UsersID) > 0 {
 		q := "INSERT INTO expense_users (expense_id, user_id) VALUES (?,?);"
 		stmt, err := tx.Prepare(q)
 		if err != nil {
 			return err
 		}
 		defer stmt.Close()
-		for _, userID := range e.UserIDS {
+		for _, userID := range e.UsersID {
 			_, err := stmt.Exec(e.ID, userID)
 			if err != nil {
 				return err
@@ -155,7 +155,7 @@ func (sqls *ExpensesStorage) Get(id expense.ExpenseID) (*expense.Expense, error)
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	e.UserIDS = userIDs
+	e.UsersID = userIDs
 	return &e, nil
 }
 
@@ -334,7 +334,7 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 				if err != nil {
 					return nil, err
 				}
-				existingExpense.UserIDS = append(existingExpense.UserIDS, uid)
+				existingExpense.UsersID = append(existingExpense.UsersID, uid)
 			}
 		} else {
 			if userID.Valid {
@@ -342,9 +342,9 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 				if err != nil {
 					return nil, err
 				}
-				e.UserIDS = []expense.UserID{uid}
+				e.UsersID = []expense.UserID{uid}
 			} else {
-				e.UserIDS = []expense.UserID{}
+				e.UsersID = []expense.UserID{}
 			}
 			expenseMap[e.ID.String()] = &e
 			expenseSlice = append(expenseSlice, &e)

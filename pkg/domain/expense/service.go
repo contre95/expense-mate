@@ -29,8 +29,8 @@ func NewCategory(name string) (*Category, error) {
 	return newCategory.Validate()
 }
 
-func NewRule(p string, cid CategoryID) (*Rule, error) {
+func NewRule(p string, uids []uuid.UUID, cid CategoryID) (*Rule, error) {
 	// TODO: Check if it is a valid regex pattern
-	rule := &Rule{uuid.New().String(), p, cid}
+	rule := &Rule{uuid.New().String(), p, cid, uids}
 	return rule.Validate()
 }

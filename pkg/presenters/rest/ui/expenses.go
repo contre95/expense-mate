@@ -103,7 +103,7 @@ func CreateExpense(eu tracking.ExpenseCreator) func(*fiber.Ctx) error {
 			Amount:     payload.Amount,
 			Shop:       payload.Shop,
 			Date:       parsedDate,
-			UserIDS:    selectedUsers,
+			UsersID:    selectedUsers,
 			CategoryID: payload.CategoryID,
 		}
 		_, err = eu.Create(req)
@@ -186,7 +186,7 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 		}
 		req := tracking.UpdateExpenseReq{
 			Amount:     payload.Amount,
-			UserIDS:    selectedUsers,
+			UsersID:    selectedUsers,
 			CategoryID: payload.CategoryID,
 			Date:       parsedDate,
 			ExpenseID:  respExpense.Expenses[0].ID,

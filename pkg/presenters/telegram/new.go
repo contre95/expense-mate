@@ -141,7 +141,7 @@ collectData:
 		Amount:     amount,
 		Shop:       shop,
 		Date:       date,
-		UserIDS:    []string{uid},
+		UsersID:    []string{uid},
 		CategoryID: categoryID,
 	}
 	// Create the expense

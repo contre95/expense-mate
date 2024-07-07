@@ -6,6 +6,7 @@ type Rule struct {
 	ID         string     `validate:"required"`
 	Pattern    string     `validate:"required"`
 	CategoryID CategoryID `validate:"required"`
+	UsersID    []UserID   // This is new
 }
 
 // Rules is the rules repository.
