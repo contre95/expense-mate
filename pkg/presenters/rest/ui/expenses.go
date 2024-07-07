@@ -129,7 +129,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 		}
 		// c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
 		return c.Render("sections/expenses/row", fiber.Map{
-			"Expense": respExpense.Expenses[c.Params("id")],
+			"Expense": respExpense.Expenses[0],
 		})
 	}
 }
@@ -190,7 +190,7 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 			UserIDS:    selectedUsers,
 			CategoryID: payload.CategoryID,
 			Date:       parsedDate,
-			ExpenseID:  respExpense.Expenses[c.Params("id")].ID,
+			ExpenseID:  respExpense.Expenses[0].ID,
 			Product:    payload.Product,
 			Shop:       payload.Shop,
 		}
@@ -223,6 +223,7 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier,
 		}
 		respExpense, err := eq.GetByID(c.Params("id"))
 		if err != nil {
+			fmt.Println(err)
 			panic("Implement error")
 		}
 		respUsers, err := mu.List()
@@ -233,7 +234,7 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier,
 			})
 		}
 		return c.Render("sections/expenses/rowEdit", fiber.Map{
-			"Expense":    respExpense.Expenses[c.Params("id")],
+			"Expense":    respExpense.Expenses[0],
 			"Categories": respCategories.Categories,
 			"NoUserID":   querying.NoUserID,
 			"Users":      respUsers.Users,
