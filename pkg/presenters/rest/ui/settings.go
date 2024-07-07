@@ -230,6 +230,7 @@ func LoadUsersConfig(um managing.UserManager) func(*fiber.Ctx) error {
 func CreateUser(um managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		c.Append("Hx-Trigger", "reloadUsersConfig")
+		c.Append("Hx-Trigger", "reloadRulesConfig ")
 		displayName := c.FormValue("display_name")
 		telegramUsername := c.FormValue("telegram_username")
 		req := managing.CreateUserReq{
@@ -253,6 +254,7 @@ func CreateUser(um managing.UserManager) func(*fiber.Ctx) error {
 func DeleteUser(um managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		c.Append("Hx-Trigger", "reloadUsersConfig")
+		c.Append("Hx-Trigger", "reloadRulesConfig ")
 		req := managing.DeleteUserReq{
 			ID: c.Params("id"),
 		}
