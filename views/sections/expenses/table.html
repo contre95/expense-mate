@@ -67,7 +67,8 @@
     </span>
     <div class="inline-flex mt-2 xs:mt-0">
       <button hx-get="/expenses/table?page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table"
-        hx-include="#filters input, #filters select" hx-push-url="true"
+        hx-include="" hx-push-url="true"
+        hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
         class="flex items-center justify-center px-4 h-10 text-base font-medium text-white rounded-s {{ if eq .CurrentPage 0 }} bg-gray-500 {{else}} hover:bg-indigo-900 bg-indigo-500 {{end}}"
         {{ if eq .CurrentPage 0 }} disabled {{end}}>
         <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -78,7 +79,8 @@
         Prev
       </button>
       <button hx-get="/expenses/table?page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
-        hx-include="#filters input, #filters select" hx-push-url="true"
+        hx-include="" hx-push-url="true"
+        hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
         class="flex items-center justify-center px-4 h-10 text-base font-medium text-white border-0 border-s border-gray-700 rounded-e {{ if eq .CurrentPage .TotalPages }} bg-gray-500 {{else}} hover:bg-indigo-900 bg-indigo-500 {{end}}"
         {{ if eq .CurrentPage .TotalPages }} disabled {{end}}>
         Next
