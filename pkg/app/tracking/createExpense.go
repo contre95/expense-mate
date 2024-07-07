@@ -20,7 +20,7 @@ type CreateExpenseReq struct {
 	Amount     float64
 	Shop       string
 	Date       time.Time
-	UserIDS    []string
+	UsersID    []string
 	CategoryID string
 }
 
@@ -45,13 +45,13 @@ func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error
 		return nil, errors.New("Couldn't fetch the category %s" + req.CategoryID)
 	}
 	newExpense, createErr := expense.NewExpense(req.Amount, req.Product, req.Shop, req.Date, *category)
-	for _, sid := range req.UserIDS {
+	for _, sid := range req.UsersID {
 		pid, err := uuid.Parse(sid)
 		if err != nil {
 			s.logger.Err("Failed to parse UUID %s", err.Error())
 			return nil, errors.New("Failed to parse UUID %s" + sid)
 		}
-		newExpense.UserIDS = append(newExpense.UserIDS, pid)
+		newExpense.UsersID = append(newExpense.UsersID, pid)
 	}
 	if createErr != nil {
 		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)

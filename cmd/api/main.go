@@ -105,14 +105,14 @@ func main() {
 	createCategory := managing.NewCategoryCreator(managerLogger, expensesStorage)
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage, ruleStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
-	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage, expensesStorage)
+	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage, expensesStorage, userStorage)
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)
 	deleteExpense := tracking.NewExpenseDeleter(trackerLogger, expensesStorage)
-	catalogExpense := tracking.NewExpenseCataloger(trackerLogger, ruleStorage)
+	catalogExpense := tracking.NewRuleApplier(trackerLogger, ruleStorage)
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense, *catalogExpense)
 
 	// Telegram Bot

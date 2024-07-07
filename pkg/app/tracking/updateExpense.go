@@ -17,7 +17,7 @@ type UpdateExpenseResp struct {
 
 type UpdateExpenseReq struct {
 	Amount     float64
-	UserIDS    []string
+	UsersID    []string
 	CategoryID string
 	Date       time.Time
 	ExpenseID  string
@@ -56,14 +56,14 @@ func (s *ExpenseUpdater) Update(req UpdateExpenseReq) (*UpdateExpenseResp, error
 	oldExpense.Shop = req.Shop
 	oldExpense.Product = req.Product
 	oldExpense.Date = req.Date
-	oldExpense.UserIDS = []uuid.UUID{}
-	for _, sid := range req.UserIDS {
+	oldExpense.UsersID = []uuid.UUID{}
+	for _, sid := range req.UsersID {
 		pid, err := uuid.Parse(sid)
 		if err != nil {
 			s.logger.Err("Failed to parse UUID %s", err.Error())
 			return nil, errors.New("Failed to parse UUID %s" + sid)
 		}
-		oldExpense.UserIDS = append(oldExpense.UserIDS, pid)
+		oldExpense.UsersID = append(oldExpense.UsersID, pid)
 	}
 	pidC, err := uuid.Parse(req.CategoryID)
 	if err != nil {

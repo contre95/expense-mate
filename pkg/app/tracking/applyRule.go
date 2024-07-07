@@ -3,31 +3,32 @@ package tracking
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+	"fmt"
 )
 
-type CatalogExpenseResp struct {
+type ApplyRuleResp struct {
 	CategoryID string
+	UsersID    []string
 	RuleID     string
 	Matched    bool
 }
 
-type CatalogExpenseReq struct {
+type ApplyRuleReq struct {
 	Product string
 	Shop    string
 }
 
-// ExpenseCataloger use case creates a category for a expense
-type ExpenseCataloger struct {
+// RuleApplier use case creates a category for a expense
+type RuleApplier struct {
 	logger app.Logger
 	rules  expense.Rules
 }
 
-func NewExpenseCataloger(l app.Logger, r expense.Rules) *ExpenseCataloger {
-	return &ExpenseCataloger{l, r}
+func NewRuleApplier(l app.Logger, r expense.Rules) *RuleApplier {
+	return &RuleApplier{l, r}
 }
 
-// Create use cases function creates a new expense
-func (s *ExpenseCataloger) Catalog(req CatalogExpenseReq) *CatalogExpenseResp {
+func (s *RuleApplier) Apply(req ApplyRuleReq) *ApplyRuleResp {
 	rules, err := s.rules.All()
 	if err != nil {
 		return nil
@@ -37,12 +38,18 @@ func (s *ExpenseCataloger) Catalog(req CatalogExpenseReq) *CatalogExpenseResp {
 		s.logger.Debug("Matching %s against %s", req.Shop, rule.Pattern)
 		if rule.Matches(req.Shop) {
 			s.logger.Info("Shop:%s matched against Pattern: %s", req.Shop, rule.Pattern)
-			return &CatalogExpenseResp{
+			uids := []string{}
+			for _, ruid := range rule.UsersID {
+				fmt.Println("uuid: ", ruid)
+				uids = append(uids, ruid.String())
+			}
+			return &ApplyRuleResp{
 				CategoryID: rule.CategoryID.String(),
+				UsersID:    uids,
 				RuleID:     rule.ID,
 				Matched:    true,
 			}
 		}
 	}
-	return &CatalogExpenseResp{Matched: false}
+	return &ApplyRuleResp{Matched: false}
 }

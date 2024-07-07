@@ -40,7 +40,7 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 	}
 }
 
-func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) func(*fiber.Ctx) error {
+func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"
 		includeTransfers := c.FormValue("externalTransactions") == "checked"
@@ -118,19 +118,18 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.ExpenseCataloger) fun
 				Amount:     amount * -1,
 				Shop:       line[1],
 				Date:       date,
-				UserIDS:    selectedUsers,
+				UsersID:    selectedUsers,
 				CategoryID: expense.UnkownCategoryID,
 			}
 			if useRules {
-				resp := eca.Catalog(tracking.CatalogExpenseReq{
+				resp := eca.Apply(tracking.ApplyRuleReq{
 					Product: req.Product,
 					Shop:    req.Shop,
 				})
 				if resp.Matched {
 					matched++
 					req.CategoryID = resp.CategoryID
-					// Remove Users
-					req.UserIDS = []string{}
+					req.UsersID = resp.UsersID
 				}
 			}
 			_, err = ec.Create(req)

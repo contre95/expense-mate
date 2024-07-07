@@ -41,7 +41,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/importers/n26", ui.LoadN26Importer(m.UserManager))
 	fi.Get("/importers", ui.LoadImporterSection())
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
-	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.ExpenseCataloger))
+	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.RuleApplier))
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
@@ -57,7 +57,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	// Rules
 	fi.Post("/settings/rules/", ui.CreateRule(m.RuleManager))
 	fi.Delete("/settings/rules/:id", ui.DeleteRule(m.RuleManager))
-	fi.Get("/settings/rules", ui.LoadRulesConfig(q.CategoryQuerier, m.RuleManager))
+	fi.Get("/settings/rules", ui.LoadRulesConfig(q.CategoryQuerier, m.RuleManager, m.UserManager))
 	// Telegram
 	fi.Get("/settings/telegram", ui.LoadTelegramConfig())
 	fi.Get("/settings/telegram/status", ui.LoadTelegramStatus(*he))
