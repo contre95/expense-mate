@@ -1,47 +1,51 @@
 {{define "sidebar"}}
 <div class="min-h-screen flex flex-row ">
-  <div class="flex flex-col w-auto border-r border-neutral-200 shadow-sm bg-neutral-50 overflow-hidden">
-    <div class="flex items-center justify-center h-25 mt-2">
+  <div class="flex flex-col w-auto border-r border-neutral-200 shadow-sm bg-emerald-50 overflow-hidden">
+    <div class="flex items-center justify-center h-25 mt-2 pointer-events-none">
       <img width="90" src="/assets/img/logo.png" alt="">
-      <h1 class="text-2xl pr-2  pt-11 text-slate-800">Expens<span style="color:#229364;" class="">Mate</span></h1>
+      <h1 class="text-2xl pr-2 pt-4 text-slate-800">Expense<br>
+        <span style="color:#229364;" class="">Mate</span>
+      </h1>
     </div>
-    <ul class="flex flex-col py-4">
+    <ul class="flex flex-col mx-4 py-4">
+      <span class="text-gray-500 text-sm">Track</span>
       <li>
-        <button id="sbBtn" hx-trigger="click,{{ .DashboardTrigger }}" hx-get="/dashboard/" hx-push-url="true" hx-swap="innerHTML"
-          class="flex flex-row items-center h-12  hover:text-green-800 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
-          <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
-              class="text-inherit bx bxs-dashboard"></i></span>
-          <span class="text-sm font-medium">Dashboard</span>
-          </a>
-      </li>
-      <li>
-        <button id="sbBtn" hx-trigger="click,{{ .ExpensesTrigger }}" hx-get="/expenses" hx-push-url="true" hx-swap="innerHTML"
-          hx-target="#contenido"
-          class="flex flex-row items-center h-12 transform  hover:text-green-800 hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+        <button id="sbBtn" hx-trigger="click,{{ .ExpensesTrigger }}" hx-get="/expenses" hx-push-url="true"
+          hx-swap="innerHTML" hx-target="#contenido"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
           <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
               class="text-inherit bx bx-table"></i></span>
           <span class="text-sm font-medium">Expenses</span>
         </button>
       </li>
       <li>
-        <button id="sbBtn" hx-trigger="click,{{ .ImporterTrigger }}" hx-get="/importers" hx-swap="innerHTML" hx-target="#contenido"
-          hx-push-url="true"
-          class="flex flex-row items-center h-12 transform  hover:text-green-800 hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+        <button id="sbBtn" hx-trigger="click,{{ .ImporterTrigger }}" hx-get="/importers" hx-swap="innerHTML"
+          hx-target="#contenido" hx-push-url="true"
+          class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
           <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
               class="text-inherit bx bxs-file-import"></i></span>
           <span class="text-sm font-medium">Import CSV</span>
         </button>
       </li>
-      <li>
-        <button id="sbBtn" hx-trigger="click,{{ .SettingsTrigger }}" hx-get="/settings" hx-swap="innerHTML" hx-target="#contenido"
-          hx-push-url="true"
-          class="flex flex-row hover:text-green-800 items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
-          <span class="inline-flex items-center text-inherit justify-center h-12 w-12 text-lg text-gray-400">
-            <i class='text-inherit bx bx-cog'></i>
-          </span>
-          <span class="text-sm font-medium">Settings</span>
-        </button>
+      <span class="text-gray-500 text-sm">Manage</span>
+      <button id="sbBtn" hx-trigger="click,{{ .SettingsTrigger }}" hx-get="/settings" hx-swap="innerHTML"
+        hx-target="#contenido" hx-push-url="true"
+        class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
+        <span class="inline-flex items-center text-inherit justify-center h-12 w-12 text-lg text-gray-400">
+          <i class='text-inherit bx bx-cog'></i>
+        </span>
+        <span class="text-sm font-medium">Settings</span>
+      </button>
       </li>
+      <span class="text-gray-500 text-sm">Upcoming</span>
+      <li>
+        <button id="sbBtn" class="flex pointer-events-none flex-row items-center h-12 text-gray-400 block">
+          <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+              class="text-inherit bx bxs-dashboard"></i></span>
+          <span class="text-sm font-medium">Dashboard</span>
+          </a>
+      </li>
+      <li>
     </ul>
   </div>
 </div>
