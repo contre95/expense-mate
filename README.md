@@ -6,7 +6,7 @@ ExpenseMate is an expense tracking app with a handy telegram bot and a front end
 ### Grafana (`refactoring`)
 ![image](https://user-images.githubusercontent.com/15664513/216789116-86d3cf33-5535-4bb9-b30c-8196c5ef1696.png)
 
-# Run locally
+### Run locally
 All configurations are set in the `.env` file and passed as environment variables
 
 ```sh
@@ -18,6 +18,19 @@ mv .env.example .env
 . <(cat .env | grep -v -e '^$' | grep -v "#" | awk '{print "export " $1}')
 # Run with air
 air -c air.toml
+```
+### Container :whale:
+```sh 
+  docker run -d \
+  --name expenses-app \
+  --restart always \
+  --env STORAGE_ENGINE=sqlite \
+  --env LOAD_SAMPLE_DATA=true \
+  --env SQLITE_PATH=./exp.db \
+  --env JSON_STORAGE_PATH=./users.json \
+  --env TELEGRAM_APITOKEN= \
+  -p 8080:8080 \
+  contre95/expense-mate:latest
 ```
 
 ### Telegram `/help`
