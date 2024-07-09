@@ -143,7 +143,7 @@ func main() {
 	if token != "" {
 		bot, err := tgbotapi.NewBotAPI(token)
 		if err != nil {
-			initLogger.Err("%v", err)
+			initLogger.Err("Couldn't init Telegram bot, please check the token: %v", err)
 			return
 		}
 		tgbotapi.SetLogger(telegramLogger)
