@@ -12,9 +12,7 @@ func Home(c *fiber.Ctx) error {
 	// render index template
 	c.Append("Hx-Trigger", "expensesTable")
 	return c.Render("main", fiber.Map{
-		"Expenses":  nil,
-		"Dashboard": nil,
-		"Settings":  nil,
+		"ExpensesTrigger": "revealed",
 	})
 }
 
