@@ -140,7 +140,6 @@ func main() {
 
 	// Telegram Bot
 	token := os.Getenv("TELEGRAM_APITOKEN")
-	initLogger.Info("TELEGRAM_APITOKEN=%s", token)
 	if token != "" {
 		bot, err := tgbotapi.NewBotAPI(token)
 		if err != nil {

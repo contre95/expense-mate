@@ -1,8 +1,8 @@
-<div id="categories" class="px-4 mx-8 w-full rounded-lg" hx-get="/settings/categories"
+<div id="categories" class="w-full rounded-lg" hx-get="/settings/categories"
   hx-trigger="reloadCategoriesConfig from:body" hx-target="this" hx-swap="outerHTML">
   <span class="text-xl block p-2  pt-2 text-orange-700"><i class='bx bx-category-alt'></i> Categories</span>
-  <div class="border border-gray-300 rounded-lg p-3 flex">
-    <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 ">
+  <div class="border inline-flex border-gray-300 rounded-lg p-3 flex">
+    <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 w-full">
       <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>

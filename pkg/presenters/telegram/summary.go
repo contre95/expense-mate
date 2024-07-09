@@ -12,7 +12,7 @@ func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Up
 	chatID := u.Message.Chat.ID
 
 	// Define time ranges
-	now := time.Now()
+	now := time.Now().Add(time.Hour * 24)
 	startOfThisMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	startOfLastMonth := startOfThisMonth.AddDate(0, -1, 0)
 	endOfLastMonth := startOfThisMonth.Add(-time.Nanosecond)
