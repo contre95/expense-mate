@@ -13,15 +13,15 @@ ExpenseMate is an expense tracking app with a handy Telegram bot and a front end
 You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot is not enabled.
 
 ### 🦭 Run in a container 
-```sh 
-  podman run -d \
+```sh
+podman run -d \
   --name expenses-app \
   --restart always \
-  --env STORAGE_ENGINE=sqlite \ # See .env.example for mysql
+  --env STORAGE_ENGINE=sqlite  \
   --env SQLITE_PATH=./exp.db \
   --env LOAD_SAMPLE_DATA=true \
   --env JSON_STORAGE_PATH=./users.json \
-  --env TELEGRAM_APITOKEN= \ # Optional
+  --env TELEGRAM_APITOKEN= \
   -p 8080:8080 \
   contre95/expense-mate:latest
 ```
