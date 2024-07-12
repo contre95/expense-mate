@@ -37,7 +37,7 @@ func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
 }
 
 // Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, commands chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
+func Run(tbot *tgbotapi.BotAPI, commands *chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
