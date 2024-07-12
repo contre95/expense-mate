@@ -147,7 +147,7 @@ func main() {
 			return
 		}
 		tgbotapi.SetLogger(telegramLogger)
-		go telegram.Run(bot, telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
+		go telegram.Run(bot, &telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
 	}
 
 	// API
