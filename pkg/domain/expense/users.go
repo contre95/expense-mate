@@ -18,6 +18,7 @@ type User struct {
 	TelegramUsername string `json:"telegram_username"`
 }
 
+// Users respository
 type Users interface {
 	All() ([]User, error)
 	Add(User) error

@@ -2,7 +2,6 @@ package managing
 
 // Service just holds all the managing use cases
 type Service struct {
-	// UserCreator     UsersCreator
 	CategoryDeleter   CategoryDeleter
 	CategoryCreator   CategoryCreator
 	CategoryUpdater   CategoryUpdater
