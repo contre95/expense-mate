@@ -1,13 +1,66 @@
-<h1 class="text-2xl font-bold text-gray-700 mb-5">Expenses Summary</h1>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {{range .Summaries}}
-  {{ $colors := nameToColor .Category }}
-  {{ if ne .Category "Unknown"}}
-  <div class='{{index $colors "bg" }} {{index $colors "txt" }} shadow-md rounded-lg border border-gray-300 p-5'>
-    <h2 class="text-xl font-semibold"><strong class="">{{.Category}}</strong> </h2>
-    <p class="mt-2">Total: ${{printf "%.2f" .Total}}</p>
-    <p class="mt-2">Count: {{.Count}}</p>
+<div class="flex w-full p-1 flex-col xl:flex-row">
+  <div class="w-full max-h-120 overflow-y-auto" id="filteredTable">
   </div>
-  {{end}}
-  {{end}}
+</div>
+
+<h1 class="text-2xl font-bold mb-5">Expenses Summary</h1>
+<!-- Past Month Summary -->
+<div class="flex w-full p-1 flex-col xl:flex-row">
+  <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
+    <h2 class="text-xl font-semibold mb-3">📅 {{ .SummariesPastMonth.Month }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {{$startOfLastMonth := .StartOfLastMonth}}
+      {{$endOfLastMonth := .EndOfLastMonth}}
+      {{range $id, $summary := .SummariesPastMonth.Summaries}}
+      {{ $name := $summary.Category }}
+      {{ $colors := nameToColor $name }}
+      <div
+        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }}  shadow-md rounded-xl p-3'>
+        <h3 class="text-xl font-semibold">{{$summary.Category}}
+        </h3>
+        <p class="mt-2 text-bold">${{printf "%.2f" $summary.Total}}
+          <button type="button" hx-trigger="click" hx-target="#filteredTable" hx-url-push="true"
+            hx-get="/expenses/table?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
+            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 rounded-md float-right'
+            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML"> View
+          </button>
+        </p>
+      </div>
+      {{end}}
+    </div>
+    <div class="mt-4 bg-neutral-100 shadow-md border border-neutral-300 text-center rounded-xl p-3">
+      <h3 class="text-xl font-semibold">Total</h3>
+      <p class="mt-2">Total: ${{printf "%.2f" .SummariesPastMonth.Total}}</p>
+    </div>
+  </div>
+  <!-- This Month Summary -->
+
+  <!-- This Month Summary -->
+  <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
+    <h2 class="text-xl font-semibold mb-3">📅 {{ .SummariesThisMonth.Month }} (so far)</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {{$startOfThisMonth := .StartOfThisMonth}}
+      {{$today:= .Today}}
+      {{range $id, $summary := .SummariesThisMonth.Summaries}}
+      {{ $name := $summary.Category }}
+      {{ $colors := nameToColor $name }}
+      <div
+        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} shadow-md rounded-xl p-3'>
+        <h3 class="text-xl font-semibold">{{$summary.Category}}
+        </h3>
+        <p class="mt-2 text-bold">${{printf "%.2f" $summary.Total}}
+          <button type="button" hx-trigger="click" hx-target="#filteredTable" hx-url-push="true"
+            hx-get="/expenses/table?from-date={{ $startOfThisMonth }}&to-date={{ $today }}&page_size=10000"
+            class='text-bold text-sm m-0 border {{index $colors "border" }} hover:border-white hover:text-white p-1 rounded-md float-right'
+            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML"> View
+          </button>
+        </p>
+      </div>
+      {{end}}
+    </div>
+    <div class="mt-4 bg-neutral-100 shadow-md border border-neutral-300 text-center rounded-xl p-3">
+      <h3 class="text-xl font-semibold">Total</h3>
+      <p class="mt-2">Total: ${{printf "%.2f" .SummariesThisMonth.Total}}</p>
+    </div>
+  </div>
 </div>

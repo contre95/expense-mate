@@ -8,16 +8,17 @@ import (
 
 // New code for summarizing expenses per category and per date
 
-type ExpensesSummary struct {
+type Summary struct {
 	Category string
-	Date     time.Time
+	Month    time.Month
 	Total    float64
 	Count    uint
 }
 
 type ExpenseSummaryResp struct {
-	Summaries    []ExpensesSummary
-	SummaryCount uint
+	Summaries map[string]Summary
+	Month     time.Month
+	Total     float64
 }
 
 type ExpenseSummaryReq struct {
@@ -40,38 +41,28 @@ func (a *ExpenseAnalyzer) Summarize(req ExpenseSummaryReq) (*ExpenseSummaryResp,
 		a.logger.Err("Could not get expenses from storage: %v", err)
 		return nil, err
 	}
-	summaryMap := make(map[string]map[time.Time]ExpensesSummary)
+	summaries := make(map[string]Summary)
+	total := 0.0
 	for _, e := range expenses {
-		if _, exists := summaryMap[e.Category.ID.String()]; !exists {
-			summaryMap[e.Category.ID.String()] = make(map[time.Time]ExpensesSummary)
-		}
-
-		dateKey := time.Date(e.Date.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, e.Date.Location())
-		if summary, exists := summaryMap[e.Category.ID.String()][dateKey]; exists {
-			summary.Total += e.Amount
-			summary.Count++
-			summaryMap[e.Category.ID.String()][dateKey] = summary
-		} else {
-			summaryMap[e.Category.ID.String()][dateKey] = ExpensesSummary{
+		total += e.Amount
+		if _, exists := summaries[e.Category.ID.String()]; !exists {
+			summaries[e.Category.ID.String()] = Summary{
 				Category: e.Category.Name,
-				Date:     dateKey,
+				Month:    e.Date.Month(),
 				Total:    e.Amount,
 				Count:    1,
 			}
 		}
-	}
+		summary := summaries[e.Category.ID.String()]
+		summary.Count += 1
+		summary.Total += e.Amount
+		summaries[e.Category.ID.String()] = summary
 
-	var summaries []ExpensesSummary
-	for _, dateSummaries := range summaryMap {
-		for _, summary := range dateSummaries {
-			summaries = append(summaries, summary)
-		}
 	}
-	a.logger.Info("Summarized %d expenses", len(summaries))
 	resp := ExpenseSummaryResp{
-		Summaries:    summaries,
-		SummaryCount: uint(len(summaries)),
+		Summaries: summaries,
+		Month:     req.TimeRange[0].Month(),
+		Total:     total,
 	}
-
 	return &resp, nil
 }
