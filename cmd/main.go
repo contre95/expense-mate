@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"expenses-app/pkg/app/analyzing"
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
@@ -29,6 +30,7 @@ func main() {
 	//Loggers
 	initLogger := logger.NewSTDLogger("INIT", logger.VIOLET)
 	healthLogger := logger.NewSTDLogger("HEALTH", logger.GREEN2)
+	analyzingLogger := logger.NewSTDLogger("Analyzing", logger.RED)
 	managerLogger := logger.NewSTDLogger("Managing", logger.CYAN)
 	querierLogger := logger.NewSTDLogger("Querying", logger.YELLOW2)
 	trackerLogger := logger.NewSTDLogger("Tracker", logger.CYAN)
@@ -129,6 +131,9 @@ func main() {
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
 
+	// analyzing
+	sumerizePerCategory := analyzing.NewSummarizer(analyzingLogger, expensesStorage)
+	analyzer := analyzing.NewService(*sumerizePerCategory)
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)
@@ -148,7 +153,7 @@ func main() {
 		tgbot := telegram.Bot{
 			API: bot,
 		}
-		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager)
+		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer)
 	}
 
 	// API
@@ -164,6 +169,6 @@ func main() {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		},
 	})
-	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier)
+	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
 	rest.Run(fiberApp, 8080)
 }

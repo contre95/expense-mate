@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"expenses-app/pkg/app/analyzing"
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
@@ -22,7 +23,7 @@ func Run(fi *fiber.App, port int) {
 
 // MapRoutes is where http REST routes are mapped to functions
 // func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, i *importing.Service, t *tracking.Service, q *querying.Service) {
-func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracking.Service, q *querying.Service) {
+func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracking.Service, q *querying.Service, a *analyzing.Service) {
 	// Home and others
 	fi.Static("/assets", "./public/assets")
 	fi.Get("/empty", ui.Empty())
@@ -64,6 +65,8 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Post("/telegram/command", ui.SendTelegramCommand(m.TelegramCommander))
 	fi.Get("/telegram/users", ui.GetTelegramUsers(m.TelegramCommander))
 	fi.Get("/telegram/status", ui.GetTelegramStatus(m.TelegramCommander))
+	fi.Get("/dashboard/categories/summary", ui.LoadCategorySummaryTable(a.ExpenseAnalyzer))
+	fi.Get("/dashboard", ui.LoadDashboardSection())
 
 	fi.Get("/api/health/app", api.Ping(*he))
 	// fi.Get("/api/health/bot", api.BotPing(*he))

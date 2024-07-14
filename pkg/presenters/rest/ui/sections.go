@@ -18,6 +18,18 @@ func LoadSettingsSection() func(*fiber.Ctx) error {
 	}
 }
 
+func LoadDashboardSection() func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		if c.Get("HX-Request") != "true" {
+			fmt.Println("No HX-Request refreshing with revealed")
+			return c.Render("main", fiber.Map{
+				"DashboardTrigger": "revealed",
+			})
+		}
+		return c.Render("sections/dashboard/index", fiber.Map{})
+	}
+}
+
 func LoadExpensesSection() func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		if c.Get("HX-Request") != "true" {

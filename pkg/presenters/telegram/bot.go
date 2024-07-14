@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"expenses-app/pkg/app/analyzing"
 	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
@@ -42,7 +43,7 @@ type Bot struct {
 }
 
 // Run starts the Telegram expense bot
-func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
+func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, a *analyzing.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -66,7 +67,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 		case "start":
 			fmt.Println("Starting new go routine")
 			if !running {
-				go b.checkUpdates(done, updates, tbot, h, t, q, m, &b.AllowedUsers, &mu)
+				go b.checkUpdates(done, updates, tbot, h, t, q, a, m, &b.AllowedUsers, &mu)
 				running = true
 			}
 		case "stop":
@@ -92,7 +93,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 
 }
 
-func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
+func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, a *analyzing.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
 	fmt.Println("Go routine started")
 	for {
 		select {
@@ -117,7 +118,7 @@ func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tb
 			case "/help":
 				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			case "/summary":
-				lastMonthSummary(tbot, &update, &updates, q)
+				lastMonthSummary(tbot, &update, a)
 			case "/unknown":
 				categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
 			case "/ping":

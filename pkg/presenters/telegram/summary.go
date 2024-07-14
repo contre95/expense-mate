@@ -1,14 +1,14 @@
 package telegram
 
 import (
-	"expenses-app/pkg/app/querying"
+	"expenses-app/pkg/app/analyzing"
 	"fmt"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, q *querying.Service) {
+func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, a *analyzing.Service) {
 	chatID := u.Message.Chat.ID
 
 	// Define time ranges
@@ -20,37 +20,28 @@ func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Up
 	pastMonth := [2]time.Time{startOfLastMonth, endOfLastMonth}
 	thisMonth := [2]time.Time{startOfThisMonth, now}
 
-	// Function to get expenses
-	getExpenses := func(timeRange [2]time.Time) ([]querying.ExpensesBasics, error) {
-		expensesReq := querying.ExpenseQuerierReq{
-			Page:        0,
-			MaxPageSize: 1000, // assuming a high number to get all expenses
-			ExpenseFilter: querying.ExpenseQuerierFilter{
-				ByCategoryID: []string{},
-				ByUsers:      []string{},
-				ByShop:       "",
-				ByProduct:    "",
-				ByAmount:     [2]uint{},
-				ByTime:       timeRange,
-			},
+	// Function to summarize expenses
+	summarizeExpenses := func(timeRange [2]time.Time) ([]analyzing.ExpensesSummary, error) {
+		summaryReq := analyzing.ExpenseSummaryReq{
+			TimeRange: timeRange,
 		}
-		expensesResp, err := q.ExpenseQuerier.Query(expensesReq)
+		summaryResp, err := a.ExpenseAnalyzer.Summarize(summaryReq)
 		if err != nil {
 			return nil, err
 		}
-		return expensesResp.Expenses, nil
+		return summaryResp.Summaries, nil
 	}
 
-	// Get expenses for past month
-	pastMonthExpenses, err := getExpenses(pastMonth)
+	// Get summarized expenses for past month
+	pastMonthSummary, err := summarizeExpenses(pastMonth)
 	if err != nil {
 		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Failed to fetch past month expenses: %v", err))
 		tbot.Send(msg)
 		return
 	}
 
-	// Get expenses for this month
-	thisMonthExpenses, err := getExpenses(thisMonth)
+	// Get summarized expenses for this month
+	thisMonthSummary, err := summarizeExpenses(thisMonth)
 	if err != nil {
 		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Failed to fetch this month expenses: %v", err))
 		tbot.Send(msg)
@@ -58,17 +49,17 @@ func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Up
 	}
 
 	// Calculate totals
-	calculateTotal := func(expenses []querying.ExpensesBasics) (total float64, categories map[string]float64) {
+	calculateTotal := func(summaries []analyzing.ExpensesSummary) (total float64, categories map[string]float64) {
 		categories = make(map[string]float64)
-		for _, expense := range expenses {
-			total += expense.Amount
-			categories[expense.Category.Name] += expense.Amount
+		for _, summary := range summaries {
+			total += summary.Total
+			categories[summary.Category] += summary.Total
 		}
 		return
 	}
 
-	pastMonthTotal, pastMonthCategories := calculateTotal(pastMonthExpenses)
-	thisMonthTotal, thisMonthCategories := calculateTotal(thisMonthExpenses)
+	pastMonthTotal, pastMonthCategories := calculateTotal(pastMonthSummary)
+	thisMonthTotal, thisMonthCategories := calculateTotal(thisMonthSummary)
 
 	// Format summary message
 	summary := fmt.Sprintf("📊 Expenses summary:\n")

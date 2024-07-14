@@ -14,11 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-const DEFAULT_DAYS_FROM_PARAM = "190"
-const DEFAULT_DAYS_TO_PARAM = "0" // Now
-const DEFAULT_PSIZE_PARAM = "30"
-const DEFAULT_PNUM_PARAM = "0"
-
 func DeleteExpense(ed tracking.ExpenseDeleter) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		req := tracking.DeleteExpenseReq{
