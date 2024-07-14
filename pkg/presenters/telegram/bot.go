@@ -31,20 +31,28 @@ const (
 	Stop
 )
 
+type UserSession struct {
+	State string
+	// Add more fields as needed to manage the conversation state
+}
+
+type Bot struct {
+	API          *tgbotapi.BotAPI
+	AllowedUsers []string
+}
+
 // Run starts the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
+func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 	var mu sync.Mutex
-	allowedUsernames := []string{}
-	err := updateAllowedUsers(&allowedUsernames, m)
+	err := b.updateAllowedUsers(m)
 	if err != nil {
 		fmt.Println("Couldn't get allowed users:", err)
 		return
 	}
-
 	running := false
 	done := make(chan bool)
 	for command := range receives {
@@ -58,7 +66,7 @@ func Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, 
 		case "start":
 			fmt.Println("Starting new go routine")
 			if !running {
-				go checkUpdates(done, updates, tbot, h, t, q, m, &allowedUsernames, &mu)
+				go b.checkUpdates(done, updates, tbot, h, t, q, m, &b.AllowedUsers, &mu)
 				running = true
 			}
 		case "stop":
@@ -69,14 +77,14 @@ func Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, 
 			}
 			fmt.Println("Go routine stopped")
 		case "updateAllowedUsers":
-			err := updateAllowedUsers(&allowedUsernames, m)
+			err := b.updateAllowedUsers(m)
 			if err != nil {
 				fmt.Println("Couldn't update allowed users:", err)
 			} else {
 				fmt.Println("Allowed users updated.")
 			}
 		case "getAllowedUsers":
-			sends <- strings.Join(allowedUsernames, ", ")
+			sends <- strings.Join(b.AllowedUsers, ", ")
 		default:
 			fmt.Println("Unknown command:", command)
 		}
@@ -84,7 +92,7 @@ func Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, 
 
 }
 
-func checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
+func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
 	fmt.Println("Go routine started")
 	for {
 		select {
@@ -113,7 +121,7 @@ func checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbot
 			case "/unknown":
 				categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
 			case "/ping":
-				ping(tbot, update, h)
+				b.ping(update, h)
 			default:
 				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			}
@@ -121,18 +129,18 @@ func checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbot
 	}
 }
 
-func ping(tbot *tgbotapi.BotAPI, update tgbotapi.Update, h *health.Service) {
-	tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, h.Ping()))
+func (b *Bot) ping(update tgbotapi.Update, h *health.Service) {
+	b.API.Send(tgbotapi.NewMessage(update.Message.Chat.ID, h.Ping()))
 }
 
-func updateAllowedUsers(allowedUsernames *[]string, m *managing.Service) error {
+func (b *Bot) updateAllowedUsers(m *managing.Service) error {
 	resp, err := m.UserManager.List()
 	if err != nil {
 		return err
 	}
-	*allowedUsernames = []string{}
+	b.AllowedUsers = []string{}
 	for _, u := range resp.Users {
-		*allowedUsernames = append(*allowedUsernames, u.TelegramUsername)
+		b.AllowedUsers = append(b.AllowedUsers, u.TelegramUsername)
 	}
 	return nil
 }

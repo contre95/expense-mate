@@ -111,14 +111,8 @@ What category does it belong ?
 			tbot.Send(msg)
 		waitforupdate:
 			update = <-*uc
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
-			fmt.Println(username, update.Message.Chat.UserName)
 			if update.Message.Chat.UserName != username {
+				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("User %s is now categorizing. Wait until he/she finishes.", username)))
 				goto waitforupdate
 			}
 
