@@ -1,7 +1,7 @@
-<div id="categories" class="w-full rounded-lg" hx-get="/settings/categories"
+<div id="categories" class="rounded-lg" hx-get="/settings/categories"
   hx-trigger="reloadCategoriesConfig from:body" hx-target="this" hx-swap="outerHTML">
   <span class="text-xl block p-2  pt-2 text-orange-700"><i class='bx bx-category-alt'></i> Categories</span>
-  <div class="border inline-flex border-gray-300 rounded-lg p-3 flex">
+  <div class="min-h-[200px] block inline-flex border border-gray-300 rounded-lg p-3">
     <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 w-full">
       <thead class="bg-gray-50">
         <tr>

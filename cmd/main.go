@@ -111,11 +111,7 @@ func main() {
 	userStorage := jsonstorage.NewStorage(path)
 
 	// Healthching
-	var botRunning int32 = 1
-	if os.Getenv("TELEGRAM_APITOKEN") == "" {
-		botRunning = 3
-	}
-	healthChecker := health.NewService(healthLogger, &botRunning)
+	healthChecker := health.NewService(healthLogger)
 
 	// Querying
 	getCategories := querying.NewCategoryQuerier(querierLogger, expensesStorage)
@@ -123,14 +119,16 @@ func main() {
 	querier := querying.NewService(*getCategories, *getExpenses)
 
 	// Managing
-	telegramCommands := make(chan string)
-	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommands)
+	telegramCommandsSends := make(chan string)
+	telegramCommandsReceived := make(chan string)
+	commandTelegram := managing.NewTelegramCommander(commanderLogger, telegramCommandsSends, telegramCommandsReceived)
 	createCategory := managing.NewCategoryCreator(managerLogger, expensesStorage)
 	deleteCategory := managing.NewCategoryDeleter(managerLogger, expensesStorage, ruleStorage)
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
 	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage, expensesStorage, userStorage)
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
+
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)
@@ -147,7 +145,7 @@ func main() {
 			return
 		}
 		tgbotapi.SetLogger(telegramLogger)
-		go telegram.Run(bot, &telegramCommands, &botRunning, &healthChecker, &tracker, &querier, &manager)
+		go telegram.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager)
 	}
 
 	// API

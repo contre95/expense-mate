@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"expenses-app/pkg/app/health"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"fmt"
@@ -172,19 +171,24 @@ func LoadTelegramConfig() func(*fiber.Ctx) error {
 	}
 }
 
-func LoadTelegramStatus(h health.Service) func(*fiber.Ctx) error {
+func GetTelegramStatus(tc managing.TelegramCommander) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
+		fmt.Println("Command to send: status")
+		resp, err := tc.CommandWithResponse("status")
+		fmt.Println("Response received: ", resp.Msg)
+		if err != nil {
+			return c.SendString(err.Error())
+		}
 		return c.Render("sections/settings/telegramStatus", fiber.Map{
-			"Status": h.CheckBotHealth(),
+			"Status": resp.Msg,
 		})
 	}
 }
 
-func SendTelegramCommandOutput(tc managing.TelegramCommander) func(*fiber.Ctx) error {
+func GetTelegramUsers(tc managing.TelegramCommander) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		cmd := c.FormValue("command")
-		fmt.Println("Command to send: ", cmd)
-		resp, err := tc.Command(cmd)
+		fmt.Println("Command to send: getAllowedUsers")
+		resp, err := tc.CommandWithResponse("getAllowedUsers")
 		fmt.Println("Response received: ", resp.Msg)
 		if err != nil {
 			return c.SendString(err.Error())

@@ -109,7 +109,19 @@ What category does it belong ?
 			msg.ParseMode = tgbotapi.ModeHTML
 			msg.ReplyMarkup = getKeybaordMarkup(categoryNames, 2)
 			tbot.Send(msg)
+		waitforupdate:
 			update = <-*uc
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			fmt.Println(username, update.Message.Chat.UserName)
+			if update.Message.Chat.UserName != username {
+				goto waitforupdate
+			}
+
 			if update.Message.Text == "/done" {
 				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("We are done for now. You categorized %d/%d expenses.", count, len(expensesResp.Expenses))))
 				return
@@ -129,5 +141,4 @@ What category does it belong ?
 	skip:
 	}
 	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("We are done for now. You categorized %d/%d expenses.", count, len(expensesResp.Expenses))))
-
 }

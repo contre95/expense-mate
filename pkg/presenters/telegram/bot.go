@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"sync/atomic"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -25,19 +24,15 @@ Check the menu for available commands, please.
 
 const NOT_ALLOWED_MSG string = "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"
 
-func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
-	mu.Lock()
-	defer mu.Unlock()
-	for _, authorizedID := range *allowedUsernames {
-		if chatID == authorizedID {
-			return true
-		}
-	}
-	return false
-}
+type ControlSignal int
 
-// Run start the Telegram expense bot
-func Run(tbot *tgbotapi.BotAPI, commands *chan string, botStatus *int32, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
+const (
+	Continue ControlSignal = iota
+	Stop
+)
+
+// Run starts the Telegram expense bot
+func Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -46,65 +41,84 @@ func Run(tbot *tgbotapi.BotAPI, commands *chan string, botStatus *int32, h *heal
 	allowedUsernames := []string{}
 	err := updateAllowedUsers(&allowedUsernames, m)
 	if err != nil {
-		fmt.Println("Couldn't get allowed users")
+		fmt.Println("Couldn't get allowed users:", err)
+		return
 	}
-	for {
-		select {
-		case update := <-updates:
-			if atomic.LoadInt32(botStatus) == 0 {
-				continue
-			}
-			if isAllowed(update.Message.Chat.UserName, &allowedUsernames, &mu) {
-				switch update.Message.Text {
-				case "/categories":
-					listCategories(tbot, &update, q)
-				case "/new":
-					createExpense(tbot, &update, &updates, t, q, m)
-				case "/help":
-					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
-				case "/summary":
-					lastMonthSummary(tbot, &update, &updates, q)
-				case "/unknown":
-					categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
-				case "/ping":
-					ping(tbot, update, h)
-				default:
-					tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
-				}
+
+	running := false
+	done := make(chan bool)
+	for command := range receives {
+		switch command {
+		case "status":
+			if running {
+				sends <- "running"
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
-				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-				tbot.Send(msg)
+				sends <- "stopped"
 			}
-		case command := <-commands:
-			switch command {
-			case "start":
-				fmt.Println(command)
-				atomic.StoreInt32(botStatus, 1)
-				commands <- string("Started")
-			case "stop":
-				fmt.Println(command)
-				atomic.StoreInt32(botStatus, 0)
-				commands <- string("Stopped")
-			case "updateAllowedUsers":
-				mu.Lock()
-				err = updateAllowedUsers(&allowedUsernames, m)
-				mu.Unlock()
-				if err != nil {
-					fmt.Println(err)
-					commands <- err.Error()
-				}
-				commands <- "Users updated."
-			case "getAllowedUsers":
-				mu.Lock()
-				commands <- strings.Join(allowedUsernames, ",") // I'm passing a copy here
-				mu.Unlock()
-			default:
-				continue
+		case "start":
+			fmt.Println("Starting new go routine")
+			if !running {
+				go checkUpdates(done, updates, tbot, h, t, q, m, &allowedUsernames, &mu)
+				running = true
 			}
+		case "stop":
+			fmt.Println("Attempting to stop go routine")
+			if running {
+				done <- true
+				running = false
+			}
+			fmt.Println("Go routine stopped")
+		case "updateAllowedUsers":
+			err := updateAllowedUsers(&allowedUsernames, m)
+			if err != nil {
+				fmt.Println("Couldn't update allowed users:", err)
+			} else {
+				fmt.Println("Allowed users updated.")
+			}
+		case "getAllowedUsers":
+			sends <- strings.Join(allowedUsernames, ", ")
+		default:
+			fmt.Println("Unknown command:", command)
 		}
 	}
 
+}
+
+func checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
+	fmt.Println("Go routine started")
+	for {
+		select {
+		case <-ImDone:
+			fmt.Println("Go routine stopped")
+			return
+		case update := <-updates:
+			if update.Message == nil {
+				continue
+			}
+			if !isAllowed(update.Message.Chat.UserName, allowedUsernames, mu) {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
+				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+				tbot.Send(msg)
+				continue
+			}
+			switch update.Message.Text {
+			case "/categories":
+				listCategories(tbot, &update, q)
+			case "/new":
+				createExpense(tbot, &update, &updates, t, q, m)
+			case "/help":
+				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+			case "/summary":
+				lastMonthSummary(tbot, &update, &updates, q)
+			case "/unknown":
+				categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
+			case "/ping":
+				ping(tbot, update, h)
+			default:
+				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+			}
+		}
+	}
 }
 
 func ping(tbot *tgbotapi.BotAPI, update tgbotapi.Update, h *health.Service) {
@@ -135,6 +149,17 @@ func getKeybaordMarkup(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarku
 		}
 	}
 	return tgbotapi.NewOneTimeReplyKeyboard(matrix...)
+}
+
+func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, authorizedID := range *allowedUsernames {
+		if chatID == authorizedID {
+			return true
+		}
+	}
+	return false
 }
 
 var NumberKeyboard = tgbotapi.NewOneTimeReplyKeyboard(

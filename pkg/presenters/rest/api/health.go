@@ -14,8 +14,8 @@ func Ping(h health.Service) func(*fiber.Ctx) error {
 	}
 }
 
-func BotPing(h health.Service) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		return c.SendString(h.CheckBotHealth())
-	}
-}
+// func BotPing(h health.Service) func(*fiber.Ctx) error {
+// 	return func(c *fiber.Ctx) error {
+// 		return c.SendString(h.CheckBotHealth())
+// 	}
+// }

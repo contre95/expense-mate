@@ -1,32 +1,33 @@
-<div id="telegram" class=" w-full rounded-lg" hx-get="/settings/telegram"
+<div id="telegram" class=" min-w-[740px] rounded-lg" hx-get="/settings/telegram"
   hx-trigger="reloadTelegramConfig from:body" hx-target="this">
   <span class="text-xl block p-2 w-full lg:w-1/3 pt-2" style="color:#1DA1DE;"><i class='bx bxl-telegram'></i> Telegram</span>
-  <div class="min-w-[750px] min-h-[200px] w-full block border border-gray-300 rounded-lg p-3">
-    <div id="telegram-not-table" class="border border-blue-300 rounded-lg p-3 flex flex-col lg:flex-row">
+  <div class="min-h-[200px] block inline-flex border border-gray-300 rounded-lg p-3">
+    <div id="telegram-not-table" class=" border border-gray-300 rounded-lg p-3 w-full flex flex-col lg:flex-row">
       <div class="w-full lg:w-1/2">
         <span class="text-md text-gray-800">Bot status:</span>
         <span class='text-gray-700 bg-gray-100 border border-gray-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-          hx-get="/settings/telegram/status" hx-swap="outerHTML"
+          hx-get="/telegram/status" hx-swap="outerHTML"
           hx-trigger="revealed delay:1s, every 5s, click from:#startstop" hx-target="this">
           Unknown
         </span>
         <br>
         <br>
         <span class="text-md text-gray-800">Allowed users:</span>
-        <span class='text-indigo-700 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
+        <br>
+        <span class='text-indigo-700 bg-indigo-200 max-w-[50px] text-sm font-medium me-2 px-2.5 py-0.5 rounded'
           hx-trigger="revealed, click from:#updateUsers delay:1s" hx-swap="innerHTML" hx-target="this"
-          hx-post="/telegram/command" hx-vals='{"command": "getAllowedUsers"}'>-</span>
+          hx-get="/telegram/users">-</span>
         <br>
         <br>
         <button id="startstop" class='text-green-700 bg-green-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/telegram/command"
           hx-vals='{"command": "start"}'>Start</button>
         <button id="startstop" class='text-red-700 bg-red-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/telegram/command"
           hx-vals='{"command": "stop"}'>Stop</button>
         <br>
         <button id="updateUsers" class='mt-5 text-indigo-500 bg-indigo-200 text-md font-medium me-2 px-2.5 py-0.5 rounded'
-          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/settings/telegram/command"
+          hx-trigger="click" hx-swap="innerHTML" hx-target="#mitoast" hx-post="/telegram/command"
           hx-vals='{"command": "updateAllowedUsers"}'>Update allowed users</button>
       </div>
       <div class="w-full lg:w-1/2 text-sm text-justify overflow-x-auto mt-5 lg:mt-0">
