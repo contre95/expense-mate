@@ -320,3 +320,4 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		})
 	}
 }
+

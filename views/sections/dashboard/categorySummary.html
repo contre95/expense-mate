@@ -6,61 +6,79 @@
 <h1 class="text-2xl font-bold mb-5">Expenses Summary</h1>
 <!-- Past Month Summary -->
 <div class="flex w-full p-1 flex-col xl:flex-row">
+
   <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
-    <h2 class="text-xl font-semibold mb-3">📅 {{ .SummariesPastMonth.Month }}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+    <div class="mt-4 bg-neutral-100 h-14 shadow-md border border-neutral-300 w-full mb-4 p-3">
+      <div class="float-left">
+        <h2 class="text-xl block font-semibold mb-3">📅 {{ .SummariesPastMonth.Month }} (so far)</h2>
+      </div>
+      <div class="float-right">
+        <h3 class="text-xl block font-semibold">Total:
+          ${{printf "%.2f" .SummariesPastMonth.Total}}
+        </h3>
+      </div>
+    </div>
+    <div class="grid  grid-flow-row grid-cols-4 auto-rows-max gap-4 auto-cols-fr absolute">
       {{$startOfLastMonth := .StartOfLastMonth}}
       {{$endOfLastMonth := .EndOfLastMonth}}
       {{range $id, $summary := .SummariesPastMonth.Summaries}}
       {{ $name := $summary.Category }}
       {{ $colors := nameToColor $name }}
       <div
-        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }}  shadow-md rounded-xl p-3'>
+        class='border min-w-[250px] {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }}  grid-item h-auto shadow-md p-2'>
         <h3 class="text-xl font-semibold">{{$summary.Category}}
         </h3>
         <p class="mt-2 text-bold">${{printf "%.2f" $summary.Total}}
-          <button type="button" hx-trigger="click" hx-target="#filteredTable" hx-url-push="true"
-            hx-get="/expenses/table?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
-            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 rounded-md float-right'
+          <button type="button" hx-trigger="click" hx-target="#tableView{{$id}}{{$startOfLastMonth}}" hx-url-push="true"
+            hx-get="/dashboard/table/mini?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
+            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 h-auto float-right'
             hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML"> View
           </button>
         </p>
+        <div id="tableView{{$id}}{{$startOfLastMonth}}" class="shadown-md overflow-x-none">
+        </div>
       </div>
       {{end}}
     </div>
-    <div class="mt-4 bg-neutral-100 shadow-md border border-neutral-300 text-center rounded-xl p-3">
-      <h3 class="text-xl font-semibold">Total</h3>
-      <p class="mt-2">Total: ${{printf "%.2f" .SummariesPastMonth.Total}}</p>
-    </div>
-  </div>
-  <!-- This Month Summary -->
 
-  <!-- This Month Summary -->
+  </div>
+
   <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
-    <h2 class="text-xl font-semibold mb-3">📅 {{ .SummariesThisMonth.Month }} (so far)</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {{$startOfThisMonth := .StartOfThisMonth}}
-      {{$today:= .Today}}
-      {{range $id, $summary := .SummariesThisMonth.Summaries}}
+
+    <div class="mt-4 bg-neutral-100 h-14 shadow-md border border-neutral-300 w-full mb-4 p-3">
+      <div class="float-left">
+        <h2 class="text-xl block font-semibold mb-3">📅 {{ .SummariesThisMonth.Month }}</h2>
+      </div>
+      <div class="float-right">
+        <h3 class="text-xl block font-semibold">Total:
+          ${{printf "%.2f" .SummariesThisMonth.Total}}
+        </h3>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex">
+      {{$startOfLastMonth := .StartOfLastMonth}}
+      {{$endOfLastMonth := .EndOfLastMonth}}
+      {{range $id, $summary := .SummariesPastMonth.Summaries}}
       {{ $name := $summary.Category }}
       {{ $colors := nameToColor $name }}
       <div
-        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} shadow-md rounded-xl p-3'>
-        <h3 class="text-xl font-semibold">{{$summary.Category}}
-        </h3>
-        <p class="mt-2 text-bold">${{printf "%.2f" $summary.Total}}
-          <button type="button" hx-trigger="click" hx-target="#filteredTable" hx-url-push="true"
-            hx-get="/expenses/table?from-date={{ $startOfThisMonth }}&to-date={{ $today }}&page_size=10000"
-            class='text-bold text-sm m-0 border {{index $colors "border" }} hover:border-white hover:text-white p-1 rounded-md float-right'
-            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML"> View
+        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} h-full shadow-md p-2'>
+        <h3 class="text-xl font-semibold">{{$summary.Category}}</h3>
+        <p class="mt-2 text-bold">
+          ${{printf "%.2f" $summary.Total}}
+          <button type="button" hx-trigger="click" hx-target="#tableView{{$id}}{{$endOfLastMonth}}" hx-url-push="true"
+            hx-get="/dashboard/table/mini?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
+            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 h-auto float-right'
+            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML">
+            View
           </button>
         </p>
+        <div id="tableView{{$id}}{{$endOfLastMonth}}" class="shadow-md overflow-/x-none"></div>
       </div>
       {{end}}
     </div>
-    <div class="mt-4 bg-neutral-100 shadow-md border border-neutral-300 text-center rounded-xl p-3">
-      <h3 class="text-xl font-semibold">Total</h3>
-      <p class="mt-2">Total: ${{printf "%.2f" .SummariesThisMonth.Total}}</p>
-    </div>
   </div>
+
 </div>

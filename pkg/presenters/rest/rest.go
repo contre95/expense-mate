@@ -66,6 +66,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/telegram/users", ui.GetTelegramUsers(m.TelegramCommander))
 	fi.Get("/telegram/status", ui.GetTelegramStatus(m.TelegramCommander))
 	fi.Get("/dashboard/categories/summary", ui.LoadCategorySummaryTable(a.ExpenseAnalyzer))
+	fi.Get("/dashboard/table/mini", ui.LoadExpensesMiniTable(q.ExpenseQuerier))
 	fi.Get("/dashboard", ui.LoadDashboardSection())
 
 	fi.Get("/api/health/app", api.Ping(*he))

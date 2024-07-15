@@ -1,0 +1,55 @@
+<style>
+  .mini-table {
+    width: 100%;
+    max-height: 107px;
+    /* Set a fixed height */
+    overflow-y: auto;
+    overflow-x: none;
+    /* Allow vertical scrolling */
+    border: 1px solid rgba(0, 0, 0, 0.13);
+    border-rounded: 15px;
+    background-color: rgba(255, 255, 255, 0.5);
+    margin-top: 15px;
+    color: rgba(0, 0, 0, 0.8);
+    ;
+    font-size: 10px;
+    /* Tiny text */
+  }
+
+  .mini-table thead th {
+    background-color: rgba(0, 0, 0, 0.11);
+    text-align: left;
+    padding: 2px;
+  }
+
+  .mini-table tbody tr {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.13);
+  }
+
+  .mini-table tbody td {
+    padding: 2px;
+  }
+</style>
+
+<div class="mini-table shadown-md  overflow-y-none">
+  <table class="w-full">
+    <thead class="">
+      <tr class="">
+        <th>Day</th>
+        <th>Shop</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody class="">
+      <!-- Example rows, replace with your data dynamically -->
+      {{ range .Expenses }}
+      <tr>
+        <td>{{ .Date.Format "Mon. 02" }}</td>
+        <td>{{ .Shop }}</td>
+        <td>{{ .Amount }}</td>
+      </tr>
+      {{end}}
+      <!-- Repeat rows as necessary -->
+    </tbody>
+  </table>
+</div>

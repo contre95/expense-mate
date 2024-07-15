@@ -2,6 +2,11 @@ package ui
 
 import (
 	"expenses-app/pkg/app/analyzing"
+	"expenses-app/pkg/app/querying"
+	"fmt"
+	"slices"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -55,6 +60,48 @@ func LoadCategorySummaryTable(ea analyzing.ExpenseAnalyzer) func(*fiber.Ctx) err
 			"StartOfLastMonth":   startOfLastMonth.Format("2006-01-02"),
 			"EndOfLastMonth":     endOfLastMonth.Format("2006-01-02"),
 			"Today":              now.Format("2006-01-02"),
+		})
+	}
+}
+
+func LoadExpensesMiniTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		pageNum, err := strconv.Atoi(c.Query("page_num", DEFAULT_PNUM_PARAM))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+		pageSize, err := strconv.Atoi(c.Query("page_size", "10000"))
+		if err != nil {
+			panic("Atoi parse error")
+		}
+		fromDate, err := time.Parse("2006-01-02", c.Query("from-date", time.Time{}.Format("2006-01-02")))
+		if err != nil {
+			panic("Date parse error")
+		}
+		toDate, err := time.Parse("2006-01-02", c.Query("to-date", time.Time{}.Format("2006-01-02")))
+		if err != nil {
+			panic("Date parse error")
+		}
+		categories := slices.DeleteFunc(strings.Split(c.Query("categories"), ","), func(s string) bool { return s == "" })
+		req := querying.ExpenseQuerierReq{
+			Page:        uint(pageNum),
+			MaxPageSize: uint(pageSize),
+			ExpenseFilter: querying.ExpenseQuerierFilter{
+				ByCategoryID: categories,
+				ByTime:       [2]time.Time{fromDate, toDate},
+			},
+		}
+		fmt.Println(req.ExpenseFilter.ByUsers)
+		resp, err := eq.Query(req)
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Table error",
+				"Msg":   "Error loading expenses table.",
+			})
+		}
+		return c.Render("sections/dashboard/miniTableView", fiber.Map{
+			"Expenses":      resp.Expenses,
+			"ExpensesCount": resp.ExpensesCount,
 		})
 	}
 }
