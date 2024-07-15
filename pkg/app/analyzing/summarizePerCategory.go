@@ -3,6 +3,7 @@ package analyzing
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
+	"fmt"
 	"time"
 )
 
@@ -44,6 +45,7 @@ func (a *ExpenseAnalyzer) Summarize(req ExpenseSummaryReq) (*ExpenseSummaryResp,
 	summaries := make(map[string]Summary)
 	total := 0.0
 	for _, e := range expenses {
+		fmt.Println(e.ID, e.Category.Name, len(e.UsersID), e.Amount)
 		total += e.Amount
 		if _, exists := summaries[e.Category.ID.String()]; !exists {
 			summaries[e.Category.ID.String()] = Summary{
@@ -52,17 +54,22 @@ func (a *ExpenseAnalyzer) Summarize(req ExpenseSummaryReq) (*ExpenseSummaryResp,
 				Total:    e.Amount,
 				Count:    1,
 			}
+		} else {
+			summary := summaries[e.Category.ID.String()]
+			summary.Count += 1
+			summary.Total += e.Amount
+			summaries[e.Category.ID.String()] = summary
 		}
-		summary := summaries[e.Category.ID.String()]
-		summary.Count += 1
-		summary.Total += e.Amount
-		summaries[e.Category.ID.String()] = summary
-
 	}
 	resp := ExpenseSummaryResp{
 		Summaries: summaries,
 		Month:     req.TimeRange[0].Month(),
 		Total:     total,
+	}
+	fmt.Println()
+	fmt.Println(len(expenses))
+	for _, v := range resp.Summaries {
+		fmt.Println(v)
 	}
 	return &resp, nil
 }

@@ -308,6 +308,9 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	}
+	fmt.Println()
+	fmt.Println(query)
+	fmt.Println()
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound
@@ -341,11 +344,11 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 					return nil, err
 				}
 				e.UsersID = []expense.UserID{uid}
+				expenseSlice = append(expenseSlice, &e)
 			} else {
 				e.UsersID = []expense.UserID{}
 			}
 			expenseMap[e.ID.String()] = &e
-			expenseSlice = append(expenseSlice, &e)
 		}
 	}
 
@@ -355,34 +358,34 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	for id := range expenseMap {
 		expenseIDs = append(expenseIDs, id)
 	}
-	if len(expenseIDs) > 0 {
-		// Build query to get all user associations for the filtered expenses
-		queryUsers := `
-			SELECT eu.expense_id, eu.user_id
-			FROM expense_users eu
-			WHERE eu.expense_id IN ('` + strings.Join(expenseIDs, "','") + `')
-		`
-		userRows, err := sqls.db.Query(queryUsers)
-		if err != nil {
-			return nil, err
-		}
-		defer userRows.Close()
-		for userRows.Next() {
-			var expenseID string
-			var userID string
-			err := userRows.Scan(&expenseID, &userID)
-			if err != nil {
-				return nil, err
-			}
-			if e, exists := expenseMap[expenseID]; exists {
-				uid, err := uuid.Parse(userID)
-				if err != nil {
-					return nil, err
-				}
-				e.UsersID = append(e.UsersID, uid)
-			}
-		}
-	}
+	// if len(expenseIDs) > 0 {
+	// 	// Build query to get all user associations for the filtered expenses
+	// 	queryUsers := `
+	// 		SELECT eu.expense_id, eu.user_id
+	// 		FROM expense_users eu
+	// 		WHERE eu.expense_id IN ('` + strings.Join(expenseIDs, "','") + `')
+	// 	`
+	// 	userRows, err := sqls.db.Query(queryUsers)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	defer userRows.Close()
+	// 	for userRows.Next() {
+	// 		var expenseID string
+	// 		var userID string
+	// 		err := userRows.Scan(&expenseID, &userID)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		if e, exists := expenseMap[expenseID]; exists {
+	// 			uid, err := uuid.Parse(userID)
+	// 			if err != nil {
+	// 				return nil, err
+	// 			}
+	// 			e.UsersID = append(e.UsersID, uid)
+	// 		}
+	// 	}
+	// }
 	var expenses []expense.Expense
 	for _, e := range expenseSlice {
 		if _, err = e.Validate(); err != nil {

@@ -55,7 +55,8 @@
         <tr id="addRow"></tr>
         {{range .Expenses}}
         <tr id="expenseRow{{ .ID }}" class="border-b border-blue-gray-200 p-0 animate__animated">
-          <td class="px-2 py-1 md:block">{{ .Date.Format "02-01-2006" }}</td>
+          <td class="px-2 py-1 md:block hidden">{{ .Date.Format "02/01/06" }}</td>
+          <td class="px-2 py-1 md:hidden">{{ .Date.Format "02/01 2006" }}</td>
           <td class="px-2 py-1 text-sm text-gray-500 ">{{.Shop}}</td>
           <td class="px-2 py-1 md:block hidden ">{{.Product }}</td>
           <td class="px-2 py-1">
