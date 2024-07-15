@@ -1,3 +1,27 @@
+<style>
+.masonry {
+  column-count: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1920px) {
+  .masonry {
+    column-count: 3;
+  }
+}
+
+.masonry-item {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+</style>
 <div class="flex w-full p-1 flex-col xl:flex-row">
   <div class="w-full max-h-120 overflow-y-auto" id="filteredTable">
   </div>
@@ -6,43 +30,6 @@
 <h1 class="text-2xl font-bold mb-5">Expenses Summary</h1>
 <!-- Past Month Summary -->
 <div class="flex w-full p-1 flex-col xl:flex-row">
-
-  <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
-
-    <div class="mt-4 bg-neutral-100 h-14 shadow-md border border-neutral-300 w-full mb-4 p-3">
-      <div class="float-left">
-        <h2 class="text-xl block font-semibold mb-3">📅 {{ .SummariesPastMonth.Month }} (so far)</h2>
-      </div>
-      <div class="float-right">
-        <h3 class="text-xl block font-semibold">Total:
-          ${{printf "%.2f" .SummariesPastMonth.Total}}
-        </h3>
-      </div>
-    </div>
-    <div class="grid  grid-flow-row grid-cols-4 auto-rows-max gap-4 auto-cols-fr absolute">
-      {{$startOfLastMonth := .StartOfLastMonth}}
-      {{$endOfLastMonth := .EndOfLastMonth}}
-      {{range $id, $summary := .SummariesPastMonth.Summaries}}
-      {{ $name := $summary.Category }}
-      {{ $colors := nameToColor $name }}
-      <div
-        class='border min-w-[250px] {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }}  grid-item h-auto shadow-md p-2'>
-        <h3 class="text-xl font-semibold">{{$summary.Category}}
-        </h3>
-        <p class="mt-2 text-bold">${{printf "%.2f" $summary.Total}}
-          <button type="button" hx-trigger="click" hx-target="#tableView{{$id}}{{$startOfLastMonth}}" hx-url-push="true"
-            hx-get="/dashboard/table/mini?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
-            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 h-auto float-right'
-            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML"> View
-          </button>
-        </p>
-        <div id="tableView{{$id}}{{$startOfLastMonth}}" class="shadown-md overflow-x-none">
-        </div>
-      </div>
-      {{end}}
-    </div>
-
-  </div>
 
   <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
 
@@ -57,14 +44,14 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex">
+    <div class="masonry">
       {{$startOfLastMonth := .StartOfLastMonth}}
       {{$endOfLastMonth := .EndOfLastMonth}}
-      {{range $id, $summary := .SummariesPastMonth.Summaries}}
+      {{range $id, $summary := .SummariesThisMonth.Summaries}}
       {{ $name := $summary.Category }}
       {{ $colors := nameToColor $name }}
       <div
-        class='border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} h-full shadow-md p-2'>
+        class='masonry-item border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} h-auto shadow-md p-2'>
         <h3 class="text-xl font-semibold">{{$summary.Category}}</h3>
         <p class="mt-2 text-bold">
           ${{printf "%.2f" $summary.Total}}
@@ -79,6 +66,46 @@
       </div>
       {{end}}
     </div>
+
   </div>
+    <div class="xl:w-1/2 mx-1 p-1 sm:w-full">
+
+    <div class="mt-4 bg-neutral-100 h-14 shadow-md border border-neutral-300 w-full mb-4 p-3">
+      <div class="float-left">
+        <h2 class="text-xl block font-semibold mb-3">📅 {{ .SummariesPastMonth.Month }}</h2>
+      </div>
+      <div class="float-right">
+        <h3 class="text-xl block font-semibold">Total:
+          ${{printf "%.2f" .SummariesThisMonth.Total}}
+        </h3>
+      </div>
+    </div>
+
+
+    <div class="masonry">
+      {{$startOfLastMonth := .StartOfLastMonth}}
+      {{$endOfLastMonth := .EndOfLastMonth}}
+      {{range $id, $summary := .SummariesPastMonth.Summaries}}
+      {{ $name := $summary.Category }}
+      {{ $colors := nameToColor $name }}
+      <div
+        class='masonry-item border {{index $colors "border" }} {{index $colors "bg" }} {{index $colors "txt" }} h-auto shadow-md p-2'>
+        <h3 class="text-xl font-semibold">{{$summary.Category}}</h3>
+        <p class="mt-2 text-bold">
+          ${{printf "%.2f" $summary.Total}}
+          <button type="button" hx-trigger="click" hx-target="#tableView{{$id}}{{$startOfLastMonth}}" hx-url-push="true"
+            hx-get="/dashboard/table/mini?from-date={{ $startOfLastMonth }}&to-date={{ $endOfLastMonth}}&page_size=10000"
+            class='text-bold text-sm border {{index $colors "border" }} hover:border-white hover:text-white p-1 h-auto float-right'
+            hx-vals='js:{categories: "{{$id}}"}' hx-swap="innerHTML">
+            View
+          </button>
+        </p>
+        <div id="tableView{{$id}}{{$startOfLastMonth}}" class="shadow-md overflow-x-none"></div>
+      </div>
+      {{end}}
+    </div>
+
+  </div>
+
 
 </div>

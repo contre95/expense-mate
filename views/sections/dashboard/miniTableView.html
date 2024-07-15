@@ -19,7 +19,9 @@
   .mini-table thead th {
     background-color: rgba(0, 0, 0, 0.11);
     text-align: left;
-    padding: 2px;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 
   .mini-table tbody tr {
@@ -27,14 +29,14 @@
   }
 
   .mini-table tbody td {
-    padding: 2px;
+    padding-left: 10px;
   }
 </style>
 
 <div class="mini-table shadown-md  overflow-y-none">
   <table class="w-full">
     <thead class="">
-      <tr class="">
+      <tr class="px-2">
         <th>Day</th>
         <th>Shop</th>
         <th>Amount</th>
@@ -46,7 +48,7 @@
       <tr>
         <td>{{ .Date.Format "Mon. 02" }}</td>
         <td>{{ .Shop }}</td>
-        <td>{{ .Amount }}</td>
+        <td>${{ .Amount }}</td>
       </tr>
       {{end}}
       <!-- Repeat rows as necessary -->
