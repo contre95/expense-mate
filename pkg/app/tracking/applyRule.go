@@ -3,7 +3,6 @@ package tracking
 import (
 	"expenses-app/pkg/app"
 	"expenses-app/pkg/domain/expense"
-	"fmt"
 )
 
 type ApplyRuleResp struct {
@@ -40,7 +39,6 @@ func (s *RuleApplier) Apply(req ApplyRuleReq) *ApplyRuleResp {
 			s.logger.Info("Shop:%s matched against Pattern: %s", req.Shop, rule.Pattern)
 			uids := []string{}
 			for _, ruid := range rule.UsersID {
-				fmt.Println("uuid: ", ruid)
 				uids = append(uids, ruid.String())
 			}
 			return &ApplyRuleResp{

@@ -308,9 +308,6 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if limit > 0 {
 		query += fmt.Sprintf("LIMIT %d OFFSET %d", limit, offset)
 	}
-	fmt.Println()
-	fmt.Println(query)
-	fmt.Println()
 	rows, err := sqls.db.Query(query)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, expense.ErrNotFound

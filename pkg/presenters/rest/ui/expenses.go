@@ -301,7 +301,6 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				ByTime:       [2]time.Time{fromDate, toDate},
 			},
 		}
-		fmt.Println(req.ExpenseFilter.ByUsers)
 		resp, err := eq.Query(req)
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{
@@ -320,4 +319,3 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		})
 	}
 }
-
