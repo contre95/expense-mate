@@ -49,7 +49,7 @@ func lastMonthSummary(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, a *analyzing.Se
 	for _, category := range thisMonthSummary.Summaries {
 		summary += fmt.Sprintf(" - %s: <code>$%.2f</code>\n", category.Category, category.Total)
 	}
-	summary += fmt.Sprintf("\nTotal</strong>: <code>$%.2f</code>", pastMonthSummary.Total)
+	summary += fmt.Sprintf("\nTotal</strong>: <code>$%.2f</code>", thisMonthSummary.Total)
 	summary += fmt.Sprintf("\n---------------------\n")
 
 	// Send message
