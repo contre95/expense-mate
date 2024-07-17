@@ -24,6 +24,7 @@ Check the menu for available commands, please.
 `
 
 const NOT_ALLOWED_MSG string = "I have keys but open no locks, I have space but no room. You can enter but not go outside, What am I?"
+const ANSWER string = "keyboard"
 
 type ControlSignal int
 
@@ -106,8 +107,8 @@ func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tb
 			}
 			if !isAllowed(update.Message.Chat.UserName, allowedUsernames, mu) {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
-				if strings.Contains(update.Message.Text, "keyboard") {
-					msg = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Yeah.. it's a 'keyboard', %s. But I'm still not letting you in.", update.Message.Chat.UserName))
+				if strings.Contains(update.Message.Text, ANSWER) {
+					msg = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Yeah.. it's a '%s', %s. But I'm still not letting you in.", ANSWER, update.Message.Chat.UserName))
 				}
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				tbot.Send(msg)
