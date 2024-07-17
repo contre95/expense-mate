@@ -1,16 +1,11 @@
-<div class="mx-5 mr-8 flex-wrap-reverse">
-  <div class="p-2 m-0">
-    <div id="categories" hx-get="/settings/categories" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
-    </div>
-    <br>
+<div class="px-5 flex-wrap justify-center w-full w-full">
+  <div id="telegram" hx-get="/settings/telegram" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+  </div>
     <div id="users" hx-get="/settings/users" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
     </div>
-  </div>
-    <div id="telegram" hx-get="/settings/telegram" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
+    <div id="categories" hx-get="/settings/categories" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
     </div>
-    <br>
     <div id="rules" hx-get="/settings/rules" hx-trigger="revealed" hx-target="this" hx-swap="outerHTML">
     </div>
-    <br>
 </div>
 
