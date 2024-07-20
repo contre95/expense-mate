@@ -3,18 +3,29 @@
   hx-swap="outerHTML">
   <div class="overflow-x-auto">
     <div id="tableButtons" class="md:block hidden">
-    <button hx-get="/expenses/table?page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table"
-      hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
-      class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage 0 }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
-      {{ if eq .CurrentPage 0 }} disabled {{end}}>
-      Prev
-    </button>
-    <button hx-get="/expenses/table?page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
-      hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
-      class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage .TotalPages }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
-      {{ if eq .CurrentPage .TotalPages }} disabled {{end}}>
-      Next
-    </button>
+      <button hx-get="/expenses/table?page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table"
+        hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
+        class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage 0 }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
+        {{ if eq .CurrentPage 0 }} disabled {{end}}>
+        Prev
+      </button>
+      <button hx-get="/expenses/table?page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
+        hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
+        class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage .TotalPages }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
+        {{ if eq .CurrentPage .TotalPages }} disabled {{end}}>
+        Next
+      </button>
+      <span class="float-right m-2 mb-3 font-medium text-gray-500 hover:text-blue-400">)</span>
+      <a class="float-right m-2 mb-3 font-medium text-gray-500 hover:text-blue-400" href="/export/csv"
+        hx-target="#mitoast" hx-swap="innerHTML">
+        <i class='bx bx-export'></i> CSV
+      </a>
+      <span class="float-right m-2 mb-3 font-medium text-gray-500 hover:text-blue-400">|</span>
+      <a class="float-right m-2 mb-3 font-medium text-gray-500 hover:text-blue-400" href="/export/json"
+        hx-target="#mitoast" hx-swap="innerHTML">
+        <i class='bx bx-export'></i> JSON
+      </a>
+      <span class="float-right m-2 mb-3 font-medium text-gray-500 hover:text-blue-400">(</span>
       <button class="float-right m-2 mb-3 font-medium text-blue-500 hover:text-blue-400" hx-get="/expenses/add"
         hx-target="#addRow" hx-swap="outerHTML">
         <i class='bx bx-plus-medical'></i>New Expense
@@ -36,7 +47,7 @@
       </div>
     </div>
     <div class="float-right m-2 mb-3 md:hidden block">
-        (<span class="text-sm font-semibold text-gray-900-white">{{ .PageSize }}</span> entries)
+      (<span class="text-sm font-semibold text-gray-900-white">{{ .PageSize }}</span> entries)
       </span>
     </div>
     <table class="min-w-full border bg-neutral-50 shadow-md border-gray-300">

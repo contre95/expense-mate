@@ -39,7 +39,6 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 		return c.Render("sections/importers/revolut", fiber.Map{})
 	}
 }
-
 func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		includeSpaces := c.FormValue("spacesTransactions") == "checked"

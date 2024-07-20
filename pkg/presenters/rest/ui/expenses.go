@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/json"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
@@ -317,5 +318,74 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 			"PageSize":      resp.PageSize,
 			"ExpensesCount": resp.ExpensesCount,
 		})
+	}
+}
+
+func ExportJSON(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		req := querying.ExpenseQuerierReq{
+			Page:          0,
+			MaxPageSize:   0,
+			ExpenseFilter: querying.ExpenseQuerierFilter{},
+		}
+		resp, err := eq.Query(req)
+		if err != nil {
+			return c.SendString(fmt.Sprintf("Error exporting trades. %s", err))
+		}
+		var data []map[string]interface{}
+		for _, t := range resp.Expenses {
+			users := []string{}
+			uids := []string{}
+			for id, u := range t.Users {
+				users = append(users, u.DisplayName)
+				uids = append(uids, id)
+			}
+			record := map[string]interface{}{
+				"ID":         t.ID,
+				"Date":       t.Date.Format("2006-01-02"),
+				"Amount":     t.Amount,
+				"Shop":       t.Shop,
+				"Product":    t.Product,
+				"CategoryID": t.Category.ID,
+				"Category":   t.Category.Name,
+				"UsersIDs":   strings.Join(uids, ","),
+				"Users":      strings.Join(users, ","),
+			}
+			data = append(data, record)
+		}
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			return c.SendString(fmt.Sprintf("Error marshalling data to JSON. %s", err))
+		}
+		c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=export_transactions.json"))
+		c.Set("Content-Type", "application/json")
+		return c.Send(jsonData)
+	}
+}
+
+func ExportCSV(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		req := querying.ExpenseQuerierReq{
+			Page:          0,
+			MaxPageSize:   0,
+			ExpenseFilter: querying.ExpenseQuerierFilter{},
+		}
+		resp, err := eq.Query(req)
+		if err != nil {
+			return c.SendString(fmt.Sprintf("Error exporting trades. %s", err))
+		}
+		file := "ID, Date, Amount, Shop, Product, CategoryID, Category, UsersIDs, Users\n"
+		for _, t := range resp.Expenses {
+			users := []string{}
+			uids := []string{}
+			for id, u := range t.Users {
+				users = append(users, u.DisplayName)
+				uids = append(uids, id)
+			}
+			file += fmt.Sprintf("%s, %s, %f, %s, %s, %s, %s, %s, %s\n", t.ID, t.Date.Format("2006-01-02"), t.Amount, t.Shop, t.Product, t.Category.ID, t.Category.Name, strings.Join(users, ";"), strings.Join(uids, ";"))
+		}
+		c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=export_transactions.csv"))
+		c.Set("Content-Type", "application/octet-stream")
+		return c.SendString(file)
 	}
 }

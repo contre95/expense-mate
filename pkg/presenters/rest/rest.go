@@ -44,6 +44,8 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
 	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.RuleApplier))
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
+	fi.Get("/export/csv", ui.ExportCSV(q.ExpenseQuerier, q.CategoryQuerier))
+	fi.Get("/export/json", ui.ExportJSON(q.ExpenseQuerier, q.CategoryQuerier))
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
 	// Users
