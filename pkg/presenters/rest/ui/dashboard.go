@@ -13,6 +13,12 @@ import (
 )
 
 // LoadExpensesTable rendersn the Expenses section
+func LoadCharts(ea analyzing.ExpenseAnalyzer) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.Render("sections/dashboard/charts", fiber.Map{})
+	}
+}
+
 func LoadCategorySummaryTable(ea analyzing.ExpenseAnalyzer) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		now := time.Now().Add(time.Hour * 24)
