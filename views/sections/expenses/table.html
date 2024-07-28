@@ -81,7 +81,7 @@
             <span class='{{index $userColor "txt" }}'>{{.DisplayName}}</span>
             {{end}}
           </td>
-          <td class="px-2 py-1">${{printf "%.2f" .Amount}}</td>
+          <td class="py-1 px-4">${{printf "%.2f" .Amount}}</td>
           <td class="px-2 py-1 md:block hidden">
             <button hx-get="/expenses/{{ .ID }}/edit" hx-target="#expenseRow{{.ID}}" hx-swap="outerHTML"
               hx-push-url="true" hx-trigger="click, click from:#editAll"

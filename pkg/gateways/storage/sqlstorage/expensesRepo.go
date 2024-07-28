@@ -356,7 +356,6 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	}
 	var expenses []expense.Expense
 	for _, e := range expenseSlice {
-		fmt.Println(e.Amount, e.UsersID)
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}

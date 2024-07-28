@@ -1,9 +1,10 @@
 <tr id="expenseRow{{ .Expense.ID }}" class="transition duration-1000 border-b border-blue-gray-200 animate__animated"
   _="on load add .bg-blue-200 to me then wait 1s then remove .bg-blue-200 from me">
-  <td class="py-1 px-4">{{ .Expense.Date.Format "02-01-2006" }}</td>
-  <td class="py-1 px-4">{{.Expense.Shop}}</td>
-  <td class="py-1 px-4">{{.Expense.Product }}</td>
-  <td class="py-1 px-4">
+  <td class="px-2 py-1 md:block hidden">{{ .Expense.Date.Format "02/01/06" }}</td>
+  <td class="px-2 py-1 md:hidden">{{ .Expense.Date.Format "02/01 2006" }}</td>
+  <td class="px-2 py-1 text-sm text-gray-500 ">{{.Expense.Shop}}</td>
+  <td class="px-2 py-1 md:block hidden ">{{.Expense.Product }}</td>
+<td class="px-2 py-1">
     {{ $colors := nameToColor .Expense.Category.Name }}
     <span
       class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{.Expense.Category.Name}}</span>
