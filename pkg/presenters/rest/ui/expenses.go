@@ -309,6 +309,10 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				"Msg":   "Error loading expenses table.",
 			})
 		}
+
+		// for _, e := range resp.Expenses {
+		// 	fmt.Println(e.Product, e.Users)
+		// }
 		return c.Render("sections/expenses/table", fiber.Map{
 			"Expenses":      resp.Expenses,
 			"CurrentPage":   resp.Page,     // Add this line
@@ -344,10 +348,10 @@ func ExportJSON(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*f
 				"ID":         t.ID,
 				"Date":       t.Date.Format("2006-01-02"),
 				"Amount":     t.Amount,
-				"Shop":       t.Shop,
+				"Shop":       strings.ReplaceAll(t.Shop, "\"", " "),
 				"Product":    t.Product,
 				"CategoryID": t.Category.ID,
-				"Category":   t.Category.Name,
+				"Category":   strings.ReplaceAll(t.Category.Name, "\"", " "),
 				"UsersIDs":   strings.Join(uids, ","),
 				"Users":      strings.Join(users, ","),
 			}
@@ -382,7 +386,7 @@ func ExportCSV(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) func(*fi
 				users = append(users, u.DisplayName)
 				uids = append(uids, id)
 			}
-			file += fmt.Sprintf("%s, %s, %f, %s, %s, %s, %s, %s, %s\n", t.ID, t.Date.Format("2006-01-02"), t.Amount, t.Shop, t.Product, t.Category.ID, t.Category.Name, strings.Join(users, ";"), strings.Join(uids, ";"))
+			file += fmt.Sprintf("%s, %s, %f, %s, %s, %s, %s, %s, %s\n", t.ID, t.Date.Format("2006-01-02"), t.Amount, strings.ReplaceAll(t.Shop, ",", " "), strings.ReplaceAll(t.Product, ",", " "), t.Category.ID, strings.ReplaceAll(t.Category.Name, ",", " "), strings.Join(users, ";"), strings.Join(uids, ";"))
 		}
 		c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=export_transactions.csv"))
 		c.Set("Content-Type", "application/octet-stream")

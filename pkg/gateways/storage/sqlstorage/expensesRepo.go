@@ -341,50 +341,22 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 					return nil, err
 				}
 				e.UsersID = []expense.UserID{uid}
-				expenseSlice = append(expenseSlice, &e)
 			} else {
 				e.UsersID = []expense.UserID{}
 			}
+			expenseSlice = append(expenseSlice, &e)
 			expenseMap[e.ID.String()] = &e
 		}
 	}
-
 	// Fetch all users associated with filtered expenses
 	// I'm updaeting the pointer used by the slice :p
 	expenseIDs := make([]string, 0, len(expenseMap))
 	for id := range expenseMap {
 		expenseIDs = append(expenseIDs, id)
 	}
-	// if len(expenseIDs) > 0 {
-	// 	// Build query to get all user associations for the filtered expenses
-	// 	queryUsers := `
-	// 		SELECT eu.expense_id, eu.user_id
-	// 		FROM expense_users eu
-	// 		WHERE eu.expense_id IN ('` + strings.Join(expenseIDs, "','") + `')
-	// 	`
-	// 	userRows, err := sqls.db.Query(queryUsers)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	defer userRows.Close()
-	// 	for userRows.Next() {
-	// 		var expenseID string
-	// 		var userID string
-	// 		err := userRows.Scan(&expenseID, &userID)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		if e, exists := expenseMap[expenseID]; exists {
-	// 			uid, err := uuid.Parse(userID)
-	// 			if err != nil {
-	// 				return nil, err
-	// 			}
-	// 			e.UsersID = append(e.UsersID, uid)
-	// 		}
-	// 	}
-	// }
 	var expenses []expense.Expense
 	for _, e := range expenseSlice {
+		fmt.Println(e.Amount, e.UsersID)
 		if _, err = e.Validate(); err != nil {
 			return nil, err
 		}
