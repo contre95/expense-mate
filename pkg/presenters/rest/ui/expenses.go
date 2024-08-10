@@ -288,7 +288,8 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		selectedUsers := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
+		// selectedUsers := slices.DeleteFunc(strings.Split(c.Query("users"), ","), func(s string) bool { return s == "" })
+		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
 		categories := slices.DeleteFunc(strings.Split(c.Query("categories"), ","), func(s string) bool { return s == "" })
 		req := querying.ExpenseQuerierReq{
 			Page:        uint(pageNum),
