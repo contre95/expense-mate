@@ -292,11 +292,12 @@ func (sqls *ExpensesStorage) Filter(user_ids, categories_ids []string, minAmount
 	if len(user_ids) > 0 && !(len(user_ids) == 1 && len(user_ids[0]) == 0) { // This means they are sending []string{""}.
 		userConditions := make([]string, len(user_ids))
 		for i, uid := range user_ids {
-			if uid == expense.NoUserID {
-				userConditions[i] = fmt.Sprintf("eu.user_id IS NULL")
-			} else {
-				userConditions[i] = fmt.Sprintf("eu.user_id ='%s'", uid)
-			}
+			userConditions[i] = fmt.Sprintf(`
+            e.id IN (
+                SELECT eu2.expense_id FROM expense_users eu2
+                WHERE eu2.user_id = '%s'
+            )
+        `, uid)
 		}
 		conditions = append(conditions, "("+strings.Join(userConditions, " OR ")+")")
 	}
