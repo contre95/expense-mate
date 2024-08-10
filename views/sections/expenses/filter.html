@@ -80,7 +80,6 @@
   <div class="mt-4">
     <button type="button" hx-trigger="click" hx-url-push="true" hx-get="/expenses/table" hx-target="#table"
       hx-include="#filters input, #filters select"
-      hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
       hx-vals="js:{users: $('#usersFilter').select2('data').map(function(item){return item.id}).join(','), categories: $('#categoriesFilter').select2('data').map(function(item){return item.id}).join(',')}"
       class="inline-flex items-center px-4 py-2 border border-teal-600 shadow-sm text-sm text-teal-800 hover:text-teal-600 hover:border-teal-500 font-medium hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-600">
       Apply Filters
