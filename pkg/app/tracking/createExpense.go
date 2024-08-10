@@ -45,6 +45,10 @@ func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error
 		return nil, errors.New("Couldn't fetch the category %s" + req.CategoryID)
 	}
 	newExpense, createErr := expense.NewExpense(req.Amount, req.Product, req.Shop, req.Date, *category)
+	if createErr != nil {
+		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)
+		return nil, createErr
+	}
 	for _, sid := range req.UsersID {
 		pid, err := uuid.Parse(sid)
 		if err != nil {
@@ -52,10 +56,6 @@ func (s *ExpenseCreator) Create(req CreateExpenseReq) (*CreateExpenseResp, error
 			return nil, errors.New("Failed to parse UUID %s" + sid)
 		}
 		newExpense.UsersID = append(newExpense.UsersID, pid)
-	}
-	if createErr != nil {
-		s.logger.Debug("Failed to validate expense %s: %v", req, createErr)
-		return nil, createErr
 	}
 	err = s.expenses.Add(*newExpense)
 	if err != nil {

@@ -121,7 +121,10 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 	return func(c *fiber.Ctx) error {
 		respExpense, err := eq.GetByID(c.Params("id"))
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
 		// c.Append("Hx-Trigger", fmt.Sprintf("reloadRow-%s", c.Params("id")))
 		return c.Render("sections/expenses/row", fiber.Map{
@@ -134,7 +137,10 @@ func LoadAddExpensesRow(cq querying.CategoryQuerier, mu managing.UserManager) fu
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
 		respUsers, err := mu.List()
 		if err != nil {
@@ -155,7 +161,10 @@ func EditExpense(eq querying.ExpenseQuerier, eu tracking.ExpenseUpdater) func(*f
 	return func(c *fiber.Ctx) error {
 		respExpense, err := eq.GetByID(c.Params("id"))
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
 		// Payload to unmarshal te form
 		payload := struct {
@@ -214,12 +223,19 @@ func LoadExpenseEditRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier,
 		}
 		respCategories, err := cq.Query()
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
+
 		respExpense, err := eq.GetByID(c.Params("id"))
 		if err != nil {
 			fmt.Println(err)
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
 		respUsers, err := mu.List()
 		if err != nil {

@@ -164,11 +164,17 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier,
 		}
 		re, err := eq.Query(req)
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   err,
+			})
 		}
 		rc, err := cq.Query()
 		if err != nil {
-			panic("Implement error")
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
 		}
 		respUsers, err := mu.List()
 		if err != nil {
