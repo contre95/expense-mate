@@ -155,7 +155,7 @@ func main() {
 		},
 	})
 	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
-	if err := rest.Run(fiberApp, 3000); err != nil {
+	if err := rest.Run(fiberApp, 3535); err != nil {
 		initLogger.Err("Error instanciating mysql: %v", err)
 		return
 	}
