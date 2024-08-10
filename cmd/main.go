@@ -17,9 +17,9 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	_ "github.com/mattn/go-sqlite3"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 )
@@ -141,6 +141,24 @@ func main() {
 	catalogExpense := tracking.NewRuleApplier(trackerLogger, ruleStorage)
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense, *catalogExpense)
 
+	// API
+	engine := html.New("./views", ".html")
+	engine.AddFunc("nameToColor", ui.NameToColor)
+	engine.AddFunc("userInMap", ui.UserInMap)
+	engine.AddFunc("unescape", ui.Unescape)
+	engine.Debug(true)
+
+	fiberApp := fiber.New(fiber.Config{
+		Views: engine,
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		},
+	})
+	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
+	if err := rest.Run(fiberApp, 3000); err != nil {
+		initLogger.Err("Error instanciating mysql: %v", err)
+		return
+	}
 	// Telegram Bot
 	token := os.Getenv("TELEGRAM_APITOKEN")
 	if token != "" {
@@ -156,19 +174,4 @@ func main() {
 		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer)
 	}
 
-	// API
-	engine := html.New("./views", ".html")
-	engine.AddFunc("nameToColor", ui.NameToColor)
-	engine.AddFunc("userInMap", ui.UserInMap)
-	engine.AddFunc("unescape", ui.Unescape)
-	engine.Debug(true)
-
-	fiberApp := fiber.New(fiber.Config{
-		Views: engine,
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-		},
-	})
-	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
-	rest.Run(fiberApp, 8080)
 }

@@ -17,8 +17,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func Run(fi *fiber.App, port int) {
-	fi.Listen(":" + strconv.Itoa(port))
+func Run(fi *fiber.App, port int) error {
+	return fi.Listen(":" + strconv.Itoa(port))
 }
 
 // MapRoutes is where http REST routes are mapped to functions
