@@ -131,9 +131,10 @@ func main() {
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
 	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
 
-	// analyzing
+	// Analyzing
 	sumerizePerCategory := analyzing.NewSummarizer(analyzingLogger, expensesStorage)
 	analyzer := analyzing.NewService(*sumerizePerCategory)
+
 	// Tracking
 	createExpense := tracking.NewExpenseCreator(trackerLogger, expensesStorage)
 	updateExpense := tracking.NewExpenseUpdater(trackerLogger, expensesStorage)
@@ -141,24 +142,6 @@ func main() {
 	catalogExpense := tracking.NewRuleApplier(trackerLogger, ruleStorage)
 	tracker := tracking.NewService(*createExpense, *updateExpense, *deleteExpense, *catalogExpense)
 
-	// API
-	engine := html.New("./views", ".html")
-	engine.AddFunc("nameToColor", ui.NameToColor)
-	engine.AddFunc("userInMap", ui.UserInMap)
-	engine.AddFunc("unescape", ui.Unescape)
-	engine.Debug(true)
-
-	fiberApp := fiber.New(fiber.Config{
-		Views: engine,
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-		},
-	})
-	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
-	if err := rest.Run(fiberApp, 3535); err != nil {
-		initLogger.Err("Error instanciating mysql: %v", err)
-		return
-	}
 	// Telegram Bot
 	token := os.Getenv("TELEGRAM_APITOKEN")
 	if token != "" {
@@ -172,6 +155,24 @@ func main() {
 			API: bot,
 		}
 		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer)
+	}
+
+	// API
+	engine := html.New("./views", ".html")
+	engine.AddFunc("nameToColor", ui.NameToColor)
+	engine.AddFunc("userInMap", ui.UserInMap)
+	engine.AddFunc("unescape", ui.Unescape)
+	engine.Debug(true)
+	fiberApp := fiber.New(fiber.Config{
+		Views: engine,
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		},
+	})
+	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
+	if err := rest.Run(fiberApp, 3535); err != nil {
+		initLogger.Err("Error instanciating mysql: %v", err)
+		return
 	}
 
 }
