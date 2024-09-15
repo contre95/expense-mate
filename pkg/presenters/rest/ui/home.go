@@ -8,7 +8,7 @@ import (
 
 const DEFAULT_DAYS_FROM_PARAM = "190"
 const DEFAULT_DAYS_TO_PARAM = "0" // Now
-const DEFAULT_PSIZE_PARAM = "30"
+const DEFAULT_PSIZE_PARAM = "4"
 const DEFAULT_PNUM_PARAM = "0"
 
 // Home hanlder reders the homescreen

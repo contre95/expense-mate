@@ -70,7 +70,7 @@ func LoadExpensesMiniTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 		if err != nil {
 			panic("Atoi parse error")
 		}
-		pageSize, err := strconv.Atoi(c.Query("page_size", "10000"))
+		pageSize, err := strconv.Atoi(c.Query("page_size", DEFAULT_PSIZE_PARAM))
 		if err != nil {
 			panic("Atoi parse error")
 		}
