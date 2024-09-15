@@ -55,7 +55,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 		fmt.Println("Couldn't get allowed users:", err)
 		return
 	}
-	running := true
+	running := false
 	done := make(chan bool)
 	for command := range receives {
 		switch command {

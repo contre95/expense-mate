@@ -4,13 +4,15 @@
   <div class="overflow-x-auto">
     <div id="tableButtons" class="md:block hidden">
       <button hx-get="/expenses/table?page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table"
-        hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
+        hx-include="#filters input, #filters select"
+        hx-vals="js:{users: $('#usersFilter').select2('data').map(function(item){return item.id}).join(','), categories: $('#categoriesFilter').select2('data').map(function(item){return item.id}).join(',')}"
         class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage 0 }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
         {{ if eq .CurrentPage 0 }} disabled {{end}}>
         Prev
       </button>
       <button hx-get="/expenses/table?page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table"
-        hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}'
+        hx-include="#filters input, #filters select"
+        hx-vals="js:{users: $('#usersFilter').select2('data').map(function(item){return item.id}).join(','), categories: $('#categoriesFilter').select2('data').map(function(item){return item.id}).join(',')}"
         class="float-left m-2 mb-3 font-medium {{ if eq .CurrentPage .TotalPages }} text-gray-500 {{else}} hover:text-indigo-900 text-indigo-500 {{end}}"
         {{ if eq .CurrentPage .TotalPages }} disabled {{end}}>
         Next
@@ -104,36 +106,4 @@
   </div>
 
   <br>
-
-  <!-- Pagination -->
-  <!-- <div class="flex flex-col items-center"> -->
-  <!--   <span class="text-sm text-gray-700 dark:text-gray-400"> -->
-  <!--     Showing page <span class="font-semibold text-gray-900 dark:text-white">{{ .CurrentPage }}/{{ .TotalPages }}</span> -->
-  <!--     (<span class="font-semibold text-gray-900 dark:text-white">{{ .PageSize }}</span> entries) -->
-  <!--   </span> -->
-  <!--   <div class="inline-flex mt-2 xs:mt-0"> -->
-  <!--     <button hx-get="/expenses/table?page_num={{ .PrevPage }}" hx-swap="outerHTML" hx-target="#table" -->
-  <!--       hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}' -->
-  <!--       class="flex items-center justify-center px-2 h-10 text-base font-medium text-white rounded-s {{ if eq .CurrentPage 0 }} bg-gray-500 {{else}} hover:bg-indigo-900 bg-indigo-500 {{end}}" -->
-  <!--       {{ if eq .CurrentPage 0 }} disabled {{end}}> -->
-  <!--       <svg class="w-3.5 h-3.5 me-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" -->
-  <!--         viewBox="0 0 14 10"> -->
-  <!--         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" -->
-  <!--           d="M13 5H1m0 0 4 4M1 5l4-4" /> -->
-  <!--       </svg> -->
-  <!--       Prev -->
-  <!--     </button> -->
-  <!--     <button hx-get="/expenses/table?page_num={{ .NextPage }}" hx-swap="outerHTML" hx-target="#table" -->
-  <!--       hx-include="#filters input" hx-vals='js:{categories: getSelectedCategories(), users: getFilteredUsers()}' -->
-  <!--       class="flex items-center justify-center px-2 h-10 text-base font-medium text-white border-0 border-s border-gray-700 rounded-e {{ if eq .CurrentPage .TotalPages }} bg-gray-500 {{else}} hover:bg-indigo-900 bg-indigo-500 {{end}}" -->
-  <!--       {{ if eq .CurrentPage .TotalPages }} disabled {{end}}> -->
-  <!--       Next -->
-  <!--       <svg class="w-3.5 h-3.5 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" -->
-  <!--         viewBox="0 0 14 10"> -->
-  <!--         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" -->
-  <!--           d="M1 5h12m0 0L9 1m4 4L9 9" /> -->
-  <!--       </svg> -->
-  <!--     </button> -->
-  <!--   </div> -->
-  <!-- </div> -->
 </div>

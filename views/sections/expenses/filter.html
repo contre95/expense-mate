@@ -26,6 +26,7 @@
             {{ range $id, $user := .Users }}
             <option value="{{$id}}">{{$user.DisplayName}}</option>
             {{end}}
+            <option value="{{.NoUserID}}">No user</option>
           </select>
           <script>
             $(document).ready(function () {

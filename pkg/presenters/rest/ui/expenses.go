@@ -326,7 +326,6 @@ func LoadExpensesTable(eq querying.ExpenseQuerier) func(*fiber.Ctx) error {
 				"Msg":   "Error loading expenses table.",
 			})
 		}
-
 		// for _, e := range resp.Expenses {
 		// 	fmt.Println(e.Product, e.Users)
 		// }
