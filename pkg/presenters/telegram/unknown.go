@@ -25,7 +25,7 @@ import (
 func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service, m *managing.Service, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
-	var update tgbotapi.Update
+	// var update tgbotapi.Update
 	var categoryID string
 
 	// Fetch available categories
@@ -80,7 +80,7 @@ func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.
 		return
 	}
 	count := 0
-	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("You have a total of %d expenes.\n Send /done when tired of categorizing and continue in another moment.", len(expensesResp.Expenses))))
+	tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("User @"+u.Message.Chat.UserName+" have a total of %d expenes.\nSend /done when tired of categorizing and continue in another moment.", len(expensesResp.Expenses))))
 	for _, e := range expensesResp.Expenses {
 		updateReq := tracking.UpdateExpenseReq{
 			Amount:     e.Amount,
@@ -107,10 +107,10 @@ What category does it belong ?
 
 			msg = tgbotapi.NewMessage(chatID, expenseText)
 			msg.ParseMode = tgbotapi.ModeHTML
-			msg.ReplyMarkup = getKeybaordMarkup(categoryNames, 2)
+			msg.ReplyMarkup = getKeybaordMarkup(categoryNames, 3)
 			tbot.Send(msg)
 		waitforupdate:
-			update = <-*uc
+			update := <-*uc
 			if update.Message.Chat.UserName != username {
 				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("User %s is now categorizing. Wait until he/she finishes.", username)))
 				goto waitforupdate
