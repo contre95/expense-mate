@@ -6,13 +6,9 @@
   {{template "head" .}}
 </head>
 
-<body class="bg-gray-50">
-  <div class="flex">
-    <!-- Sidebar toggle button for mobile -->
-    <button id="sidebarToggle" class="lg:hidden p-2 m-2 bg-gray-200 rounded-md" onclick="toggleSidebar()">
-      <i class="bx bx-menu text-xl"></i>
-    </button>
-    {{template "sidebar" .}}
+<body class="bg-gray-50 pt-16">
+  <div class="max-w-screen-2xl mx-auto">
+    {{template "topbar" .}}
     <main class="flex-1 overflow-y-auto lg:h-screen">
       <div id="contenido">
       </div>
@@ -20,12 +16,6 @@
   </div>
   <div id="mitoast" class="absolute m-4 right-0 z-50 top-0 ">
   </div>
-  <script>
-    function toggleSidebar() {
-      var sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('hidden');
-    }
-  </script>
 </body>
 {{template "scripts" .}}
 

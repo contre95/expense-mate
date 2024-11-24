@@ -4,13 +4,19 @@
 }
 
 .user-display-name:not(:last-child)::after {
-  content: "|"; /* Insert your desired character */
-  margin: 0 5px; /* Adjust spacing as needed */
-  color: red; /* Adjust color as needed */
+  content: "|";
+  /* Insert your desired character */
+  margin: 0 5px;
+  /* Adjust spacing as needed */
+  color: red;
+  /* Adjust color as needed */
 }
 
-.user-display-name{ color: red;}
+.user-display-name {
+  color: red;
+}
 
 body {
-  background-color=#fff7ed;
+  /* Adjust based on the height of your topbar */
+  background-color: #fff7ed;
 }

@@ -1,0 +1,67 @@
+{{define "topbar"}}
+<!-- <div id="topbar" class="flex w-full h-16 border-b border-neutral-200 shadow-sm bg-stone-50"> -->
+<div id="topbar" class="flex w-full h-16 border-b border-neutral-200 shadow-sm bg-stone-50 fixed top-0 left-0 z-10">
+  <div class="flex items-center justify-start h-full px-4">
+    <img width="40" src="/assets/img/logo.png" alt="" />
+    <h1 class="text-xl pl-2 text-slate-800">
+      Expense<span style="color: #229364">Mate</span>
+    </h1>
+  </div>
+  <ul class="flex flex-row items-center ml-auto px-4">
+    <li class="mx-2">
+      <button id="sbBtn" hx-trigger="click,{{ .DashboardTrigger }}" hx-get="/dashboard" hx-push-url="true"
+        hx-swap="innerHTML" hx-target="#contenido"
+        class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
+        <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+            class="text-inherit bx bxs-dashboard"></i></span>
+        <span class="hidden md:inline text-sm font-medium">Dashboard</span>
+      </button>
+    </li>
+    <li class="mx-2">
+      <button id="tbBtn" hx-trigger="click,{{ .ExpensesTrigger }}" hx-get="/expenses" hx-push-url="true"
+        hx-swap="innerHTML" hx-target="#contenido"
+        class="flex flex-row items-center h-12 transform hover:translate-y-1 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
+        <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+            class="text-inherit bx bx-table"></i></span>
+        <span class="hidden md:inline text-sm font-medium">Expenses</span>
+      </button>
+    </li>
+    <li class="mx-2">
+      <button id="tbBtn" hx-trigger="click,{{ .ImporterTrigger }}" hx-get="/importers" hx-swap="innerHTML"
+        hx-target="#contenido" hx-push-url="true"
+        class="flex flex-row items-center h-12 transform hover:translate-y-1 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
+        <span class="inline-flex text-inherit items-center justify-center h-12 w-12 text-lg text-gray-400"><i
+            class="text-inherit bx bxs-file-import"></i></span>
+        <span class="hidden md:inline text-sm font-medium">Import</span>
+      </button>
+    </li>
+    <li class="mx-2">
+      <button id="tbBtn" hx-trigger="click,{{ .SettingsTrigger }}" hx-get="/settings" hx-swap="innerHTML"
+        hx-target="#contenido" hx-push-url="true"
+        class="flex flex-row items-center h-12 transform hover:translate-y-1 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-600">
+        <span class="inline-flex items-center text-inherit justify-center h-12 w-12 text-lg text-gray-400">
+          <i class="text-inherit bx bx-cog"></i>
+        </span>
+        <span class="hidden md:inline text-sm font-medium">Settings</span>
+      </button>
+    </li>
+  </ul>
+  <div class="flex items-center justify-end h-full px-4">
+    <a href="https://github.com/contre95/expense-mate" target="_blank">
+      <i class="bx bxl-github text-3xl text-gray-500"></i>
+    </a>
+  </div>
+</div>
+<script>
+  // Function to initialize select2
+  function initializeSelect2() {
+    $(".js-example-basic-multiple").select2({
+      theme: "classic",
+    });
+  }
+  // Initialize select2 after htmx from:body load
+  document.body.addEventListener("htmx:load", function (event) {
+    initializeSelect2();
+  });
+</script>
+{{end}}
