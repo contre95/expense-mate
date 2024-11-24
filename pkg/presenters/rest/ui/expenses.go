@@ -133,6 +133,30 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 	}
 }
 
+func LoadAddExpensesForm(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		respCategories, err := cq.Query()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
+		}
+		respUsers, err := mu.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "User error",
+				"Msg":   "Could not load users.",
+			})
+		}
+		return c.Render("sections/expenses/formAdd", fiber.Map{
+			"Categories": respCategories.Categories,
+			"NoUserID":   querying.NoUserID,
+			"Users":      respUsers.Users,
+		})
+	}
+}
+
 func LoadAddExpensesRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()

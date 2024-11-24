@@ -1,21 +1,19 @@
 {{define "main"}}
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
   {{template "head" .}}
 </head>
 
-<body class="bg-gray-50 pt-16">
-  <div class="max-w-screen-2xl mx-auto">
-    {{template "topbar" .}}
-    <main class="flex-1 overflow-y-auto lg:h-screen">
-      <div id="contenido">
-      </div>
+<body class="bg-zinc-50 pt-20">
+  {{template "topbar" .}}
+  <div class="max-w-screen-xl mx-auto shadow-lg border border-neutral-300 rounded-lg bg-stone-50">
+    <main class="flex-1 overflow-y-auto">
+      <div id="contenido"></div>
     </main>
   </div>
-  <div id="mitoast" class="absolute m-4 right-0 z-50 top-0 ">
-  </div>
+  <div id="mitoast" class="absolute m-4 right-0 z-50 top-0"></div>
 </body>
 {{template "scripts" .}}
 

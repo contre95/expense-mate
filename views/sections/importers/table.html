@@ -1,5 +1,5 @@
 <div id="table" hx-get="/importers/table" hx-trigger="reloadImportTable from:body" hx-swap="outerHTML">
-  <div class="overflow-x-auto">
+  <div class="">
     <span class="ml-2 text-xl text-gray-400">{{ .ExpensesCount }} Uncatalogged expenses</span>
     <br>
     <span class="ml-2 text-md text-gray-500">Expenses will appear in this section when imported for you to manually set
@@ -13,6 +13,7 @@
     <!--   class="float-right m-2 mb-3 font-medium text-pink-600 hover:text-pink-800"> -->
     <!--   Refresh -->
     <!-- </button> -->
+    <div class="overflow-x-auto min-w-full">
     <table class="min-w-full border bg-neutral-50 shadow-md border-gray-300">
       <thead class="rounded-full">
         <tr class="bg-slate-100 text-gray-400 rounded-lg ">
@@ -99,6 +100,7 @@
         {{end}}
       </tbody>
     </table>
+    </div>
   </div>
   <br>
   <div class="flex flex-col items-center">

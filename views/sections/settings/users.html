@@ -1,6 +1,7 @@
+<div class="min-w-full border border-gray-300 rounded-lg my-3">
 <div id="users" class="rounded-lg w-full" hx-get="/settings/users" hx-trigger="reloadUsersConfig from:body" hx-target="this">
   <span class="text-xl block p-2 pt-2 text-indigo-500"><i class='bx bx-user'></i> Users</span>
-  <div class=" min-h-[200px] w-full block inline-flex border border-gray-300 rounded-lg p-3">
+  <div class=" overflow-x-auto min-h-[200px] w-full block inline-flex p-3">
     <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg w-full">
       <thead class="bg-gray-50">
         <tr>
@@ -41,5 +42,6 @@
       </tbody>
     </table>
   </div>
+</div>
 </div>
 

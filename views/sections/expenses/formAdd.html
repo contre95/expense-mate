@@ -1,0 +1,59 @@
+<div id="addForm">
+  <div class="border-b border-blue-gray-200 shadow-lg bg-blue-100 fade-me-out p-4">
+    <div class="mb-4">
+      <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+      <input class="bg-gray-50 px-2 rounded-md w-full" type="date" id="date" name="date" value="" />
+    </div>
+    <div class="mb-4">
+      <label for="shop" class="block text-sm font-medium text-gray-700">Shop</label>
+      <input class="bg-gray-50 px-2 rounded-md w-full" type="text" id="shop" name="shop" value="" />
+    </div>
+    <div class="mb-4">
+      <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
+      <input class="bg-gray-50 px-2 rounded-md w-full" type="text" id="product" name="product" value="" />
+    </div>
+    <div class="mb-4">
+      <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+      <select id="category" name="category"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
+        {{ $current := .Expense.Category }} {{ range $id, $name := .Categories
+        }} {{ if eq $id "unknown"}}
+        <option value="{{$id}}" selected>{{$name}}</option>
+        {{else}}
+        <option value="{{$id}}">{{$name}}</option>
+        {{end}} {{end}}
+      </select>
+    </div>
+    <div class="mb-4">
+      <label for="usersAdd" class="block text-sm font-medium text-gray-700">Users</label>
+      <select id="usersAdd" style="width: 100%"
+        class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+        name="users[]" multiple="multiple">
+        {{ range $id, $user := .Users }}
+        <option value="{{$id}}">{{$user.DisplayName}}</option>
+        {{end}}
+      </select>
+    </div>
+    <div class="mb-4">
+      <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
+      <div class="flex items-center">
+        <span class="mr-2">$</span>
+        <input class="w-full px-1 border border-gray-300 rounded-md" type="number" min="0" id="amount" name="amount"
+          value="" />
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <button id="apply" hx-trigger="click"
+        class="border border-green-300 p-2 font-medium bg-green-200 text-green-500 hover:text-green-800">
+        <i class="bx bx-check"></i> Apply
+      </button>
+      <div hx-post="/expenses" hx-swap="innerHTML" hx-target="#mitoast" hx-include="#addRow input, #addRow select"
+        hx-vals="js:{users: $('#usersAdd').select2('data').map(function(item){return item.id}).join(',')}"
+        hx-trigger="click from:#apply"></div>
+      <button id="cancel" hx-get="/empty" hx-target="#addForm" hx-swap="innerHTML"
+        class="border border-red-300 p-2 font-medium bg-red-200 text-red-500 hover:text-red-800">
+        <i class="bx bx-x"></i> Cancel
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,79 +1,93 @@
-<div id="rules" class="rounded-lg w-full" hx-get="/settings/rules" hx-trigger="reloadRulesConfig from:body"
-  hx-target="this">
-  <span class="text-xl block p-2 pt-2 text-purple-500"><i class='bx bx-ruler'></i> Rules</span>
-  <div class="w-full  block inline-flex border border-gray-300 rounded-lg p-3">
-    <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 w-full">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase ">Pattern</th>
-          <th class="px-6 py-3 w-64 text-left text-xs font-medium text-gray-500 uppercase ">Users</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase ">Category</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase float-right">Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody id="rules-list" class="bg-white divide-y divide-gray-200 w-full">
-        <tr>
-          <td class='pl-6 py-2 text-sm font-medium text-gray-900'>
-            <input type="text" id="rule_pattern" name="rule_pattern" value="" placeholder="Pattern for Shop"
-              class="mt-1 px-1 border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-          </td>
-          <td class="py-0 px-2">
-            <select id="usersRules" style="width:75%;"
-              class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
-              name="users[]" multiple="multiple">
-              {{ range $id, $user := .Users }}
-              <option value="{{$id}}">{{$user.DisplayName}}</option>
-              {{end}}
-            </select>
-            <script>
-              // Function to initialize select2
-              function initializeSelect2() {
-                $('.js-example-basic-multiple').select2({
-                  theme: "classic"
+<div class="min-w-full">
+  <div id="rules" class="rounded-lg w-full" hx-get="/settings/rules" hx-trigger="reloadRulesConfig from:body"
+    hx-target="this">
+    <span class="text-xl block p-2 pt-2 text-purple-500"><i class="bx bx-ruler"></i> Rules</span>
+    <div class="overflow-x-auto w-full block inline-flex border border-gray-300 rounded-lg p-3">
+      <table class="divide-y divide-gray-200 border border-gray-300 rounded-lg p-3 w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              Pattern
+            </th>
+            <th class="px-6 py-3 w-64 text-left text-xs font-medium text-gray-500 uppercase">
+              Users
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              Category
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase float-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody id="rules-list" class="bg-white divide-y divide-gray-200 w-full">
+          <tr>
+            <td class="pl-6 py-2 text-sm font-medium text-gray-900">
+              <input type="text" id="rule_pattern" name="rule_pattern" value="" placeholder="Pattern for Shop"
+                class="mt-1 px-1 border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            </td>
+            <td class="py-0 px-2">
+              <select id="usersRules" style="width: 75%"
+                class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+                name="users[]" multiple="multiple">
+                {{ range $id, $user := .Users }}
+                <option value="{{$id}}">{{$user.DisplayName}}</option>
+                {{end}}
+              </select>
+              <script>
+                // Function to initialize select2
+                function initializeSelect2() {
+                  $(".js-example-basic-multiple").select2({
+                    theme: "classic",
+                  });
+                }
+                // Initialize select2 after htmx from:body load
+                document.body.addEventListener("htmx:load", function (event) {
+                  initializeSelect2();
                 });
-              }
-              // Initialize select2 after htmx from:body load
-              document.body.addEventListener('htmx:load', function (event) {initializeSelect2();});
-            </script>
-          </td>
-          <td class="py-0 px-4">
-            <select id="category_id" name="category_id"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-gray-500 block w-35 p-1">
-              {{ range $id, $name := .Categories }}
-              <option value="{{$id}}">{{$name}}</option>
-              {{end}}
-            </select>
-          </td>
-          <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
-            <button hx-post="/settings/rules" hx-target="#mitoast" hx-swap="innerHTML"
-              hx-vals="js:{users: $('#usersRules').select2('data').map(function(item){return item.id}).join(',')}"
-              hx-include="#rule_pattern, #category_id" class="text-indigo-600 hover:text-indigo-900">Add</button>
-          </td>
-        </tr>
-        {{ range $rid, $rule := .Rules }}
-        {{ $colors := nameToColor $rule.Category.Name}}
-        <tr>
-          <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
-            <span class='text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ $rule.Pattern }}</span>
-          </td>
-          <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
-            <span class='text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{ range $rule.Users }}{{.DisplayName}}
-              {{end}}</span>
-          </td>
-          <td class='px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900'>
-            <span
-              class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{
-              $rule.Category.Name }}</span>
-          </td>
-          <td class="px-6 py-2 whitespace-nowrap text-sm font-medium float-right">
-            <button hx-delete="/settings/rules/{{$rid}}" hx-target="#mitoast" hx-swap="innerHTML"
-              class="text-red-600 hover:text-red-900 ml-4">Delete</button>
-          </td>
-        </tr>
-        {{ end }}
-
-      </tbody>
-    </table>
+              </script>
+            </td>
+            <td class="py-0 px-4">
+              <select id="category_id" name="category_id"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-gray-500 block w-35 p-1">
+                {{ range $id, $name := .Categories }}
+                <option value="{{$id}}">{{$name}}</option>
+                {{end}}
+              </select>
+            </td>
+            <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
+              <button hx-post="/settings/rules" hx-target="#mitoast" hx-swap="innerHTML"
+                hx-vals="js:{users: $('#usersRules').select2('data').map(function(item){return item.id}).join(',')}"
+                hx-include="#rule_pattern, #category_id" class="text-indigo-600 hover:text-indigo-900">
+                Add
+              </button>
+            </td>
+          </tr>
+          {{ range $rid, $rule := .Rules }} {{ $colors := nameToColor
+          $rule.Category.Name}}
+          <tr>
+            <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
+              <span class="text-sm font-medium me-2 px-2.5 py-0.5 rounded">{{ $rule.Pattern }}</span>
+            </td>
+            <td class="px-6 py-2 whitespace-nowrap text-left text-sm font-medium">
+              <span class="text-sm font-medium me-2 px-2.5 py-0.5 rounded">{{ range $rule.Users }}{{.DisplayName}}
+                {{end}}</span>
+            </td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+              <span
+                class='{{index $colors "bg" }} {{index $colors "txt" }} text-sm font-medium me-2 px-2.5 py-0.5 rounded'>{{
+                $rule.Category.Name }}</span>
+            </td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm font-medium float-right">
+              <button hx-delete="/settings/rules/{{$rid}}" hx-target="#mitoast" hx-swap="innerHTML"
+                class="text-red-600 hover:text-red-900 ml-4">
+                Delete
+              </button>
+            </td>
+          </tr>
+          {{ end }}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
