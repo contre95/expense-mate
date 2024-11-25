@@ -55,8 +55,3 @@ Check the menu for available commands, please.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
 ```
-# Front end 
-![image](https://github.com/contre95/expense-mate/assets/15664513/7909fef3-a041-40a8-a164-a873cdd1e305)
-
-### Grafana (`WIP`)
-![image](https://user-images.githubusercontent.com/15664513/216789116-86d3cf33-5535-4bb9-b30c-8196c5ef1696.png)
