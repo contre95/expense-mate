@@ -47,6 +47,8 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	fi.Get("/export/csv", ui.ExportCSV(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/export/json", ui.ExportJSON(q.ExpenseQuerier, q.CategoryQuerier))
+	// Installments
+	fi.Get("/installments", ui.LoadInstallmentsSection())
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
 	// Users

@@ -13,7 +13,7 @@ func NewExpense(amount float64, product string, shop string, date time.Time, cat
 		Product:  product,
 		Shop:     shop,
 		Date:     date,
-		Category: category, // I'm asking for a valid category when I create an user
+		Category: category, // I'm asking for a valid category when I create a expense
 	}
 
 	newExpense.ID = uuid.New()
