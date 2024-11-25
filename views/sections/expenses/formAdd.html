@@ -47,7 +47,7 @@
         class="border border-green-300 p-2 font-medium bg-green-200 text-green-500 hover:text-green-800">
         <i class="bx bx-check"></i> Apply
       </button>
-      <div hx-post="/expenses" hx-swap="innerHTML" hx-target="#mitoast" hx-include="#addRow input, #addRow select"
+      <div hx-post="/expenses" hx-swap="innerHTML" hx-target="#mitoast" hx-include="#addForm input, #addForm select"
         hx-vals="js:{users: $('#usersAdd').select2('data').map(function(item){return item.id}).join(',')}"
         hx-trigger="click from:#apply"></div>
       <button id="cancel" hx-get="/empty" hx-target="#addForm" hx-swap="innerHTML"

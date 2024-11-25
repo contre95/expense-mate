@@ -39,14 +39,6 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 	}
 }
 func ImportGenericCSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fiber.Ctx) error {
-	indexOf := func(haystack []string, needle string) int {
-		for i, v := range haystack {
-			if v == needle {
-				return i
-			}
-		}
-		return -1
-	}
 	return func(c *fiber.Ctx) error {
 		csvOrder := strings.Split(c.FormValue("csvOrder"), ",")
 		fmt.Println(csvOrder)
@@ -85,22 +77,22 @@ func ImportGenericCSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func
 				})
 			}
 			total++
-			date, err := time.Parse("2006-01-02", line[indexOf(csvOrder, "Date")])
+			date, err := time.Parse("2006-01-02", line[slices.Index(csvOrder, "Date")])
 			if err != nil {
 				slog.Error("error", err)
 				failedLines = append(failedLines, total)
 				continue
 			}
 			// Exclude all incomes (i.e amount > 0, this includes internal transfers between spaces)
-			amount, err := strconv.ParseFloat(strings.ReplaceAll(line[indexOf(csvOrder, "Amount")], " ", ""), 64)
+			amount, err := strconv.ParseFloat(strings.ReplaceAll(line[slices.Index(csvOrder, "Amount")], " ", ""), 64)
 			if err != nil {
 				slog.Error("error", err)
 				failedLines = append(failedLines, total)
 				continue
 			}
 			req := tracking.CreateExpenseReq{
-				Product:    line[indexOf(csvOrder, "Product")],
-				Shop:       line[indexOf(csvOrder, "Shop")],
+				Product:    line[slices.Index(csvOrder, "Product")],
+				Shop:       line[slices.Index(csvOrder, "Shop")],
 				Amount:     amount,
 				Date:       date,
 				UsersID:    selectedUsers,
