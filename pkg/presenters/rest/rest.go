@@ -49,7 +49,10 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/export/json", ui.ExportJSON(q.ExpenseQuerier, q.CategoryQuerier))
 	// Installments
 	fi.Get("/installments", ui.LoadInstallmentsSection())
-	fi.Get("/installments/table", ui.LoadInsatllmentsTable(m.InstallmentManager))
+	fi.Get("/installments/table", ui.LoadInstallmentsTable(m.InstallmentManager, m.UserManager))
+	fi.Post("/installments", ui.CreateInstallment(m.InstallmentManager))
+	fi.Delete("/installments/:id", ui.DeleteInstallment(m.InstallmentManager))
+
 	// Settings
 	fi.Get("/settings", ui.LoadSettingsSection())
 	// Users

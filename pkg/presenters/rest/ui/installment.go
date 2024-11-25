@@ -2,7 +2,6 @@ package ui
 
 import (
 	"expenses-app/pkg/app/managing"
-	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -10,15 +9,42 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoadInsatllmentsTable(rm managing.InstallmentManager) func(*fiber.Ctx) error {
+// func LoadInstallmentsTable(rm managing.InstallmentManager) func(*fiber.Ctx) error {
+// 	return func(c *fiber.Ctx) error {
+// 		resp, err := rm.List()
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return err
+// 		}
+// 		respJSON, err := json.Marshal(resp)
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return err
+// 		}
+// 		return c.SendString(string(respJSON))
+// 	}
+// }
+
+func LoadInstallmentsTable(im managing.InstallmentManager, um managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		resp, err := rm.List()
+		usersResp, err := um.List()
 		if err != nil {
-			fmt.Println(err)
-			return err
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   "Could not load users.",
+			})
 		}
-		fmt.Println(resp)
-		return nil
+		installmentsResp, err := im.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   "Could not load installments.",
+			})
+		}
+		return c.Render("sections/installments/table", fiber.Map{
+			"Installments": installmentsResp.Installments,
+			"Users":        usersResp.Users,
+		})
 	}
 }
 
@@ -68,8 +94,8 @@ func DeleteInstallment(im managing.InstallmentManager) func(*fiber.Ctx) error {
 		err := im.Delete(req)
 		if err != nil {
 			return c.Render("alerts/toastErr", fiber.Map{
-				"Title": "Error",
 				"Msg":   "Could not delete installment.",
+				"Title": "Error",
 			})
 		}
 		return c.Render("alerts/toastOk", fiber.Map{
