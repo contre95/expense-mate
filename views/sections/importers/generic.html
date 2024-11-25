@@ -1,0 +1,109 @@
+<div class="mb-4 p-4 border bg-neutral-50 shadow-md border-slate-200 xl:w-full w-full">
+  <div class="overflow-x-auto">
+    <div class="flex">
+      <span class="text-xl w-1/3 pt-2 text-gray-700">CSV Importer</span>
+      <img id="spinner" class="htmx-indicator w-1/3 h-10" src="/assets/img/loader.svg" />
+      <button class="text-md w-1/3 text-right text-blue-600 hover:text-blue-800"
+        hx-include="#csvOrder,#useRules,#genericCSV" hx-encoding='multipart/form-data'
+        hx-vals="js:{users: $('#usersImport').select2('data').map(function(item){return item.id}).join(','), csvOrder: $('#csvOrder')[0].value}"
+        hx-post='/importers/generic' hx-target="#mitoast" hx-indicator="#spinner">
+        <!-- <span class="inline-flex items-center justify-center bg-white-200 text-slate-600 py-2 px-6 rounded-md border-1 border-slate-400 border hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200 ease-in-out"> -->
+        Import
+        <!-- </span> -->
+      </button>
+    </div>
+
+
+    <div class="container mx-auto p-6">
+      <h3 class="text-xl mb-4 text-center">CSV Headers Order</h3>
+
+      <div id="sortable" class="flex space-x-4 justify-center">
+        <div
+          class="p-3 bg-orange-400 rounded-lg text-white cursor-pointer transition-colors transform hover:bg-orange-200 hover:scale-105"
+          draggable="true">Date</div>
+        <div
+          class="p-3 bg-green-400 rounded-lg text-white cursor-pointer transition-colors transform hover:bg-green-200 hover:scale-105"
+          draggable="true">Amount</div>
+        <div
+          class="p-3 bg-red-400 rounded-lg text-white cursor-pointer transition-colors transform hover:bg-red-200 hover:scale-105"
+          draggable="true">Shop</div>
+        <div
+          class="p-3 bg-blue-400 rounded-lg text-white cursor-pointer transition-colors transform hover:bg-blue-200 hover:scale-105"
+          draggable="true">Product</div>
+      </div>
+
+      <!-- HTMX to handle submission -->
+      <input type="hidden" value='Date,Amount,Shop,Product' id="csvOrder">
+      <div class="w-full text-center pt-1 text-slate-500">
+        <small>Drag and drop to define CSV import order</small>
+      </div>
+    </div>
+
+    <script>
+      new Sortable(document.getElementById('sortable'), {
+        onEnd(evt) {
+          const order = Array.from(evt.from.children).map(item => item.textContent);
+          document.getElementById('csvOrder').value = order;
+        }
+      });
+    </script>
+
+    <div class="flex items-center justify-center py-5">
+      <label for="genericCSV" style="border-color:#ACAEF6;"
+        class="flex flex-col items-center justify-center h-30 w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-50  hover:bg-green-50">
+        <div class="flex flex-col items-center justify-center pt-3 pb-4">
+          <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+          </svg>
+          <input id="genericCSV" type='file' name='genericCSV' accept=".csv" class="hidden">
+          <p id="selectedFileName"></p>
+          <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or
+            drag and drop</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">CSV</p>
+        </div>
+      </label>
+    </div>
+    <div class="">
+      <input id="useRules" name="useRules" type="checkbox" value="checked" _="on click toggle .hidden on #rulesWarn"
+        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+      <label for="useRules" class="ms-2  text-sm font-medium text-gray-900 dark:text-gray-300">
+        User <strong class="text-indigo-500">Rules</strong> to automatically set a category. Go to <a
+          class="text-blue-600" href="/settings">/settings</a> to create a new rule.
+    </div>
+    <br>
+    <div class="flex">
+      <span class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 w-1/2">
+        <span class="text-indigo-500">
+          <i class='bx bx-user'></i>
+        </span>
+        Select users to override assignment on every transaction:
+        <br>
+        <small id="rulesWarn" class="hidden text-red-400">Transactions that matches a rule won't be overriden.</small>
+      </span>
+      <select id="usersImport"
+        class="js-example-basic-multiple w-1/2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+        name="users[]" multiple="multiple">
+        {{ range $id, $user := .Users }}
+        <option value="{{$id}}">{{$user.DisplayName}}</option>
+        {{end}}
+      </select>
+      <script>
+        $(document).ready(function () {
+          $('#usersImport').select2({
+            theme: "classic"
+          });
+        });
+      </script>
+    </div>
+  </div>
+  <br>
+</div>
+</div>
+<script>
+  document.getElementById('genericcsv').onchange = function () {
+    f = this.value.replace(/.*[\/\\]/, '');
+    document.getElementById('selectedFileName').innerText = f;
+  };
+</script>

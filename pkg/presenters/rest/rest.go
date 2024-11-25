@@ -40,10 +40,10 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	// Importers
-	fi.Get("/importers/n26", ui.LoadN26Importer(m.UserManager))
+	fi.Get("/importers/generic", ui.LoadGenericImporter(m.UserManager))
 	fi.Get("/importers", ui.LoadImporterSection())
 	fi.Get("/importers/revolut", ui.LoadRevolutImporter())
-	fi.Post("/importers/n26", ui.ImportN26CSV(t.ExpenseCreator, t.RuleApplier))
+	fi.Post("/importers/generic", ui.ImportGenericCSV(t.ExpenseCreator, t.RuleApplier))
 	fi.Get("/importers/table", ui.LoadImportersTable(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
 	fi.Get("/export/csv", ui.ExportCSV(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/export/json", ui.ExportJSON(q.ExpenseQuerier, q.CategoryQuerier))

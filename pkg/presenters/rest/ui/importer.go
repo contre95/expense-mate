@@ -10,7 +10,6 @@ import (
 	"io"
 	"log/slog"
 	"math"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -19,7 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func LoadN26Importer(mu managing.UserManager) func(*fiber.Ctx) error {
+func LoadGenericImporter(mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respUsers, err := mu.List()
 		if err != nil {
@@ -28,7 +27,7 @@ func LoadN26Importer(mu managing.UserManager) func(*fiber.Ctx) error {
 				"Msg":   "Could not load users.",
 			})
 		}
-		return c.Render("sections/importers/n26", fiber.Map{
+		return c.Render("sections/importers/generic", fiber.Map{
 			"Users": respUsers.Users,
 		})
 	}
@@ -39,15 +38,24 @@ func LoadRevolutImporter() func(*fiber.Ctx) error {
 		return c.Render("sections/importers/revolut", fiber.Map{})
 	}
 }
-func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fiber.Ctx) error {
+func ImportGenericCSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fiber.Ctx) error {
+	indexOf := func(haystack []string, needle string) int {
+		for i, v := range haystack {
+			if v == needle {
+				return i
+			}
+		}
+		return -1
+	}
 	return func(c *fiber.Ctx) error {
-		includeSpaces := c.FormValue("spacesTransactions") == "checked"
-		includeTransfers := c.FormValue("externalTransactions") == "checked"
+		csvOrder := strings.Split(c.FormValue("csvOrder"), ",")
+		fmt.Println(csvOrder)
 		useRules := c.FormValue("useRules") == "checked"
 		selectedUsers := slices.DeleteFunc(strings.Split(c.FormValue("users"), ","), func(s string) bool { return s == "" })
+		fmt.Println(selectedUsers)
 		var matched, skipped, total uint = 0, 0, 0
 		failedLines := []uint{}
-		file, err := c.FormFile("n26csv")
+		file, err := c.FormFile("genericCSV")
 		if err != nil || file == nil {
 			slog.Error("error", err)
 			return c.Render("alerts/toastErr", fiber.Map{
@@ -66,56 +74,34 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fi
 		defer uploadedFile.Close()
 		csvReader := csv.NewReader(uploadedFile)
 		// Iterate over the CSV records
-		csvReader.Read() // Skip column
 		for {
 			line, err := csvReader.Read()
 			if err == io.EOF { // Finished processing CSV
 				break
 			}
-			if err != nil {
-				return c.Render("toastErr", fiber.Map{"Title": "Error", "Msg": fmt.Sprintln("Error reading CSV req:", err)})
+			if err != nil || len(line) != 4 {
+				return c.Render("alerts/toastErr", fiber.Map{
+					"Msg": "Error importing CSV, check Header order.",
+				})
 			}
 			total++
-			// Exclude outgoing transactions (Direct Debit not included)
-			// Example1: "2024-03-02","Esteban","ES6315636852323267845001","MoneyBeam","MoneyBeam","-25.2","","",""
-			// Example2: "2024-01-29","PEDRO GONZALES","ES0355491146272210003281","Income","Sin concepto","7.6","","",""
-			if !includeTransfers && line[2] != "" && slices.Contains([]string{"Outgoing Transfer", "MoneyBeam"}, line[3]) { // Extenal transfers conaint IBAN of the recipients in the 3rd col of csv
-				// Example:
-				slog.Debug("Excluiding income", "Income", line[3])
-				skipped++
-				continue
-			}
-			// Exclude transfers between spaces
-			// Example1: "2024-02-22","From Main to Holidays","","Outgoing Transfer","2x Round-up","-1.0","","",""
-			// Example2: "2024-02-22","From Car to Main","","Income","PAPELERIA Y LLIB LLORE","4.5","","",""
-			internalTransferPattern := regexp.MustCompile(`^From \S+ to \S+$`)
-			if !includeSpaces && internalTransferPattern.MatchString(line[1]) {
-				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
-				skipped++
-				continue
-			}
-			date, err := time.Parse("2006-01-02", line[0])
+			date, err := time.Parse("2006-01-02", line[indexOf(csvOrder, "Date")])
 			if err != nil {
-				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
+				slog.Error("error", err)
 				failedLines = append(failedLines, total)
 				continue
 			}
 			// Exclude all incomes (i.e amount > 0, this includes internal transfers between spaces)
-			amount, err := strconv.ParseFloat(line[5], 64)
+			amount, err := strconv.ParseFloat(strings.ReplaceAll(line[indexOf(csvOrder, "Amount")], " ", ""), 64)
 			if err != nil {
-				slog.Debug("Excluiding internal transfer", "Internal transfer", line[1])
+				slog.Error("error", err)
 				failedLines = append(failedLines, total)
 				continue
 			}
-			if amount > 0 {
-				slog.Debug("Excluiding income", "Income", line[1])
-				skipped++
-				continue
-			}
 			req := tracking.CreateExpenseReq{
-				Product:    line[3],
-				Amount:     amount * -1,
-				Shop:       line[1],
+				Product:    line[indexOf(csvOrder, "Product")],
+				Shop:       line[indexOf(csvOrder, "Shop")],
+				Amount:     amount,
 				Date:       date,
 				UsersID:    selectedUsers,
 				CategoryID: expense.UnkownCategoryID,
@@ -138,9 +124,15 @@ func ImportN26CSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func(*fi
 			}
 		}
 		c.Append("HX-Trigger", "reloadImportTable")
+		if int(total)-len(failedLines) == 0 {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Created",
+				"Msg":   fmt.Sprintf("Success: %d\nFailed: %d\nSkipped:%d\nAutomatically categorized:%d\nFailed lines:%v", int(total)-len(failedLines), len(failedLines), skipped, matched, failedLines),
+			})
+		}
 		return c.Render("alerts/toastOk", fiber.Map{
 			"Title": "Created",
-			"Msg":   fmt.Sprintf("Success: %d\nFailed: %d\nSkipped:%d\nAutomatically categorized:%d\nFailed lines:%v", total, len(failedLines), skipped, matched, failedLines),
+			"Msg":   fmt.Sprintf("Success: %d\nFailed: %d\nSkipped:%d\nAutomatically categorized:%d\nFailed lines:%v", int(total)-len(failedLines), len(failedLines), skipped, matched, failedLines),
 		})
 	}
 }
