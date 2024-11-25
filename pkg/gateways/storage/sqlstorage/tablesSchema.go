@@ -44,6 +44,7 @@ INSERT IGNORE INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','a6f
 INSERT IGNORE INTO rule_users VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','9e10c58f-adb3-419b-9e20-f4fbb075661e');
 INSERT IGNORE INTO rule_users VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
 `
+
 const MySQLTables string = ` 
 CREATE TABLE IF NOT EXISTS categories (
   id VARCHAR(255) NOT NULL,
@@ -130,7 +131,23 @@ INSERT OR IGNORE INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','
 INSERT OR IGNORE INTO rule_users VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
 INSERT OR IGNORE INTO rule_users VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','9e10c58f-adb3-419b-9e20-f4fbb075661e');
 INSERT OR IGNORE INTO rule_users VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
+
+INSERT OR IGNORE INTO installments VALUES('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', 30, '3b325284-e437-49c1-b311-9dae17c47eed', '2023-01-01', '2023-01-31', 100.0, 'Monthly subscription', 'Product A', 'Shop A');
+INSERT OR IGNORE INTO installments VALUES('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', 60, '40a82e30-a9ee-4cc4-8018-de1e98c4d3be', '2023-02-01', '2023-03-31', 200.0, 'Bi-monthly subscription', 'Product B', 'Shop B');
+INSERT OR IGNORE INTO installments VALUES('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', 90, '12e78baa-8785-419b-aca0-b625d5fb0b49', '2023-04-01', '2023-06-30', 300.0, 'Quarterly subscription', 'Product C', 'Shop C');
+INSERT OR IGNORE INTO installments VALUES('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9g', 120, '72ee0c4a-3809-41ef-98a5-5630a9a53242', '2023-07-01', '2023-10-31', 400.0, 'Four-month subscription', 'Product D', 'Shop D');
+
+INSERT OR IGNORE INTO installment_expenses VALUES('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', '22f488f9-5d77-434f-80ce-3efa6b245500');
+INSERT OR IGNORE INTO installment_expenses VALUES('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', '22f488f9-5d77-434f-80ce-3efa6b245500');
+INSERT OR IGNORE INTO installment_expenses VALUES('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', '22f488f9-5d77-434f-80ce-3efa6b245500');
+INSERT OR IGNORE INTO installment_expenses VALUES('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9g', '22f488f9-5d77-434f-80ce-3efa6b245500');
+
+INSERT OR IGNORE INTO installment_users VALUES('1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', '2c0e2b2c-1794-4b8c-a43d-1cab7c3a8ea6');
+INSERT OR IGNORE INTO installment_users VALUES('2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e', '2c0e2b2c-1794-4b8c-a43d-1cab7c3a8ea6');
+INSERT OR IGNORE INTO installment_users VALUES('3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f', '9e10c58f-adb3-419b-9e20-f4fbb075661e');
+INSERT OR IGNORE INTO installment_users VALUES('4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9g', 'a6f4fe7e-52b6-48fc-ba0b-bef77940168f');
 `
+
 const SQLiteTables string = ` 
 PRAGMA foreign_keys=ON;
 
@@ -138,6 +155,20 @@ CREATE TABLE IF NOT EXISTS categories (
   id TEXT NOT NULL,
   name TEXT,
   PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS installments (
+  id TEXT NOT NULL,
+  repeat_every INTEGER NOT NULL,
+  category_id TEXT DEFAULT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  amount REAL NOT NULL,
+  description TEXT,
+  product TEXT,
+  shop TEXT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS rules (
@@ -171,6 +202,21 @@ CREATE TABLE IF NOT EXISTS expense_users (
   user_id TEXT NOT NULL,
   PRIMARY KEY (expense_id, user_id),
   FOREIGN KEY (expense_id) REFERENCES expenses (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS installment_expenses (
+  installment_id TEXT NOT NULL,
+  expense_id TEXT NOT NULL,
+  PRIMARY KEY (installment_id, expense_id),
+  FOREIGN KEY (installment_id) REFERENCES installments (id) ON DELETE CASCADE,
+  FOREIGN KEY (expense_id) REFERENCES expenses (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS installment_users (
+  installment_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  PRIMARY KEY (installment_id, user_id),
+  FOREIGN KEY (installment_id) REFERENCES installments (id) ON DELETE CASCADE
 );
 
 INSERT OR IGNORE INTO categories (id, name) VALUES ('` + expense.UnkownCategoryID + `', 'Unknown');

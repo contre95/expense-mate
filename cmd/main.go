@@ -95,6 +95,7 @@ func main() {
 	}
 	expensesStorage := sqlstorage.NewExpensesStorage(db)
 	ruleStorage := sqlstorage.NewRulesStorage(db)
+	installmentStorage := sqlstorage.NewInstallmentStorage(db)
 
 	// JSON Storage
 	path := os.Getenv("JSON_STORAGE_PATH")
@@ -129,7 +130,8 @@ func main() {
 	updateCategory := managing.NewCategoryUpdater(managerLogger, expensesStorage)
 	ruleManager := managing.NewRuleManager(managerLogger, ruleStorage, expensesStorage, userStorage)
 	userManager := managing.NewUserManager(managerLogger, userStorage, expensesStorage)
-	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager)
+	installmentManager := managing.NewInstallmentManager(managerLogger, installmentStorage, expensesStorage, userStorage)
+	manager := managing.NewService(*deleteCategory, *createCategory, *updateCategory, *commandTelegram, *ruleManager, *userManager, *installmentManager)
 
 	// Analyzing
 	sumerizePerCategory := analyzing.NewSummarizer(analyzingLogger, expensesStorage)

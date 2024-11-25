@@ -12,6 +12,14 @@ func NewExpensesStorage(db *sql.DB) *ExpensesStorage {
 	return &ExpensesStorage{db}
 }
 
+type InstallmentsStorage struct {
+	db *sql.DB
+}
+
+func NewInstallmentStorage(db *sql.DB) *InstallmentsStorage {
+	return &InstallmentsStorage{db}
+}
+
 type RulesStorage struct {
 	db *sql.DB
 }

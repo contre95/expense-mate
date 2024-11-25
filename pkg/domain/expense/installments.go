@@ -10,6 +10,12 @@ type Installent struct {
 	ExpensesID  []ExpenseID   `validate:"required"`
 	CategoryID  CategoryID    `validate:"required"`
 	UsersID     []UserID
+	StartDate   time.Time `validate:"required"`
+	EndDate     time.Time `validate:"required"`
+	Amount      float64   `validate:"required"`
+	Description string
+	Product     string
+	Shop        string
 }
 
 // Installments is the Installments repository.
