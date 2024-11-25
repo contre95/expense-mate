@@ -16,8 +16,10 @@ type CreateInstallmentReq struct {
 	UsersID     []string
 	Amount      float64
 	Description string
-	Start       time.Time
-	End         time.Time
+	EndDate     time.Time
+	Product     string
+	Shop        string
+	StartDate   time.Time
 }
 
 type DeleteInstallmentReq struct {
@@ -25,6 +27,10 @@ type DeleteInstallmentReq struct {
 }
 
 type InstallmentBasic struct {
+	EndDate     time.Time
+	Product     string
+	Shop        string
+	StartDate   time.Time
 	RepeatEvery time.Duration
 	Amount      float64
 	Description string
@@ -89,6 +95,12 @@ func (s *InstallmentManager) List() (*ListInstallmentsResp, error) {
 		}
 		installmentBasic := InstallmentBasic{
 			RepeatEvery: i.RepeatEvery,
+			Amount:      i.Amount,
+			Description: i.Description,
+			Start:       i.StartDate,
+			End:         i.EndDate,
+			Product:     i.Product,
+			Shop:        i.Shop,
 			Category: struct {
 				ID   string
 				Name string
@@ -155,6 +167,12 @@ func (s *InstallmentManager) Create(req CreateInstallmentReq) error {
 		ExpensesID:  expensesID,
 		CategoryID:  catID,
 		UsersID:     usersID,
+		StartDate:   req.StartDate,
+		EndDate:     req.EndDate,
+		Amount:      req.Amount,
+		Description: req.Description,
+		Product:     req.Product,
+		Shop:        req.Shop,
 	}
 	err = s.installments.Add(newInstallment)
 	if err != nil {
