@@ -2,6 +2,8 @@ package ui
 
 import (
 	"expenses-app/pkg/app/managing"
+	"expenses-app/pkg/app/querying"
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -9,21 +11,38 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// func LoadInstallmentsTable(rm managing.InstallmentManager) func(*fiber.Ctx) error {
-// 	return func(c *fiber.Ctx) error {
-// 		resp, err := rm.List()
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			return err
-// 		}
-// 		respJSON, err := json.Marshal(resp)
-// 		if err != nil {
-// 			fmt.Println(err)
-// 			return err
-// 		}
-// 		return c.SendString(string(respJSON))
-// 	}
-// }
+func LoadInstallmentsAddRow(im managing.InstallmentManager, um managing.UserManager, cq querying.CategoryQuerier) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		fmt.Println("asdf")
+		usersResp, err := um.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   "Could not load users.",
+			})
+		}
+		installmentsResp, err := im.List()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   "Could not load installments.",
+			})
+		}
+		rc, err := cq.Query()
+		if err != nil {
+			return c.Render("alerts/toastErr", fiber.Map{
+				"Title": "Error",
+				"Msg":   err,
+			})
+		}
+
+		return c.Render("sections/installments/rowAdd", fiber.Map{
+			"Installments": installmentsResp.Installments,
+			"Users":        usersResp.Users,
+			"Categories":   rc.Categories,
+		})
+	}
+}
 
 func LoadInstallmentsTable(im managing.InstallmentManager, um managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {

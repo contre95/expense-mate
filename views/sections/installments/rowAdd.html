@@ -1,0 +1,61 @@
+<tr>
+  <td class="pl-6 py-2 text-sm font-medium text-gray-900">
+    <select id="category" name="category"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full p-1">
+      {{ $current := .Expense.Category }} {{ range $id, $name := .Categories }}
+      {{ if eq $id "unknown"}}
+      <option value="{{$id}}" selected>{{$name}}</option>
+      {{else}}
+      <option value="{{$id}}">{{$name}}</option>
+      {{end}} {{end}}
+    </select>
+  </td>
+  <td class="pl-6 py-2 text-sm font-medium text-gray-900">
+    <input class="w-20 px-1 border border-gray-300 rounded-md" type="number" min="0" id="amount" name="amount"
+      value="0" />
+  </td>
+  <td class="py-0 px-2">
+    <select id="usersInstallments" style="width: 75%"
+      class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-blue-500 block w-full"
+      name="users[]" multiple="multiple">
+      {{ range $id, $user := .Users }}
+      <option value="{{$id}}">{{$user.DisplayName}}</option>
+      {{end}}
+    </select>
+    <script>
+      // Function to initialize select2
+      function initializeSelect2() {
+        $(".js-example-basic-multiple").select2({
+          theme: "classic",
+        });
+      }
+      // Initialize select2 after htmx from:body load
+      document.body.addEventListener("htmx:load", function (event) {
+        initializeSelect2();
+      });
+    </script>
+  </td>
+  <td class="pl-6 py-2 text-sm font-medium text-gray-900">
+    <input type="text" id="amount" name="prodcut" value="" placeholder="Bambu Lab"
+      class="mt-1 px-1 w-20 h-8 rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+  </td>
+  <td class="pl-6 py-2 text-sm font-medium text-gray-900">
+    <input type="text" id="product" name="shop" value="" placeholder="Printer"
+      class="mt-1 px-1 h-8 rounded-md w-20 border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+  </td>
+  <td class="py-0 px-4">
+    <input type="date" id="start_date" name="start_date"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-gray-500 block w-35 p-1" />
+  </td>
+  <td class="py-0 px-4">
+    <input type="date" id="end_date" name="end_date"
+      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 border-gray-500 block w-35 p-1" />
+  </td>
+  <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
+    <button hx-post="/installments" hx-target="#mitoast" hx-swap="innerHTML"
+      hx-vals="js:{users: $('#usersInstallments').select2('data').map(function(item){return item.id}).join(',')}"
+      hx-include="#amount, #end_date" class="text-indigo-600 hover:text-indigo-900">
+      Add
+    </button>
+  </td>
+</tr>

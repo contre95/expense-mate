@@ -9,67 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-//	func (i *InstallmentsStorage) All() ([]expense.Installent, error) {
-//		query := `SELECT i.id, i.repeat_every, i.category_id,
-//	                     GROUP_CONCAT(ie.expense_id) as expense_ids,
-//	                     GROUP_CONCAT(iu.user_id) as user_ids
-//	              FROM installments i
-//	              LEFT JOIN installment_expenses ie ON i.id = ie.installment_id
-//	              LEFT JOIN installment_users iu ON i.id = iu.installment_id
-//	              GROUP BY i.id`
-//		rows, err := i.db.Query(query)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		defer rows.Close()
-//		var installments []expense.Installent
-//		for rows.Next() {
-//			var installment expense.Installent
-//			var expenseIDs sql.NullString
-//			var userIDs sql.NullString
-//			var repeatEvery int64
-//
-//			if err := rows.Scan(&installment.ID, &repeatEvery, &installment.CategoryID, &expenseIDs, &userIDs); err != nil {
-//				return nil, err
-//			}
-//
-//			installment.RepeatEvery = time.Duration(repeatEvery) * time.Second
-//			installment.ExpensesID = []uuid.UUID{}
-//			installment.UsersID = []uuid.UUID{}
-//
-//			// Parse Expense IDs
-//			if expenseIDs.Valid && expenseIDs.String != "" {
-//				expenseIDStrs := strings.Split(expenseIDs.String, ",")
-//				for _, expenseIDStr := range expenseIDStrs {
-//					expenseID, err := uuid.Parse(expenseIDStr)
-//					if err != nil {
-//						return nil, err
-//					}
-//					installment.ExpensesID = append(installment.ExpensesID, expenseID)
-//				}
-//			}
-//
-//			// Parse User IDs
-//			if userIDs.Valid && userIDs.String != "" {
-//				userIDStrs := strings.Split(userIDs.String, ",")
-//				for _, userIDStr := range userIDStrs {
-//					userID, err := uuid.Parse(userIDStr)
-//					if err != nil {
-//						return nil, err
-//					}
-//					installment.UsersID = append(installment.UsersID, userID)
-//				}
-//			}
-//
-//			installments = append(installments, installment)
-//		}
-//		if err := rows.Err(); err != nil {
-//			return nil, err
-//		}
-//		return installments, nil
-//	}
-
 func (i *InstallmentsStorage) All() ([]expense.Installent, error) {
 	query := `SELECT i.id, i.repeat_every, i.category_id, 
                      i.start_date, i.end_date, i.amount, i.description, i.product, i.shop,

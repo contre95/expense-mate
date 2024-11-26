@@ -133,7 +133,7 @@ func LoadExpenseRow(eq querying.ExpenseQuerier, cq querying.CategoryQuerier) fun
 	}
 }
 
-func LoadAddExpensesForm(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
+func LoadAddExpensesAddForm(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()
 		if err != nil {
@@ -157,7 +157,7 @@ func LoadAddExpensesForm(cq querying.CategoryQuerier, mu managing.UserManager) f
 	}
 }
 
-func LoadAddExpensesRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
+func LoadAddExpensesAddRow(cq querying.CategoryQuerier, mu managing.UserManager) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		respCategories, err := cq.Query()
 		if err != nil {

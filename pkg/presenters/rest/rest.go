@@ -34,8 +34,8 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Delete("/expenses/:id", ui.DeleteExpense(t.ExpenseDeleter))
 	fi.Get("/expenses/table", ui.LoadExpensesTable(q.ExpenseQuerier))
 	fi.Put("/expenses/:id", ui.EditExpense(q.ExpenseQuerier, t.ExpenseUpdater))
-	fi.Get("/expenses/addForm", ui.LoadAddExpensesForm(q.CategoryQuerier, m.UserManager))
-	fi.Get("/expenses/addRow", ui.LoadAddExpensesRow(q.CategoryQuerier, m.UserManager))
+	fi.Get("/expenses/addForm", ui.LoadAddExpensesAddForm(q.CategoryQuerier, m.UserManager))
+	fi.Get("/expenses/addRow", ui.LoadAddExpensesAddRow(q.CategoryQuerier, m.UserManager))
 	fi.Get("/expenses/filter", ui.LoadExpenseFilter(q.CategoryQuerier, m.UserManager))
 	fi.Get("/expenses/:id/row", ui.LoadExpenseRow(q.ExpenseQuerier, q.CategoryQuerier))
 	fi.Get("/expenses/:id/edit", ui.LoadExpenseEditRow(q.ExpenseQuerier, q.CategoryQuerier, m.UserManager))
@@ -51,6 +51,7 @@ func MapRoutes(fi *fiber.App, he *health.Service, m *managing.Service, t *tracki
 	fi.Get("/installments", ui.LoadInstallmentsSection())
 	fi.Get("/installments/table", ui.LoadInstallmentsTable(m.InstallmentManager, m.UserManager))
 	fi.Post("/installments", ui.CreateInstallment(m.InstallmentManager))
+	fi.Get("/installments/addRow", ui.LoadInstallmentsAddRow(m.InstallmentManager, m.UserManager, q.CategoryQuerier))
 	fi.Delete("/installments/:id", ui.DeleteInstallment(m.InstallmentManager))
 
 	// Settings
