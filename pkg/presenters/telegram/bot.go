@@ -6,6 +6,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/gateways/ai"
 	"fmt"
 	"strings"
 	"sync"
@@ -18,6 +19,7 @@ Check the menu for available commands, please.
 /categories - Sends you all the categories available.
 /summary - Sends summar of last month's expenses.
 /unknown - Categorize imported expenses. /done and continue in another moment.
+/guess - Analyzes an image and prompts you the expenses for you to save.
 /new - Creates a new expense. /fix if you made made a mistake.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
@@ -44,7 +46,7 @@ type Bot struct {
 }
 
 // Run starts the Telegram expense bot
-func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, a *analyzing.Service) {
+func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, a *analyzing.Service, ai *ai.Guesser) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -68,7 +70,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 		case "start":
 			fmt.Println("Starting new go routine")
 			if !running {
-				go b.checkUpdates(done, updates, tbot, h, t, q, a, m, &b.AllowedUsers, &mu)
+				go b.checkUpdates(done, updates, tbot, h, t, q, a, m, ai, &b.AllowedUsers, &mu)
 				running = true
 			}
 		case "stop":
@@ -94,7 +96,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 
 }
 
-func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, a *analyzing.Service, m *managing.Service, allowedUsernames *[]string, mu *sync.Mutex) {
+func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, a *analyzing.Service, m *managing.Service, ai *ai.Guesser, allowedUsernames *[]string, mu *sync.Mutex) {
 	fmt.Println("Go routine started")
 	for {
 		select {
@@ -117,6 +119,8 @@ func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tb
 			switch update.Message.Text {
 			case "/categories":
 				listCategories(tbot, &update, q)
+			case "/guess":
+				guessExpense(tbot, &update, &updates, t, m, ai, update.Message.Chat.UserName)
 			case "/new":
 				createExpense(tbot, &update, &updates, t, q, m)
 			case "/help":

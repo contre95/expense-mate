@@ -1,6 +1,8 @@
 module expenses-app
 
-go 1.19
+go 1.22
+
+toolchain go1.23.4
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
@@ -10,9 +12,10 @@ require (
 	github.com/gofiber/jwt/v3 v3.3.4
 	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/golang-jwt/jwt/v4 v4.4.3
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.22
-	golang.org/x/crypto v0.4.0
+	github.com/otiai10/gosseract/v2 v2.4.1
+	golang.org/x/crypto v0.32.0
 )
 
 require (
@@ -27,9 +30,10 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.41.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
