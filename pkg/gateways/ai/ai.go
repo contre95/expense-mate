@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 )
@@ -176,7 +177,7 @@ func (g *Guesser) parseAndConvertTransactions(responseStr string) ([]ExpenseGues
 		}
 		guesses = append(guesses, ExpenseGuess{
 			Shop:    tx.Shop,
-			Amount:  tx.Amount,
+			Amount:  math.Abs(tx.Amount),
 			Date:    parsedDate,
 			Product: "AI Generated",
 		})
