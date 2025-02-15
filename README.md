@@ -17,9 +17,9 @@ You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot
 podman run -d \
   --name expense-mate \
   --restart always \
-  --env STORAGE_ENGINE=sqlite  \  # Required (sqlite|mysql)
-  --env SQLITE_PATH=./exp.db \  # Required
-  --env LOAD_SAMPLE_DATA=true \  # Optional (default:true)
+  --env STORAGE_ENGINE="sqlite"  \  # Required (sqlite|mysql)
+  --env SQLITE_PATH="./exp.db" \  # Required
+  --env LOAD_SAMPLE_DATA="true" \  # Optional (default:true)
   --env VISION_MODEL="llama3.2-vision:11b-instruct-q4_K_M"  # Optional
   --env TEXT_MODEL="llama3.2:3b-instruct-q6_K"  # Optional
   --env OLLAMA_ENDPOINT="http://localhost:11434/api/generate"  # Optional
