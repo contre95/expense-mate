@@ -19,7 +19,7 @@ Check the menu for available commands, please.
 /categories - Sends you all the categories available.
 /summary - Sends summar of last month's expenses.
 /unknown - Categorize imported expenses. /done and continue in another moment.
-/guess - Analyzes an image and prompts you the expenses for you to save.
+/ai- Analyze image/text for expenses. Send /cancel to quit.
 /new - Creates a new expense. /fix if you made made a mistake.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
@@ -57,8 +57,9 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 		fmt.Println("Couldn't get allowed users:", err)
 		return
 	}
-	running := false
 	done := make(chan bool)
+	go b.checkUpdates(done, updates, tbot, h, t, q, a, m, ai, &b.AllowedUsers, &mu)
+	running := true
 	for command := range receives {
 		switch command {
 		case "status":
@@ -70,7 +71,6 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 		case "start":
 			fmt.Println("Starting new go routine")
 			if !running {
-				go b.checkUpdates(done, updates, tbot, h, t, q, a, m, ai, &b.AllowedUsers, &mu)
 				running = true
 			}
 		case "stop":
@@ -119,7 +119,7 @@ func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tb
 			switch update.Message.Text {
 			case "/categories":
 				listCategories(tbot, &update, q)
-			case "/guess":
+			case "/ai":
 				guessExpense(tbot, &update, &updates, t, m, ai, update.Message.Chat.UserName)
 			case "/new":
 				createExpense(tbot, &update, &updates, t, q, m)
