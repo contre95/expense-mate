@@ -96,7 +96,7 @@ func ImportGenericCSV(ec tracking.ExpenseCreator, eca tracking.RuleApplier) func
 				Amount:     amount,
 				Date:       date,
 				UsersID:    selectedUsers,
-				CategoryID: expense.UnkownCategoryID,
+				CategoryID: expense.UnknownCategoryID,
 			}
 			if useRules {
 				resp := eca.Apply(tracking.ApplyRuleReq{
@@ -143,7 +143,7 @@ func LoadImportersTable(eq querying.ExpenseQuerier, cq querying.CategoryQuerier,
 			Page:        uint(pageNum),
 			MaxPageSize: uint(pageSize),
 			ExpenseFilter: querying.ExpenseQuerierFilter{
-				ByCategoryID: []string{expense.UnkownCategoryID},
+				ByCategoryID: []string{expense.UnknownCategoryID},
 			},
 		}
 		re, err := eq.Query(req)

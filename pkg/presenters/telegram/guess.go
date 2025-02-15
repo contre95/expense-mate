@@ -17,9 +17,8 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
 
-	// First check if we're receiving the image directly
+	// Handle initial image request
 	if u.Message.Photo == nil {
-		// Send image request
 		msg = tgbotapi.NewMessage(chatID, "📸 Please send a receipt photo for analysis")
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 		tbot.Send(msg)
@@ -32,7 +31,6 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 				continue
 			}
 
-			// Check if message is from the same user
 			if update.Message.Chat.UserName != username {
 				tbot.Send(tgbotapi.NewMessage(
 					update.Message.Chat.ID,
@@ -41,7 +39,6 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 				goto waitForImage
 			}
 
-			// Check if user wants to cancel
 			if update.Message.Text == "/cancel" {
 				msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
@@ -49,116 +46,139 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 				return
 			}
 
-			// Check if received image
 			if update.Message.Photo == nil {
 				msg = tgbotapi.NewMessage(chatID, "🖼️ Please send a receipt photo or /cancel to abort")
 				tbot.Send(msg)
 				goto waitForImage
 			}
 
-			// Update the update reference with the image message
 			u = &update
 			break
 		}
 	}
 
-	// Rest of your image processing logic...
+	// Process received image
 	photo := u.Message.Photo[len(u.Message.Photo)-1]
 	fileURL, err := tbot.GetFileDirectURL(photo.FileID)
 	if err != nil {
-		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to get image: %v", err))
-		tbot.Send(msg)
+		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to get image: %v", err)))
 		return
 	}
 
-	// Download image
 	resp, err := http.Get(fileURL)
 	if err != nil {
-		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to download image: %v", err))
-		tbot.Send(msg)
+		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to download image: %v", err)))
 		return
 	}
 	defer resp.Body.Close()
 
 	imageData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to read image: %v", err))
-		tbot.Send(msg)
+		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to read image: %v", err)))
 		return
 	}
 
-	// Get AI guess
-	shop, amount, date, product, err := aiGuesser.GuessExpense(imageData)
+	// Get AI guesses
+	guesses, err := aiGuesser.GuessExpense(imageData)
 	if err != nil {
-		msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("🤖 AI processing failed: %v", err))
-		tbot.Send(msg)
+		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("🤖 AI processing failed: %v", err)))
 		return
 	}
+	if len(guesses) == 0 {
+		tbot.Send(tgbotapi.NewMessage(chatID, "🤖 No expenses detected in the receipt"))
+		return
+	}
+
 	// Find user ID
 	userID := ""
 	usersResp, err := m.UserManager.List()
 	if err == nil {
 		for id, u := range usersResp.Users {
-			if username == u.TelegramUsername {
+			if u.TelegramUsername == username {
 				userID = id
 				break
 			}
 		}
 	}
+	if userID == "" {
+		tbot.Send(tgbotapi.NewMessage(chatID, "❌ User not found in system"))
+		return
+	}
 
-	// Create confirmation message
-	expenseText := fmt.Sprintf(`📷 AI Guessed Expense:
+	// Process each guess
+	for _, guess := range guesses {
+		// Create confirmation message
+		expenseText := fmt.Sprintf(`📷 AI Guessed Expense:
 <code>
 Shop:    %s
 Amount:  € %.2f
 Date:    %s
 Product: %s
 </code>
-Save this expense?`, shop, amount, date.Format("2006-01-02"), product)
+Save this expense?`,
+			guess.Shop, guess.Amount, guess.Date.Format("2006-01-02"), guess.Product)
 
-	msg = tgbotapi.NewMessage(chatID, expenseText)
-	msg.ParseMode = tgbotapi.ModeHTML
-	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("Skip"),
-			tgbotapi.NewKeyboardButton("Save"),
-		),
-	)
-	tbot.Send(msg)
-
-	// Wait for user response
-waitForResponse:
-	update := <-*uc
-	if update.Message.Chat.UserName != username {
-		tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID,
-			fmt.Sprintf("Please wait for @%s to respond", username)))
-		goto waitForResponse
-	}
-
-	switch update.Message.Text {
-	case "Save":
-		req := tracking.CreateExpenseReq{
-			Amount:     amount,
-			CategoryID: expense.UnkownCategoryID,
-			Date:       date,
-			Product:    product,
-			Shop:       shop,
-			UsersID:    []string{userID},
-		}
-		_, err := t.ExpenseCreator.Create(req)
-		if err != nil {
-			msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("Failed to save: %v", err))
-		} else {
-			msg = tgbotapi.NewMessage(chatID, "✅ Expense saved with 'Unknown' category")
-		}
-	case "Skip":
-		msg = tgbotapi.NewMessage(chatID, "⏭️ Expense skipped")
-	default:
-		msg = tgbotapi.NewMessage(chatID, "⚠️ Please choose Skip or Save")
+		msg := tgbotapi.NewMessage(chatID, expenseText)
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton("Skip"),
+				tgbotapi.NewKeyboardButton("Save"),
+			),
+		)
 		tbot.Send(msg)
-		goto waitForResponse
+
+		// Wait for user response
+		var response string
+		for response == "" {
+			update := <-*uc
+			if update.Message == nil || update.Message.Chat.UserName != username {
+				continue
+			}
+
+			if update.Message.Text == "/cancel" {
+				msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
+				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+				tbot.Send(msg)
+				return
+			}
+
+			switch update.Message.Text {
+			case "Save", "Skip":
+				response = update.Message.Text
+			default:
+				tbot.Send(tgbotapi.NewMessage(chatID, "⚠️ Please choose Skip or Save"))
+			}
+		}
+
+		// Handle response
+		if response == "Save" {
+			req := tracking.CreateExpenseReq{
+				Amount:     guess.Amount,
+				CategoryID: expense.UnknownCategoryID,
+				Date:       guess.Date,
+				Product:    guess.Product,
+				Shop:       guess.Shop,
+				UsersID:    []string{userID},
+			}
+
+			if _, err := t.ExpenseCreator.Create(req); err != nil {
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to save: %v", err)))
+			} else {
+				tbot.Send(tgbotapi.NewMessage(chatID, "✅ Expense saved with 'Unknown' category"))
+			}
+		} else {
+			tbot.Send(tgbotapi.NewMessage(chatID, "⏭️ Expense skipped"))
+		}
+
+		// Clear keyboard
+		clearMsg := tgbotapi.NewMessage(chatID, "Processing next expense...")
+		clearMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+		tbot.Send(clearMsg)
 	}
 
-	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-	tbot.Send(msg)
+	// Final message
+	finalMsg := tgbotapi.NewMessage(chatID, "🏁 All expenses processed")
+	finalMsg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	tbot.Send(finalMsg)
 }

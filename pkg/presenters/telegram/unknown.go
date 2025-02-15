@@ -51,7 +51,7 @@ func categorizeUnknowns(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.
 		Page:        0,
 		MaxPageSize: 0,
 		ExpenseFilter: querying.ExpenseQuerierFilter{
-			ByCategoryID: []string{expense.UnkownCategoryID},
+			ByCategoryID: []string{expense.UnknownCategoryID},
 			ByUsers:      []string{userID, expense.NoUserID},
 			ByShop:       "",
 			ByProduct:    "",
