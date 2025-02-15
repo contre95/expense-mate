@@ -17,75 +17,83 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
 
-	// Handle initial image request
-	if u.Message.Photo == nil {
-		msg = tgbotapi.NewMessage(chatID, "📸 Please send a receipt photo for analysis")
-		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-		tbot.Send(msg)
+	// Handle initial request
+	msg = tgbotapi.NewMessage(chatID, "📸 Send a receipt photo or paste transaction text")
+	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	tbot.Send(msg)
 
-		// Wait for image response
-		for {
-		waitForImage:
-			update := <-*uc
-			if update.Message == nil {
-				continue
-			}
-
-			if update.Message.Chat.UserName != username {
-				tbot.Send(tgbotapi.NewMessage(
-					update.Message.Chat.ID,
-					fmt.Sprintf("Please wait for @%s to finish their current operation", username),
-				))
-				goto waitForImage
-			}
-
-			if update.Message.Text == "/cancel" {
-				msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
-				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-				tbot.Send(msg)
-				return
-			}
-
-			if update.Message.Photo == nil {
-				msg = tgbotapi.NewMessage(chatID, "🖼️ Please send a receipt photo or /cancel to abort")
-				tbot.Send(msg)
-				goto waitForImage
-			}
-
-			u = &update
-			break
+	// Wait for response
+	for {
+	waitForInput:
+		update := <-*uc
+		if update.Message == nil {
+			continue
 		}
+
+		if update.Message.Chat.UserName != username {
+			tbot.Send(tgbotapi.NewMessage(
+				update.Message.Chat.ID,
+				fmt.Sprintf("Please wait for @%s to finish their current operation", username),
+			))
+			goto waitForInput
+		}
+
+		if update.Message.Text == "/cancel" {
+			msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
+			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			tbot.Send(msg)
+			return
+		}
+
+		if update.Message.Photo == nil && update.Message.Text == "" {
+			msg = tgbotapi.NewMessage(chatID, "🖼️ Please send a receipt photo/text or /cancel to abort")
+			tbot.Send(msg)
+			goto waitForInput
+		}
+
+		u = &update
+		break
 	}
 
-	// Process received image
-	photo := u.Message.Photo[len(u.Message.Photo)-1]
-	fileURL, err := tbot.GetFileDirectURL(photo.FileID)
-	if err != nil {
-		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to get image: %v", err)))
-		return
+	// Process input
+	var guesses []ai.ExpenseGuess
+	var err error
+
+	if u.Message.Photo != nil {
+		// Process image
+		photo := u.Message.Photo[len(u.Message.Photo)-1]
+		fileURL, err := tbot.GetFileDirectURL(photo.FileID)
+		if err != nil {
+			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to get image: %v", err)))
+			return
+		}
+
+		resp, err := http.Get(fileURL)
+		if err != nil {
+			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to download image: %v", err)))
+			return
+		}
+		defer resp.Body.Close()
+
+		imageData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to read image: %v", err)))
+			return
+		}
+
+		guesses, err = aiGuesser.GuessFromImage(imageData)
+	} else {
+		// Process text
+		guesses, err = aiGuesser.GuessFromText(u.Message.Text)
 	}
 
-	resp, err := http.Get(fileURL)
-	if err != nil {
-		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to download image: %v", err)))
-		return
-	}
-	defer resp.Body.Close()
-
-	imageData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to read image: %v", err)))
-		return
-	}
-
-	// Get AI guesses
-	guesses, err := aiGuesser.GuessExpense(imageData)
 	if err != nil {
 		tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("🤖 AI processing failed: %v", err)))
 		return
 	}
+
 	if len(guesses) == 0 {
-		tbot.Send(tgbotapi.NewMessage(chatID, "🤖 No expenses detected in the receipt"))
+		tbot.Send(tgbotapi.NewMessage(chatID, "🤖 No expenses detected in the input"))
 		return
 	}
 

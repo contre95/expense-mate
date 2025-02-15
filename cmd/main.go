@@ -41,7 +41,10 @@ func main() {
 	commanderLogger := logger.NewSTDLogger("TELEGRAM COMMANDER", logger.BLUE2)
 
 	//AI
-	guesser, err := ai.NewGuesser()
+	txtModel := os.Getenv("TEXT_MODEL")
+	visioModel := os.Getenv("VISION_MODEL")
+	ollamaURL := os.Getenv("OLLAMA_ENDPOINT")
+	guesser, err := ai.NewGuesser(txtModel, visioModel, ollamaURL)
 	if err != nil {
 		initLogger.Err("failed to create guesser: %v", err)
 	}

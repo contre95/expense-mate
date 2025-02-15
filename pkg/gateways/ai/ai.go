@@ -7,13 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"time"
 )
 
 type Guesser struct {
-	apiURL string
-	client *http.Client
+	apiURL      string
+	client      *http.Client
+	txtModel    string
+	visionModel string
 }
 
 type ExpenseGuess struct {
@@ -23,44 +24,64 @@ type ExpenseGuess struct {
 	Product string
 }
 
-func NewGuesser() (*Guesser, error) {
+const OUTPUT_PROMPT = `1. OUTPUT FORMAT:
+{
+    "transactions": [
+        {
+            "shop": "Exact Merchant Name", 
+            "amount": 123.45,
+            "date": "YYYY-MM-DD"
+        },
+      ...
+    ]
+}
+2. FIELD REQUIREMENTS:
+- shop: String containing ONLY the business name (no lists/arrays)
+- amount: POSITIVE float (convert negatives to positive, NO symbols)
+- date: Full date in STRICT YYYY-MM-DD format (ignore time if present)
+3. STRICT PROHIBITIONS:
+- NO plural field names (use "shop", not "shops")
+- NO arrays in values (single value per field)
+- NO negative amounts
+- NO time components in dates
+- NO currency symbols (€/$) or special characters
+4. DATA CLEANSING:
+- If date can't be converted to YYYY-MM-DD, OMIT ENTIRE ENTRY
+- If amount contains symbols, REMOVE THEM (keep numeric value)
+- If amount is negative, CONVERT TO POSITIVE
+Convert this transaction text to JSON. Follow ALL rules EXACTLY.
+GOOD EXAMPLE:
+{
+    "transactions": [
+        {"shop": "ShopName1", "amount": 65.00, "date": "YYYY-MM-DD"},
+        {"shop": "ShopName2", "amount": 5.00, "date": "YYYY-MM-DD"},
+        ...
+        {"shop": "ShopName8", "amount": 1.78, "date": "YYYY-MM-DD"}
+    ]
+}
+`
+
+// const TEXT_MODEL = "llama3.2:3b-instruct-q4_K_M"
+
+func NewGuesser(txtModel, imgModel, ollamaEndpoint string) (*Guesser, error) {
 	return &Guesser{
-		apiURL: "http://localhost:11434/api/generate",
-		client: &http.Client{Timeout: 300 * time.Second},
+		apiURL:      ollamaEndpoint,
+		client:      &http.Client{Timeout: 300 * time.Second},
+		txtModel:    txtModel,
+		visionModel: imgModel,
 	}, nil
 }
 
-func (g *Guesser) GuessExpense(imageData []byte) ([]ExpenseGuess, error) {
+func (g *Guesser) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
 	encodedImage := base64.StdEncoding.EncodeToString(imageData)
-
 	requestBody := map[string]interface{}{
-		"model": "llama3.2-vision:11b-instruct-q4_K_M",
-		"prompt": `STRICT INSTRUCTIONS:
-1. Return ONLY a JSON array of transaction objects.
-2. Each object MUST have EXACTLY these fields:
-   - shop (string): The name of the shop or store.
-   - amount (positive float): The total amount spent, as a positive number (e.g., 4.50, not +€4.50 or -€4.50).
-   - date (string in YYYY-MM-DD format): The date of the transaction, in the exact format YYYY-MM-DD.
-3. DO NOT include any nested groups/categories.
-4. DO NOT add other fields or explanations.
-5. DO NOT include currency symbols (e.g., €, $) or signs (e.g., +, -) in the amount.
-6. DO NOT include time in the date field.
-7. If the date or amount cannot be parsed, omit the transaction entirely.
-GOOD EXAMPLE: 
-[
-  {
-    "shop": "Coffee Shop",
-    "amount": 4.50,
-    "date": "2023-10-15"
-  },
-  {
-    "shop": "Supermarket",
-    "amount": 12.30,
-    "date": "2023-10-16"
-  }
-]
-
-Current receipt to parse:`,
+		"model": g.visionModel,
+		"prompt": `You are an image to json model converter of bank transaction screenshots. Convert the information to JSON following these STRICT RULES:
+    ` + OUTPUT_PROMPT + `
+    ` + "If no specific year is specified, assume is " + time.Now().Format("2006") + `
+    ` + "If no specific year is specified, assume is " + time.Now().Format("Jan") + `
+    ` + "Treat today as day " + time.Now().Format("02") + "and yesterday as " + time.Now().Add(-24*time.Hour).Format("02") + `
+Current screenshot to parse:`,
 		"stream": false,
 		"format": "json",
 		"images": []string{encodedImage},
@@ -70,72 +91,123 @@ Current receipt to parse:`,
 		return nil, fmt.Errorf("error encoding request: %v", err)
 	}
 
+	resp, err := g.sendRequest(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("\n\n%s\n\n", resp)
+	return g.parseAndConvertTransactions(resp)
+}
+
+func (g *Guesser) GuessFromText(text string) ([]ExpenseGuess, error) {
+	prompt := fmt.Sprintf(`You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
+You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
+    `+OUTPUT_PROMPT+`
+Current  text to parse: %s`, text)
+	requestBody := map[string]interface{}{
+		"model":  g.txtModel,
+		"prompt": prompt,
+		"stream": false,
+		"format": "json",
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("error encoding request: %v", err)
+	}
+
+	resp, err := g.sendRequest(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return g.parseAndConvertTransactions(resp)
+}
+
+// Shared request handling
+func (g *Guesser) sendRequest(jsonBody []byte) (string, error) {
 	req, err := http.NewRequestWithContext(context.Background(), "POST", g.apiURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return "", fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := g.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API request failed: %v", err)
+		return "", fmt.Errorf("API request failed: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned status: %d", resp.StatusCode)
+		return "", fmt.Errorf("API returned status: %d", resp.StatusCode)
 	}
 
-var apiResponse struct {
+	var apiResponse struct {
 		Response string `json:"response"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
+		return "", fmt.Errorf("error decoding response: %v", err)
 	}
 
-	fmt.Printf("\n\n%s\n\n", apiResponse.Response)
-	jsonStr, err := extractJSONArray(apiResponse.Response)
-	if err != nil {
-		return nil, err
+	return apiResponse.Response, nil
+}
+
+// Shared parsing logic
+func (g *Guesser) parseAndConvertTransactions(responseStr string) ([]ExpenseGuess, error) {
+	fmt.Printf("\n%s\n", responseStr)
+	var response struct {
+		Transactions []struct {
+			Date   string  `json:"date"`
+			Shop   string  `json:"shop"`
+			Amount float64 `json:"amount"`
+		} `json:"transactions"`
 	}
 
-	var results []struct {
-		Shop   string  `json:"shop"`
-		Amount float64 `json:"amount"`
-		Date   string  `json:"date"`
+	if err := json.Unmarshal([]byte(responseStr), &response); err != nil {
+		return nil, fmt.Errorf("error parsing JSON: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(jsonStr), &results); err != nil {
-		return nil, fmt.Errorf("error parsing JSON array: %v", err)
-	}
-
-	if len(results) == 0 {
-		return nil, fmt.Errorf("no items found in response")
-	}
-
-	guesses := make([]ExpenseGuess, 0, len(results))
-	for _, result := range results {
-		parsedDate, err := time.Parse("2006-01-02", result.Date)
+	guesses := make([]ExpenseGuess, 0, len(response.Transactions))
+	for _, tx := range response.Transactions {
+		parsedDate, err := parseDate(tx.Date)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing date %q: %v", result.Date, err)
+			return nil, fmt.Errorf("error parsing date %q: %v", tx.Date, err)
 		}
-
 		guesses = append(guesses, ExpenseGuess{
-			Shop:    result.Shop,
-			Amount:  result.Amount,
+			Shop:    tx.Shop,
+			Amount:  tx.Amount,
 			Date:    parsedDate,
 			Product: "AI Generated",
 		})
 	}
 
+	if len(guesses) == 0 {
+		return nil, fmt.Errorf("no valid transactions found in response")
+	}
+
 	return guesses, nil
 }
 
-func extractJSONArray(input string) (string, error) {
-	re := regexp.MustCompile(`(?s)\[.*\]`)
-	match := re.FindString(input)
-	if match == "" {
-		return "", fmt.Errorf("no JSON array found in response")
+func parseDate(dateStr string) (time.Time, error) {
+	dateFormats := []string{
+		"02/01/2006",
+		"02/01/06",
+		"2006-01-02",
+		"01/02/2006",
+		"02-01-2006",
+		"Jan 2, 2006",
+		"02 Jan 2006",
+		"02/01/2006 3:04 PM",
+		"02/01/2006 15:04",
 	}
-	return match, nil
+
+	for _, format := range dateFormats {
+		parsedDate, err := time.Parse(format, dateStr)
+		if err == nil {
+			return parsedDate, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("error parsing date %q: no matching format found", dateStr)
 }
