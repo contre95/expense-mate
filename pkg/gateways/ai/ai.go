@@ -1,131 +1,110 @@
 package ai
 
 import (
+	"bytes"
+	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"regexp"
-	"strings"
 	"time"
-
-	"github.com/otiai10/gosseract/v2"
 )
 
 type Guesser struct {
-	ocrClient *gosseract.Client
+	apiURL string
+	client *http.Client
 }
 
 func NewGuesser() (*Guesser, error) {
-	client := gosseract.NewClient()
-	err := client.SetLanguage("eng")
-	if err != nil {
-		return nil, fmt.Errorf("failed to set OCR language: %w", err)
-	}
-	return &Guesser{ocrClient: client}, nil
+	return &Guesser{
+		apiURL: "http://localhost:11434/api/generate",
+		client: &http.Client{Timeout: 30 * time.Second},
+	}, nil
 }
 
 func (g *Guesser) GuessExpense(imageData []byte) (shop string, amount float64, date time.Time, product string, err error) {
-	g.ocrClient.SetImageFromBytes(imageData)
-	text, err := g.ocrClient.Text()
+	// Encode image to base64
+	encodedImage := base64.StdEncoding.EncodeToString(imageData)
+
+	// Prepare request payload
+	requestBody := map[string]interface{}{
+		"model": "llava-llama3",
+		"prompt": `Extract receipt information as JSON with these fields: 
+                  "shop" (string), "amount" (float), 
+                  "date" (YYYY-MM-DD format). 
+                  Return ONLY valid JSON without any additional text.`,
+		"stream": false,
+		"format": "json",
+		"images": []string{encodedImage},
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return "", 0, time.Time{}, "", fmt.Errorf("OCR failed: %w", err)
+		return "", 0, time.Time{}, "", fmt.Errorf("error encoding request: %v", err)
 	}
 
-	// Preprocess text for better parsing
-	lines := strings.Split(text, "\n")
-	cleanedLines := make([]string, 0)
-	for _, line := range lines {
-		if trimmed := strings.TrimSpace(line); trimmed != "" {
-			cleanedLines = append(cleanedLines, trimmed)
-		}
+	// Create API request
+	req, err := http.NewRequestWithContext(context.Background(), "POST", g.apiURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", 0, time.Time{}, "", fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send request
+	resp, err := g.client.Do(req)
+	if err != nil {
+		return "", 0, time.Time{}, "", fmt.Errorf("API request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", 0, time.Time{}, "", fmt.Errorf("API returned status: %d", resp.StatusCode)
 	}
 
-	// Debug: Print OCR results
-	fmt.Println("OCR Text:\n", strings.Join(cleanedLines, "\n"))
+	// Parse response
+	var apiResponse struct {
+		Response string `json:"response"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+		return "", 0, time.Time{}, "", fmt.Errorf("error decoding response: %v", err)
+	}
 
-	// Parse information
-	amount, err = extractAmount(cleanedLines)
+	// Extract JSON from response
+	fmt.Printf("\n\n%s\n\n", apiResponse.Response)
+	jsonStr, err := extractJSON(apiResponse.Response)
 	if err != nil {
 		return "", 0, time.Time{}, "", err
 	}
 
-	date = extractDate(cleanedLines)
-	shop = extractShop(cleanedLines)
-	product = extractProduct(cleanedLines)
+	// Parse extracted JSON
+	var result struct {
+		Shop    string  `json:"shop"`
+		Amount  float64 `json:"amount"`
+		Date    string  `json:"date"`
+		Product string  `json:"product"`
+	}
+	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+		return "", 0, time.Time{}, "", fmt.Errorf("error parsing JSON: %v", err)
+	}
 
-	return shop, amount, date, product, nil
+	// Parse date
+	parsedDate, err := time.Parse("2006-01-02", result.Date)
+	if err != nil {
+		// return "", 0, time.Time{}, "", fmt.Errorf("error parsing date: %v", err)
+		fmt.Println(result.Date)
+		parsedDate = time.Now()
+	}
+
+	return result.Shop, result.Amount, parsedDate, result.Product, nil
 }
 
-func extractAmount(lines []string) (float64, error) {
-	// Look for the main total amount (last € value)
-	var amountStr string
-	re := regexp.MustCompile(`€\s*([+-]?\d+[\.,]\d{2})`)
-
-	for i := len(lines) - 1; i >= 0; i-- {
-		if matches := re.FindStringSubmatch(lines[i]); len(matches) > 1 {
-			amountStr = strings.Replace(matches[1], ",", ".", 1)
-			break
-		}
+// Helper function to extract JSON from response text
+func extractJSON(input string) (string, error) {
+	re := regexp.MustCompile(`(?s)\{.*\}`)
+	match := re.FindString(input)
+	if match == "" {
+		return "", fmt.Errorf("no JSON found in response")
 	}
-
-	if amountStr == "" {
-		return 0, fmt.Errorf("no amount found")
-	}
-
-	var amount float64
-	_, err := fmt.Sscanf(amountStr, "%f", &amount)
-	return amount, err
+	return match, nil
 }
-
-func extractDate(lines []string) time.Time {
-	// Look for date keywords or relative dates
-	now := time.Now()
-	dateFormats := []string{
-		"2/1/2006",
-		"2006-01-02",
-		"January 2, 2006",
-	}
-
-	for _, line := range lines {
-		lower := strings.ToLower(line)
-		if strings.Contains(lower, "today") {
-			return now
-		}
-		if strings.Contains(lower, "yesterday") {
-			return now.AddDate(0, 0, -1)
-		}
-
-		for _, format := range dateFormats {
-			if _, err := time.Parse(format, line); err == nil {
-				if t, err := time.Parse(format, line); err == nil {
-					return t
-				}
-			}
-		}
-	}
-	return now
-}
-
-func extractShop(lines []string) string {
-	// Look for lines that appear before time stamps
-	timePattern := regexp.MustCompile(`\d{1,2}:\d{2}\s*[AP]M`)
-
-	for i, line := range lines {
-		if timePattern.MatchString(line) && i > 0 {
-			return lines[i-1]
-		}
-	}
-	return "Unknown Shop"
-}
-
-func extractProduct(lines []string) string {
-	// Look for lines starting with "For" or after shop name
-	for i, line := range lines {
-		if strings.HasPrefix(line, "For ") && i+1 < len(lines) {
-			return lines[i+1]
-		}
-		if strings.Contains(line, "€") && i > 0 {
-			return lines[i-1]
-		}
-	}
-	return "General Purchase"
-}
-
