@@ -2,6 +2,7 @@ name: Build and Push Docker Image
 on:
   release:
     types: [created]
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
