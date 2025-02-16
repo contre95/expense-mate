@@ -53,5 +53,4 @@ jobs:
           release_name: Release ${{ env.new_version }}
           draft: false
           prerelease: false
-          body: |
-            # Automated release for version ${{ env.new_version }}.
+          body_path: CHANGELOG.me
