@@ -81,11 +81,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version=${{ needs.tag-and-release.outputs.tag_name }}
-          podman image build -t contre95/expense-mate:$version .
+          podman image build --build-arg IMAGE_TAG=$version -t contre95/expense-mate:$version .
           podman push contre95/expense-mate:$version
 
           # Tag and push the :beta tag
-          podman tag contre95/expense-mate:$version contre95/expense-mate:beta
+          podman image build --build-arg IMAGE_TAG=beta-$version -t contre95/expense-mate:beta .
           podman push contre95/expense-mate:beta
 
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.head.ref }}" == release/* ]]; then

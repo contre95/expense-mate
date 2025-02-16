@@ -47,11 +47,14 @@
       </button>
     </li>
   </ul>
-  <div class="flex items-center justify-end h-full px-4">
-    <a href="https://github.com/contre95/expense-mate" target="_blank">
-      <i class="bx bxl-github text-3xl text-gray-500"></i>
-    </a>
-  </div>
+<div class="relative group flex items-center justify-end h-full px-4">
+  <a href="https://github.com/contre95/expense-mate" target="_blank" class="relative">
+    <i class="bx bxl-github text-3xl text-gray-500"></i>
+    <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+          {{ .MateVersion }}
+    </span>
+  </a>
+</div>
 </div>
 </div>
 <script>
