@@ -54,3 +54,8 @@ jobs:
           draft: false
           prerelease: false
           body_path: CHANGELOG.md
+      - name: Output tag name
+        id: set_tag
+        run: |
+          TAG_NAME=${{ github.event.release.tag_name }}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
