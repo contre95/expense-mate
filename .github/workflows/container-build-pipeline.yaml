@@ -54,18 +54,18 @@ jobs:
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
-      - name: Build and push Container image
-        run: |
+      # - name: Build and push Container image
+      #   run: |
           # Build and push the versioned image
-          podman build --platform linux/amd64,linux/arm64 \
-            -t contre95/expense-mate:${{ env.new_version }} . \
-          && podman image push "contre95/expense-mate:${{ env.new_version }}"
-
-          # Push the :latest tag if merging into main or it's a major version bump
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ env.is_major_bump }}" == "true" ]]; then
-            podman build --platform linux/amd64,linux/arm64 \
-              -t contre95/expense-mate:latest . && podman image push contre95/expense-mate:latest
-          fi
+          # podman build --platform linux/amd64,linux/arm64 \
+          #   -t contre95/expense-mate:${{ env.new_version }} . \
+          # && podman image push "contre95/expense-mate:${{ env.new_version }}"
+          #
+          # # Push the :latest tag if merging into main or it's a major version bump
+          # if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ env.is_major_bump }}" == "true" ]]; then
+          #   podman build --platform linux/amd64,linux/arm64 \
+          #     -t contre95/expense-mate:latest . && podman image push contre95/expense-mate:latest
+          # fi
       - name: Create Git tag
         if: ${{ github.event.pull_request.merged == true }}
         run: |
