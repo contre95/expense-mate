@@ -23,8 +23,8 @@ jobs:
       - name: Set is_major_bump variable
         id: set_major_bump
         run: |
-          version=\${{ github.event.release.tag_name }}
-          if [[ $version =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
+          version=${{ github.event.release.tag_name }}
+          if [[ "$version" =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
             echo "is_major_bump=true" >> $GITHUB_ENV
           else
             echo "is_major_bump=false" >> $GITHUB_ENV
