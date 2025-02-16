@@ -78,13 +78,13 @@ jobs:
           fi
 
       - name: Create Git tag
-        if: ${{ github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'fix/*' || github.event.pull_request.head.ref == 'feature/*') }}
+        if: ${{ github.event.pull_request.merged == true }}
         run: |
           git tag ${{ env.new_version }}
           git push origin ${{ env.new_version }}
 
       - name: Create GitHub Release
-        if: ${{ github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'fix/*' || github.event.pull_request.head.ref == 'feature/*') }}
+        if: ${{ github.event.pull_request.merged == true }}
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
