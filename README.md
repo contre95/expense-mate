@@ -22,7 +22,7 @@ All configurations are set in the `.env` file and passed as environment variable
   # Install the dependencies
   go mod tidy
   # Set the .env (you can leave the defaults for a quick start)
-  mv .env.example .env
+  cp .env.example .env
   # Source the env variables
   . <(cat .env | grep -v -e '^$' | grep -v "#" | awk '{print "export " $1}')
   # Run with go
