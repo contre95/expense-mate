@@ -15,9 +15,8 @@ RUN go mod download
 # Copy the rest of the source code
 COPY . .
 
-# Build the Go app with necessary flags for static linking
-RUN go build -o /app/expenses-app cmd/main.go
-# RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-app cmd/main.go
+# Build the Go app with necessary flags for static linking (cause I'm gonna be using scratch)
+RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-app cmd/main.go
 
 
 ARG IMAGE_TAG
