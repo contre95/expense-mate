@@ -6,7 +6,7 @@ on:
     types: [closed]
 jobs:
   build-and-push:
-    if: github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'develop' || startsWith(github.event.pull_request.head.ref, 'feature/'))
+    if: github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'fix/') || startsWith(github.event.pull_request.head.ref, 'feature/'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -39,9 +39,9 @@ jobs:
           IFS='.' read -r major minor patch <<< "$version"
 
           # Determine the type of change based on the branch
-          if [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
             patch=$((patch + 1))
-          elif [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
+          elif [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
             minor=$((minor + 1))
             patch=0
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
