@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log/slog"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,6 +19,7 @@ func Home(c *fiber.Ctx) error {
 	c.Append("Hx-Trigger", "expensesTable")
 	return c.Render("main", fiber.Map{
 		"DashboardTrigger": "revealed",
+		"MateVersion":      os.Getenv("IMAGE_TAG"),
 	})
 }
 
