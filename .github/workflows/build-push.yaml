@@ -33,5 +33,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=\${{ github.event.release.tag_name }}
-          podman build -
+          version=${{ github.event.release.tag_name }}
+          podman image built -t contre95/expense-mate:$version
+          podman push contre95/expense-mate:$version
+          # Tag and push the :beta tag
+          podman tag contre95/expense-mate:$version contre95/expense-mate:beta
+          podman push contre95/expense-mate:beta
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ env.is_major_bump }}" == "true" ]]; then
+            # Tag and push the :latest tag
+            podman tag contre95/expense-mate:$version contre95/expense-mate:latest
+            podman push contre95/expense-mate:latest
+          fi
