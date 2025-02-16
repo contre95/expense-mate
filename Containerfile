@@ -31,7 +31,7 @@ COPY --from=builder /app/public /app/public
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 3535
 
 # Command to run the executable
 ENTRYPOINT ["/app/expenses-app"]

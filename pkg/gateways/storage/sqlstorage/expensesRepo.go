@@ -15,7 +15,7 @@ import (
 const SQL_DATE_FORMAT = "2006-01-02 15:04:05"
 
 func (sqls *ExpensesStorage) Add(e expense.Expense) error {
-	// Start a transaction to ensure atomicity
+	// Start a transaction to ensure atomicit
 	tx, err := sqls.db.Begin()
 	if err != nil {
 		return err

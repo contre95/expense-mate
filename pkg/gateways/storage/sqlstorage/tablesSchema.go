@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS expense_users (
   FOREIGN KEY (expense_id) REFERENCES expenses (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT IGNORE INTO categories (id, name) VALUES ('` + expense.UnkownCategoryID + `', 'Unknown');
+INSERT IGNORE INTO categories (id, name) VALUES ('` + expense.UnknownCategoryID + `', 'Unknown');
 `
 
 const SQLiteInserts string = ` 
@@ -173,5 +173,5 @@ CREATE TABLE IF NOT EXISTS expense_users (
   FOREIGN KEY (expense_id) REFERENCES expenses (id) ON DELETE CASCADE
 );
 
-INSERT OR IGNORE INTO categories (id, name) VALUES ('` + expense.UnkownCategoryID + `', 'Unknown');
+INSERT OR IGNORE INTO categories (id, name) VALUES ('` + expense.UnknownCategoryID + `', 'Unknown');
 `

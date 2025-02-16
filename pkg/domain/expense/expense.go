@@ -22,7 +22,7 @@ var (
 	ErrInvalidCategory = errors.New("The category of the expense is invalid")
 )
 
-const UnkownCategoryID = "0c202ba7-39a8-4f67-bbe1-9dcb30d2a346"
+const UnknownCategoryID = "0c202ba7-39a8-4f67-bbe1-9dcb30d2a346"
 
 // ExpenseID is the unique identifier for the domain objects of type Expense
 type ExpenseID = uuid.UUID

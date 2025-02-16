@@ -17,7 +17,7 @@ func (c *Expense) Validate() (*Expense, error) {
 			fmt.Println(err)
 		}
 		fmt.Println(err)
-		return nil, errors.New(fmt.Sprintf("Invalid expense data. Please review the fields."))
+		return nil, errors.New(fmt.Sprintf("Invalid expense data. Please review the fields. %s", err))
 	}
 	return c, nil
 }

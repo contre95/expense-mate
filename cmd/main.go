@@ -7,6 +7,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/gateways/ai"
 	"expenses-app/pkg/gateways/logger"
 	"expenses-app/pkg/gateways/storage/jsonstorage"
 	"expenses-app/pkg/gateways/storage/sqlstorage"
@@ -37,8 +38,15 @@ func main() {
 	telegramLogger := logger.NewSTDLogger("TELEGRAM", logger.BLUE)
 	commanderLogger := logger.NewSTDLogger("TELEGRAM COMMANDER", logger.BLUE2)
 
+	//AI
+	txtModel := os.Getenv("TEXT_MODEL")
+	visioModel := os.Getenv("VISION_MODEL")
+	ollamaURL := os.Getenv("OLLAMA_ENDPOINT")
+	guesser, err := ai.NewGuesser(txtModel, visioModel, ollamaURL)
+	if err != nil {
+		initLogger.Err("failed to create guesser: %v", err)
+	}
 	// SQL storage
-	var err error
 	var db *sql.DB
 	defer db.Close()
 	switch os.Getenv("STORAGE_ENGINE") {
@@ -154,7 +162,7 @@ func main() {
 		tgbot := telegram.Bot{
 			API: bot,
 		}
-		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer)
+		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
 	}
 
 	// API

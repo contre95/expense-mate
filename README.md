@@ -9,16 +9,9 @@ You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot
 
 ### 🦭 Run in a container 
 ```sh
-podman run -d \
-  --name expenses-app \
-  --restart always \
-  --env STORAGE_ENGINE=sqlite  \
-  --env SQLITE_PATH=./exp.db \
-  --env LOAD_SAMPLE_DATA=true \
-  --env JSON_STORAGE_PATH=./users.json \
-  --env TELEGRAM_APITOKEN= \
-  -p 8080:8080 \
-  contre95/expense-mate:latest
+  cp .env.example .env
+  podman container run -p 3535:3535 --env-file=.env contre95/expense-mate
+
 ```
 
 ### 💻 Run locally
@@ -48,5 +41,6 @@ Check the menu for available commands, please.
 /unknown - Categorize unknown expenses. /done and continue in another moment.
 /new - Creates a new expense. /fix if you made made a mistake.
 /ping - Checks bot availability and health.
+/ai - Analyze image/text for expenses. Send /cancel to quit.
 /help - Displays this menu.
 ```
