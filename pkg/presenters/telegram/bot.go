@@ -17,10 +17,10 @@ import (
 const HELP_MSG string = `
 Check the menu for available commands, please.
 /categories - Sends you all the categories available.
-/summary - Sends summar of last month's expenses.
+/summary - Sends summary of last month's expenses.
 /unknown - Categorize imported expenses. /done and continue in another moment.
-/ai- Analyze image/text for expenses. Send /cancel to quit.
-/new - Creates a new expense. /fix if you made made a mistake.
+/ai - Analyze image/text for expenses. Send /cancel to quit.
+/new - Creates a new expense. /fix if you made a mistake.
 /ping - Checks bot availability and health.
 /help - Displays this menu.
 `
@@ -45,20 +45,34 @@ type Bot struct {
 	AllowedUsers []string
 }
 
+type BotContext struct {
+	BotAPI       *tgbotapi.BotAPI
+	Health       *health.Service
+	Tracking     *tracking.Service
+	Querying     *querying.Service
+	Managing     *managing.Service
+	Analyzing    *analyzing.Service
+	AI           *ai.Guesser
+	AllowedUsers *[]string
+	Mu           *sync.Mutex
+}
+
 // Run starts the Telegram expense bot
-func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, a *analyzing.Service, ai *ai.Guesser) {
+func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, ctx BotContext) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
-	var mu sync.Mutex
-	err := b.updateAllowedUsers(m)
+
+	err := b.updateAllowedUsers(ctx.Managing)
 	if err != nil {
 		fmt.Println("Couldn't get allowed users:", err)
 		return
 	}
+
 	done := make(chan bool)
-	go b.checkUpdates(done, updates, tbot, h, t, q, a, m, ai, &b.AllowedUsers, &mu)
+	go b.checkUpdates(done, updates, ctx)
+
 	running := true
 	for command := range receives {
 		switch command {
@@ -81,7 +95,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 			}
 			fmt.Println("Go routine stopped")
 		case "updateAllowedUsers":
-			err := b.updateAllowedUsers(m)
+			err := b.updateAllowedUsers(ctx.Managing)
 			if err != nil {
 				fmt.Println("Couldn't update allowed users:", err)
 			} else {
@@ -93,46 +107,45 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.
 			fmt.Println("Unknown command:", command)
 		}
 	}
-
 }
 
-func (b *Bot) checkUpdates(ImDone chan bool, updates tgbotapi.UpdatesChannel, tbot *tgbotapi.BotAPI, h *health.Service, t *tracking.Service, q *querying.Service, a *analyzing.Service, m *managing.Service, ai *ai.Guesser, allowedUsernames *[]string, mu *sync.Mutex) {
+func (b *Bot) checkUpdates(done chan bool, updates tgbotapi.UpdatesChannel, ctx BotContext) {
 	fmt.Println("Go routine started")
 	for {
 		select {
-		case <-ImDone:
+		case <-done:
 			fmt.Println("Go routine stopped")
 			return
 		case update := <-updates:
 			if update.Message == nil {
 				continue
 			}
-			if !isAllowed(update.Message.Chat.UserName, allowedUsernames, mu) {
+			if !isAllowed(update.Message.Chat.UserName, ctx.AllowedUsers, ctx.Mu) {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
 				if strings.Contains(update.Message.Text, ANSWER) {
 					msg = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Yeah.. it's a '%s', %s. But I'm still not letting you in.", ANSWER, update.Message.Chat.UserName))
 				}
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-				tbot.Send(msg)
+				ctx.BotAPI.Send(msg)
 				continue
 			}
 			switch update.Message.Text {
 			case "/categories":
-				listCategories(tbot, &update, q)
+				listCategories(ctx.BotAPI, &update, ctx.Querying)
 			case "/ai":
-				guessExpense(tbot, &update, &updates, t, m, ai, update.Message.Chat.UserName)
+				guessExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Managing, ctx.AI, update.Message.Chat.UserName)
 			case "/new":
-				createExpense(tbot, &update, &updates, t, q, m)
+				createExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Querying, ctx.Managing)
 			case "/help":
-				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				ctx.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			case "/summary":
-				lastMonthSummary(tbot, &update, a)
+				lastMonthSummary(ctx.BotAPI, &update, ctx.Analyzing)
 			case "/unknown":
-				categorizeUnknowns(tbot, &update, &updates, t, q, m, update.Message.Chat.UserName)
+				categorizeUnknowns(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Querying, ctx.Managing, update.Message.Chat.UserName)
 			case "/ping":
-				b.ping(update, h)
+				b.ping(update, ctx.Health)
 			default:
-				tbot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				ctx.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			}
 		}
 	}
@@ -154,13 +167,13 @@ func (b *Bot) updateAllowedUsers(m *managing.Service) error {
 	return nil
 }
 
-func getKeybaordMarkup(items []string, rowsCant int) tgbotapi.ReplyKeyboardMarkup {
+func getKeyboardMarkup(items []string, rowsCount int) tgbotapi.ReplyKeyboardMarkup {
 	matrix := [][]tgbotapi.KeyboardButton{}
 	row := []tgbotapi.KeyboardButton{}
 	for _, i := range items {
 		newButton := tgbotapi.NewKeyboardButton(i)
 		row = append(row, newButton)
-		if len(row) == rowsCant || len(items)-len(matrix)*rowsCant == len(row) {
+		if len(row) == rowsCount || len(items)-len(matrix)*rowsCount == len(row) {
 			matrix = append(matrix, row)
 			row = []tgbotapi.KeyboardButton{}
 		}
@@ -193,3 +206,4 @@ var NumberKeyboard = tgbotapi.NewOneTimeReplyKeyboard(
 		tgbotapi.NewKeyboardButton("0"), tgbotapi.NewKeyboardButton("."), tgbotapi.NewKeyboardButton("00"),
 	),
 )
+
