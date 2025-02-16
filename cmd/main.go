@@ -16,6 +16,7 @@ import (
 	"expenses-app/pkg/presenters/telegram"
 	"os"
 	"strings"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -162,7 +163,22 @@ func main() {
 		tgbot := telegram.Bot{
 			API: bot,
 		}
-		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
+		ctx := telegram.BotContext{
+			BotAPI:       bot,
+			Health:       &healthChecker,
+			Tracking:     &tracker,
+			Querying:     &querier,
+			Managing:     &manager,
+			Analyzing:    &analyzer,
+			AI:           guesser,
+			AllowedUsers: &tgbot.AllowedUsers,
+			Mu:           &sync.Mutex{},
+		}
+
+		// Run the bot with the updated context
+		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, ctx)
+		// go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
+		// go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
 	}
 
 	// API
