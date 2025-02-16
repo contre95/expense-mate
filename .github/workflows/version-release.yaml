@@ -1,4 +1,4 @@
-name: Tag and Create Release
+name: Tag, Release, and Build
 on:
   push:
     branches:
@@ -11,11 +11,13 @@ jobs:
   tag-and-release:
     if: github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'fix/') || startsWith(github.event.pull_request.head.ref, 'feature/'))
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.set_tag.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0 # Fetch all history for all tags and branches
+          fetch-depth: 0
       - name: Get the latest tag
         id: get_tag
         run: |
@@ -50,7 +52,7 @@ jobs:
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.new_version }}
           release_name: Release ${{ env.new_version }}
@@ -60,8 +62,16 @@ jobs:
       - name: Output tag name
         id: set_tag
         run: |
-          TAG_NAME=${{ github.event.release.tag_name }}
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ env.new_version }}" >> $GITHUB_OUTPUT
+  build-and-push:
+    needs: tag-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code at tag
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.tag-and-release.outputs.tag_name }}
+          fetch-depth: 0
       - name: Set up Podman
         run: |
           sudo apt-get update
@@ -73,12 +83,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=${{ env.new_version }}
+          version=${{ needs.tag-and-release.outputs.tag_name }}
           podman image build -t contre95/expense-mate:$version .
           podman push contre95/expense-mate:$version
+
           # Tag and push the :beta tag
           podman tag contre95/expense-mate:$version contre95/expense-mate:beta
           podman push contre95/expense-mate:beta
+
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
             # Tag and push the :latest tag
             podman tag contre95/expense-mate:$version contre95/expense-mate:latest
