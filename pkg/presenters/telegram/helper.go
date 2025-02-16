@@ -16,11 +16,16 @@ func setOneTimeKeyBoardMap(items []string, rowsCant int) tgbotapi.ReplyKeyboardM
 	return tgbotapi.NewOneTimeReplyKeyboard(matrix...)
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
+func getKeyboardMarkup(items []string, rowsCount int) tgbotapi.ReplyKeyboardMarkup {
+	matrix := [][]tgbotapi.KeyboardButton{}
+	row := []tgbotapi.KeyboardButton{}
+	for _, i := range items {
+		newButton := tgbotapi.NewKeyboardButton(i)
+		row = append(row, newButton)
+		if len(row) == rowsCount || len(items)-len(matrix)*rowsCount == len(row) {
+			matrix = append(matrix, row)
+			row = []tgbotapi.KeyboardButton{}
 		}
 	}
-	return false
+	return tgbotapi.NewOneTimeReplyKeyboard(matrix...)
 }
