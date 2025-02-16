@@ -1,0 +1,99 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Get the latest tag
+        id: get_tag
+        run: |
+          # Fetch all tags from the remote repository
+          git fetch --tags
+          # Get the latest tag that matches semantic versioning
+          latest_tag=$(git describe --tags --match "v*.*.*" --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $latest_tag"
+          echo "tag=$latest_tag" >> $GITHUB_ENV
+
+      - name: Determine new version
+        id: determine_version
+        run: |
+          # Extract the version number from the latest tag (remove the 'v' prefix)
+          version=${tag#v}
+          IFS='.' read -r major minor patch <<< "$version"
+
+          # Determine the type of change based on the branch
+          if [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
+            patch=$((patch + 1))
+          elif [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
+            minor=$((minor + 1))
+            patch=0
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
+          fi
+
+          # Construct the new version
+          new_version="v${major}.${minor}.${patch}"
+          echo "New version: $new_version"
+          echo "new_version=$new_version" >> $GITHUB_ENV
+
+      - name: Build and push Container image
+        run: |
+          # Build and push the versioned image
+          podman build --platform linux/amd64,linux/arm64 \
+            -t contre95/expense-mate:${{ env.new_version }} . \
+          && podman image push "contre95/expense-mate:${{ env.new_version }}"
+
+          # Push the :latest tag if merging into main or it's a major version bump
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ env.is_major_bump }}" == "true" ]]; then
+            podman build --platform linux/amd64,linux/arm64 \
+              -t contre95/expense-mate:latest . && podman image push contre95/expense-mate:latest
+          fi
+
+      - name: Create Git tag
+        if: ${{ github.event.pull_request.merged == true }}
+        run: |
+          git tag ${{ env.new_version }}
+          git push origin ${{ env.new_version }}
+
+      - name: Create GitHub Release
+        if: ${{ github.event.pull_request.merged == true }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.new_version }}
+          release_name: Release ${{ env.new_version }}
+          draft: false
+          prerelease: false
+          body: |
+            Automated release for version ${{ env.new_version }}.
+            Changes:
+            - Add your release notes here.

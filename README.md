@@ -1,14 +1,9 @@
 # 📊🧉 ExpenseMate
-ExpenseMate is an expense tracking app with a handy Telegram bot and a front end. It uses [Go](https://go.dev/), [MySQL](https://www.mysql.com/), [SQLite](https://www.sqlite.org/index.html), [Fiber](https://gofiber.io/), [TailwindCSS](https://tailwindcss.com/) and [HTMX](https://htmx.org/).
-
-### Features
-* Create, Update, Delete or Modify expenses. (Web) 
-* Import expenses from [N26](https://n26.com/en-es) CSV extract. (Web)
-* Create Rules to automatically categorize imported expenses. (Web)
-* Manage multiple users and attach them to expenses. (Web)
-* Get prompted expenses without category and categorize them. (Telegram) 
-* Create expenses. (Telegram) 
-* Get an expense summary by category. (Telegram) 
+ExpenseMate is an expense tracking app with a handy Telegram bot and a front end.
+Stack:
+ * Go
+ * MySQL or SQLite
+ * HTMX
 
 You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot is not enabled.
 
