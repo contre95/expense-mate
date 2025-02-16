@@ -1,5 +1,8 @@
 name: Tag and Create Release
 on:
+  push:
+    branches:
+      - feature/ai
   pull_request:
     branches:
       - main
@@ -59,3 +62,18 @@ jobs:
         run: |
           TAG_NAME=${{ github.event.release.tag_name }}
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+      - name: Build and push Container image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=${{ github.event.release.tag_name }}
+          podman image build -t contre95/expense-mate:$version .
+          podman push contre95/expense-mate:$version
+          # Tag and push the :beta tag
+          podman tag contre95/expense-mate:$version contre95/expense-mate:beta
+          podman push contre95/expense-mate:beta
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
+            # Tag and push the :latest tag
+            podman tag contre95/expense-mate:$version contre95/expense-mate:latest
+            podman push contre95/expense-mate:latest
+          fi
