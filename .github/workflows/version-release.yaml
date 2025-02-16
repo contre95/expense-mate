@@ -62,6 +62,13 @@ jobs:
         run: |
           TAG_NAME=${{ github.event.release.tag_name }}
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+      - name: Login to DockerHub
+        run: |
+          podman login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} docker.io
       - name: Build and push Container image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
