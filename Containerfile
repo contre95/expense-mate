@@ -16,7 +16,8 @@ RUN go mod download
 COPY . .
 
 # Build the Go app with necessary flags for static linking
-RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-app cmd/main.go
+RUN go build -o /app/expenses-app cmd/main.go
+# RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-app cmd/main.go
 
 # Stage 2: Run the Go binary in a minimal environment
 FROM scratch
