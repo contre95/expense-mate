@@ -26,8 +26,6 @@ import (
 )
 
 func main() {
-	var err error
-
 	// Infrastructure / Gateways
 
 	//Loggers
