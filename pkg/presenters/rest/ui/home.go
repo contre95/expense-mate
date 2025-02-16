@@ -15,6 +15,7 @@ const DEFAULT_PNUM_PARAM = "0"
 // Home hanlder reders the homescreen
 func Home(c *fiber.Ctx) error {
 	slog.Info("HOME")
+	slog.Info(os.Getenv("IMAGE_TAG"))
 	// render index template
 	c.Append("Hx-Trigger", "expensesTable")
 	return c.Render("main", fiber.Map{
