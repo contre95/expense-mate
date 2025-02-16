@@ -26,9 +26,9 @@ jobs:
           version=${tag#v}
           IFS='.' read -r major minor patch <<< "$version"
 
-          if [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
             patch=$((patch + 1))
-          elif [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
+          elif [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
             minor=$((minor + 1))
             patch=0
           elif [[ "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
