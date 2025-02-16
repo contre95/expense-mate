@@ -23,8 +23,29 @@ jobs:
       - name: Set is_major_bump variable
         id: set_major_bump
         run: |
-          version=${{ github.event.release.tag_name }}
-          if [[ "$version" =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
+          # Fetch all tags (including existing ones)
+          git fetch --tags
+
+          # Get the NEWLY CREATED tag from the GitHub event
+          NEW_VERSION="${{ github.event.release.tag_name }}"
+
+          # Get the LATEST EXISTING TAG (before this release)
+          LATEST_EXISTING_VERSION=$(git tag --sort=-v:refname | grep -v "$NEW_VERSION" | head -n 1)
+
+          # If there's no existing tag (first release), default to "0.0.0"
+          LATEST_EXISTING_VERSION=${LATEST_EXISTING_VERSION:-"0.0.0"}
+
+          # Split versions into parts
+          NEW_MAJOR=$(echo "$NEW_VERSION" | cut -d. -f1)
+          NEW_MINOR=$(echo "$NEW_VERSION" | cut -d. -f2)
+          NEW_PATCH=$(echo "$NEW_VERSION" | cut -d. -f3)
+
+          EXISTING_MAJOR=$(echo "$LATEST_EXISTING_VERSION" | cut -d. -f1)
+          EXISTING_MINOR=$(echo "$LATEST_EXISTING_VERSION" | cut -d. -f2)
+          EXISTING_PATCH=$(echo "$LATEST_EXISTING_VERSION" | cut -d. -f3)
+
+          # Check if MAJOR version increased, and MINOR/PATCH reset to 0
+          if [[ $NEW_MAJOR -gt $EXISTING_MAJOR ]] && [[ $NEW_MINOR -eq 0 ]] && [[ $NEW_PATCH -eq 0 ]]; then
             echo "is_major_bump=true" >> $GITHUB_ENV
           else
             echo "is_major_bump=false" >> $GITHUB_ENV
@@ -34,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version=${{ github.event.release.tag_name }}
-          podman image build -t contre95/expense-mate:$version
+          podman image build -t contre95/expense-mate:$version .
           podman push contre95/expense-mate:$version
           # Tag and push the :beta tag
           podman tag contre95/expense-mate:$version contre95/expense-mate:beta
