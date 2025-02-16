@@ -107,7 +107,7 @@ What category does it belong ?
 
 			msg = tgbotapi.NewMessage(chatID, expenseText)
 			msg.ParseMode = tgbotapi.ModeHTML
-			msg.ReplyMarkup = getKeybaordMarkup(categoryNames, 3)
+			msg.ReplyMarkup = getKeyboardMarkup(categoryNames, 3)
 			tbot.Send(msg)
 		waitforupdate:
 			update := <-*uc

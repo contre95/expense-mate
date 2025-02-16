@@ -167,20 +167,6 @@ func (b *Bot) updateAllowedUsers(m *managing.Service) error {
 	return nil
 }
 
-func getKeyboardMarkup(items []string, rowsCount int) tgbotapi.ReplyKeyboardMarkup {
-	matrix := [][]tgbotapi.KeyboardButton{}
-	row := []tgbotapi.KeyboardButton{}
-	for _, i := range items {
-		newButton := tgbotapi.NewKeyboardButton(i)
-		row = append(row, newButton)
-		if len(row) == rowsCount || len(items)-len(matrix)*rowsCount == len(row) {
-			matrix = append(matrix, row)
-			row = []tgbotapi.KeyboardButton{}
-		}
-	}
-	return tgbotapi.NewOneTimeReplyKeyboard(matrix...)
-}
-
 func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
 	mu.Lock()
 	defer mu.Unlock()
@@ -191,19 +177,3 @@ func isAllowed(chatID string, allowedUsernames *[]string, mu *sync.Mutex) bool {
 	}
 	return false
 }
-
-var NumberKeyboard = tgbotapi.NewOneTimeReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("1"), tgbotapi.NewKeyboardButton("2"), tgbotapi.NewKeyboardButton("3"),
-	),
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("4"), tgbotapi.NewKeyboardButton("5"), tgbotapi.NewKeyboardButton("6"),
-	),
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("7"), tgbotapi.NewKeyboardButton("8"), tgbotapi.NewKeyboardButton("9"),
-	),
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("0"), tgbotapi.NewKeyboardButton("."), tgbotapi.NewKeyboardButton("00"),
-	),
-)
-

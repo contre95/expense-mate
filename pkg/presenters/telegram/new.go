@@ -108,7 +108,7 @@ collectData:
 
 	for {
 		msg = tgbotapi.NewMessage(chatID, "Please choose a category:")
-		msg.ReplyMarkup = getKeybaordMarkup(categoryNames, 3)
+		// msg.ReplyMarkup = getKeyboardMarkup(categoryNames, 3)
 		tbot.Send(msg)
 		update = <-*uc
 		if update.Message.Text == "/fix" {
