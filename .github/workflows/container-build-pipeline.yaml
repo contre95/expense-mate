@@ -34,8 +34,8 @@ jobs:
       - name: Determine new version
         id: determine_version
         run: |
-          # Extract the version number from the latest tag
-          version=${env.tag#v}
+          # Extract the version number from the latest tag (remove the 'v' prefix)
+          version=${tag#v}
           IFS='.' read -r major minor patch <<< "$version"
 
           # Determine the type of change based on the branch
