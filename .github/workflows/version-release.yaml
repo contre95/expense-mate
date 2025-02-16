@@ -54,6 +54,4 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            Automated release for version ${{ env.new_version }}.
-            Changes:
-            - Add your release notes here.
+            # Automated release for version ${{ env.new_version }}.
