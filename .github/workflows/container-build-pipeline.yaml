@@ -6,7 +6,7 @@ on:
     types: [closed]
 jobs:
   build-and-push:
-    if: github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'develop' || startsWith(github.event.pull_request.head.ref, 'feature/'))
+    if: github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'fix/*' || startsWith(github.event.pull_request.head.ref, 'feature/*'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
