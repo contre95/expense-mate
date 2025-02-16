@@ -46,6 +46,7 @@ type Bot struct {
 }
 
 // Run starts the Telegram expense bot
+// TODO: Refactor this bit
 func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, h *health.Service, t *tracking.Service, q *querying.Service, m *managing.Service, a *analyzing.Service, ai *ai.Guesser) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
