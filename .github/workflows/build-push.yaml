@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version=${{ github.event.release.tag_name }}
-          podman image built -t contre95/expense-mate:$version
+          podman image build -t contre95/expense-mate:$version
           podman push contre95/expense-mate:$version
           # Tag and push the :beta tag
           podman tag contre95/expense-mate:$version contre95/expense-mate:beta
