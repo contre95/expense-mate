@@ -1,10 +1,14 @@
 name: Build and Push Docker Image
+
 on:
   push:
     branches:
       - main
-      - feature/*
-      - fix/*
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -13,15 +17,19 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # Fetch all history for all tags and branches
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Get the latest tag
         id: get_tag
         run: |
@@ -31,6 +39,7 @@ jobs:
           latest_tag=$(git describe --tags --match "v*.*.*" --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Latest tag: $latest_tag"
           echo "tag=$latest_tag" >> $GITHUB_ENV
+
       - name: Determine new version
         id: determine_version
         run: |
@@ -39,9 +48,9 @@ jobs:
           IFS='.' read -r major minor patch <<< "$version"
 
           # Determine the type of change based on the branch
-          if [[ "${{ github.ref }}" == "refs/heads/fix/*" ]]; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == fix/* ]]; then
             patch=$((patch + 1))
-          elif [[ "${{ github.ref }}" == "refs/heads/feature/*" ]]; then
+          elif [[ "${{ github.event.pull_request.head.ref }}" == feature/* ]]; then
             minor=$((minor + 1))
             patch=0
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
@@ -54,6 +63,7 @@ jobs:
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
+
       - name: Build and push Container image
         run: |
           # Build and push the versioned image
@@ -66,13 +76,15 @@ jobs:
             podman build --platform linux/amd64,linux/arm64 \
               -t contre95/expense-mate:latest . && podman image push contre95/expense-mate:latest
           fi
+
       - name: Create Git tag
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'fix/*' || github.event.pull_request.head.ref == 'feature/*') }}
         run: |
           git tag ${{ env.new_version }}
           git push origin ${{ env.new_version }}
+
       - name: Create GitHub Release
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.event.pull_request.merged == true && (github.event.pull_request.head.ref == 'fix/*' || github.event.pull_request.head.ref == 'feature/*') }}
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
