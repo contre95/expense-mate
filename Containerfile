@@ -20,19 +20,6 @@ RUN go build -ldflags='-s -w -extldflags "-static"' -o /app/expenses-app cmd/mai
 # Stage 2: Run the Go binary in a minimal environment
 FROM scratch
 
-# Set environment variables
-ENV STORAGE_ENGINE=sqlite
-ENV LOAD_SAMPLE_DATA=true
-ENV MYSQL_USER=expuser
-ENV MYSQL_PASS=11223344
-ENV MYSQL_PORT=3306
-ENV MYSQL_HOST=localhost
-ENV MYSQL_DB=expdb
-ENV SQLITE_PATH=./exp.db
-ENV JSON_STORAGE_PATH=./users.json
-ENV CORS_ALLOWLIST=*
-ENV TELEGRAM_APITOKEN=
-
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
