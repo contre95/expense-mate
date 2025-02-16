@@ -1,10 +1,8 @@
-name: Build and Push Docker Image
-
+name: Build and Push Podman Image
 on:
   workflow_run:
     workflows: ["Tag and Create Release"]
     types: [completed]
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -14,20 +12,20 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up QEMU
-        uses: podman/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: podman/setup-buildx-action@v2
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
       - name: Login to DockerHub
-        uses: podman/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          podman login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} docker.io
       - name: Set is_major_bump variable
         id: set_major_bump
         run: |
-          version=${{ github.event.release.tag_name }}
+          version=\${{ github.event.release.tag_name }}
           if [[ $version =~ ^[0-9]+\.[0-9]+\.0$ ]]; then
-            echo "is_major_bump=true" >> $GITHUB_ENV
+            echo "is_major_bump=true" >> \$GITHUB_ENV
           else
             echo "is_major_bump=false" >> $GITHUB_ENV
           fi
@@ -35,15 +33,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=${{ github.event.release.tag_name }}
-          podman push contre95/expense-mate:$version
-
-          # Tag and push the :beta tag
-          podman tag contre95/expense-mate:$version contre95/expense-mate:beta
-          podman push contre95/expense-mate:beta
-
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ env.is_major_bump }}" == "true" ]]; then
-            # Tag and push the :latest tag
-            podman tag contre95/expense-mate:$version contre95/expense-mate:latest
-            podman push contre95/expense-mate:latest
-          fi
+          version=\${{ github.event.release.tag_name }}
+          podman build -
