@@ -174,11 +174,8 @@ func main() {
 			AllowedUsers: &tgbot.AllowedUsers,
 			Mu:           &sync.Mutex{},
 		}
-
 		// Run the bot with the updated context
 		go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, ctx)
-		// go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
-		// go tgbot.Run(bot, telegramCommandsSends, telegramCommandsReceived, &healthChecker, &tracker, &querier, &manager, &analyzer, guesser)
 	}
 
 	// API
