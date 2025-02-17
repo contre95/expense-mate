@@ -24,15 +24,15 @@ INSERT IGNORE INTO rules VALUES('4df66260-5457-4eae-805f-b42bfaa9cdff','BadaBing
 INSERT IGNORE INTO rules VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','Gardener','3b325284-e437-49c1-b311-9dae17c47eed');INSERT INTO rules VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','Nuovo Vesuvio S.R.L','12e78baa-8785-419b-aca0-b625d5fb0b49');
 INSERT IGNORE INTO rules VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','Transfer to Phil Intintola','2b0e8ddf-29b6-4b0f-b15e-7a7c68520583');
 
-INSERT IGNORE INTO expenses VALUES('1f37f2b2-2df0-4774-b52c-3c7cfd5ad7f3',45.2999999999999971,'Groceries','Walmart','` + pastMonth + `-01 00:00:00+00:00','3b325284-e437-49c1-b311-9dae17c47eed');
-INSERT IGNORE INTO expenses VALUES('22f488f9-5d77-434f-80ce-3efa6b245500',100.5,'ELECTRICITY BILL','ELECTRIC COMPANY','` + pastMonth + `-03 00:00:00+00:00','40a82e30-a9ee-4cc4-8018-de1e98c4d3be');
-INSERT IGNORE INTO expenses VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8',60.75,'Gasoline','Shell','` + pastMonth + `-04 00:00:00+00:00','72ee0c4a-3809-41ef-98a5-5630a9a53242');
+INSERT IGNORE INTO expenses VALUES('1f37f2b2-2df0-4774-b52c-3c7cfd5ad7f3',45.2999999999999971,'Groceries','Centanni’s Market','` + pastMonth + `-01 00:00:00+00:00','3b325284-e437-49c1-b311-9dae17c47eed');
+INSERT IGNORE INTO expenses VALUES('22f488f9-5d77-434f-80ce-3efa6b245500',100.5,'ELECTRICITY BILL','Jersey Power','` + pastMonth + `-03 00:00:00+00:00','40a82e30-a9ee-4cc4-8018-de1e98c4d3be');
+INSERT IGNORE INTO expenses VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8',60.75,'Gasoline','Exxon','` + pastMonth + `-04 00:00:00+00:00','72ee0c4a-3809-41ef-98a5-5630a9a53242');
 INSERT IGNORE INTO expenses VALUES('183e01a2-7892-4932-a190-3c8c0946bca6',1.0,'Unknown with/o ppl','Example2','` + pastMonth + `-05 00:00:00+00:00','0c202ba7-39a8-4f67-bbe1-9dcb30d2a346');
 INSERT IGNORE INTO expenses VALUES('8e752e9a-3027-4b1a-a225-b270076a7ea9',31.0,'Direct Debit','Excavator Renting','` + thisMonth + `-28 00:00:00+00:00','5e27a713-1a0b-45d5-8c59-2c6aff0cd0ae');
 INSERT IGNORE INTO expenses VALUES('2784bcfd-da55-4783-9a04-b198ebb4d9a7',1.0,'Unknown with ppl','Example1','` + thisMonth + `-01 00:00:00+00:00','0c202ba7-39a8-4f67-bbe1-9dcb30d2a346');
 INSERT IGNORE INTO expenses VALUES('a4c805cb-77a0-4907-8e18-2abe22bde140',3000.0,'Monthly donation','Transfer to Phil Intintola','` + thisMonth + `-10 00:00:00+00:00','2b0e8ddf-29b6-4b0f-b15e-7a7c68520583');
 INSERT IGNORE INTO expenses VALUES('996b8883-4270-4deb-8dce-e14d8d9e5e58',1000.0,'Lend to a friend','Cash','` + thisMonth + `-09 00:00:00+00:00','40373de2-de1f-449d-92ef-29da67322efd');
-INSERT IGNORE INTO expenses VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4',436.0,'Dinner','BAMONTE’S RESTAURANT','` + thisMonth + `-23 00:00:00+00:00','12e78baa-8785-419b-aca0-b625d5fb0b49');
+INSERT IGNORE INTO expenses VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4',436.0,'Dinner','Vesuvio','` + thisMonth + `-23 00:00:00+00:00','12e78baa-8785-419b-aca0-b625d5fb0b49');
 
 INSERT IGNORE INTO expense_users VALUES('8e752e9a-3027-4b1a-a225-b270076a7ea9','9e10c58f-adb3-419b-9e20-f4fbb075661e');
 INSERT IGNORE INTO expense_users VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8','9e10c58f-adb3-419b-9e20-f4fbb075661e');
@@ -111,15 +111,15 @@ INSERT OR IGNORE INTO rules VALUES('5be2b350-d963-49d7-bcd0-6c2ebe73b9f5','Garde
 INSERT OR IGNORE INTO rules VALUES('47805da9-10ce-4f95-bf0c-a8d848e9130e','Nuovo Vesuvio S.R.L','12e78baa-8785-419b-aca0-b625d5fb0b49');
 INSERT OR IGNORE INTO rules VALUES('af11376c-88ba-48bc-aaf4-0aa0de3a31a6','Transfer to Phil Intintola','2b0e8ddf-29b6-4b0f-b15e-7a7c68520583');
 
-INSERT OR IGNORE INTO expenses VALUES('1f37f2b2-2df0-4774-b52c-3c7cfd5ad7f3',45.2999999999999971,'Groceries','Walmart','` + pastMonth + `-01 00:00:00+00:00','3b325284-e437-49c1-b311-9dae17c47eed');
-INSERT OR IGNORE INTO expenses VALUES('22f488f9-5d77-434f-80ce-3efa6b245500',100.5,'ELECTRICITY BILL','ELECTRIC COMPANY','` + pastMonth + `-03 00:00:00+00:00','40a82e30-a9ee-4cc4-8018-de1e98c4d3be');
-INSERT OR IGNORE INTO expenses VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8',60.75,'Gasoline','Shell','` + pastMonth + `-04 00:00:00+00:00','72ee0c4a-3809-41ef-98a5-5630a9a53242');
+INSERT OR IGNORE INTO expenses VALUES('1f37f2b2-2df0-4774-b52c-3c7cfd5ad7f3',45.2999999999999971,'Groceries','Centanni’s Market','` + pastMonth + `-01 00:00:00+00:00','3b325284-e437-49c1-b311-9dae17c47eed');
+INSERT OR IGNORE INTO expenses VALUES('22f488f9-5d77-434f-80ce-3efa6b245500',100.5,'ELECTRICITY BILL','Jersey Power','` + pastMonth + `-03 00:00:00+00:00','40a82e30-a9ee-4cc4-8018-de1e98c4d3be');
+INSERT OR IGNORE INTO expenses VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8',60.75,'Gasoline','Exxon','` + pastMonth + `-04 00:00:00+00:00','72ee0c4a-3809-41ef-98a5-5630a9a53242');
 INSERT OR IGNORE INTO expenses VALUES('183e01a2-7892-4932-a190-3c8c0946bca6',1.0,'Unknown with/o ppl','Example2','` + pastMonth + `-05 00:00:00+00:00','0c202ba7-39a8-4f67-bbe1-9dcb30d2a346');
-INSERT OR IGNORE INTO expenses VALUES('8e752e9a-3027-4b1a-a225-b270076a7ea9',31.0,'Direct Debit','Excavator Renting','` + pastMonth + `-28 00:00:00+00:00','5e27a713-1a0b-45d5-8c59-2c6aff0cd0ae');
+INSERT OR IGNORE INTO expenses VALUES('8e752e9a-3027-4b1a-a225-b270076a7ea9',31.0,'Direct Debit','Excavator Renting','` + thisMonth + `-28 00:00:00+00:00','5e27a713-1a0b-45d5-8c59-2c6aff0cd0ae');
 INSERT OR IGNORE INTO expenses VALUES('2784bcfd-da55-4783-9a04-b198ebb4d9a7',1.0,'Unknown with ppl','Example1','` + thisMonth + `-01 00:00:00+00:00','0c202ba7-39a8-4f67-bbe1-9dcb30d2a346');
 INSERT OR IGNORE INTO expenses VALUES('a4c805cb-77a0-4907-8e18-2abe22bde140',3000.0,'Monthly donation','Transfer to Phil Intintola','` + thisMonth + `-10 00:00:00+00:00','2b0e8ddf-29b6-4b0f-b15e-7a7c68520583');
 INSERT OR IGNORE INTO expenses VALUES('996b8883-4270-4deb-8dce-e14d8d9e5e58',1000.0,'Lend to a friend','Cash','` + thisMonth + `-09 00:00:00+00:00','40373de2-de1f-449d-92ef-29da67322efd');
-INSERT OR IGNORE INTO expenses VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4',436.0,'Dinner','BAMONTE’S RESTAURANT','` + thisMonth + `-23 00:00:00+00:00','12e78baa-8785-419b-aca0-b625d5fb0b49');
+INSERT OR IGNORE INTO expenses VALUES('82f37c1b-0e22-4566-b987-d195fb9ab7f4',436.0,'Dinner','Vesuvio','` + thisMonth + `-23 00:00:00+00:00','12e78baa-8785-419b-aca0-b625d5fb0b49');
 
 INSERT OR IGNORE INTO expense_users VALUES('8e752e9a-3027-4b1a-a225-b270076a7ea9','9e10c58f-adb3-419b-9e20-f4fbb075661e');
 INSERT OR IGNORE INTO expense_users VALUES('52c30029-c0a2-4e17-b830-607c0c0393b8','9e10c58f-adb3-419b-9e20-f4fbb075661e');
