@@ -23,7 +23,6 @@ RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-a
 FROM scratch
 ARG IMAGE_TAG
 ENV IMAGE_TAG=$IMAGE_TAG
-RUN echo "Building with IMAGE_TAG=$IMAGE_TAG"
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
