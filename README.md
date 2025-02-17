@@ -8,15 +8,11 @@ Stack:
 You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot is not enabled.
 
 ### 🦭 Run in a container 
+All varialbes are optional and these are the defaults:
 ```sh
 podman container run -p 3535:3535 \
   --env STORAGE_ENGINE="sqlite" \
-  --env LOAD_SAMPLE_DATA="true" \
-  --env MYSQL_USER="expuser" \
-  --env MYSQL_PASS="11223344" \
-  --env MYSQL_PORT="3306" \
-  --env MYSQL_HOST="localhost" \
-  --env MYSQL_DB="expdb" \
+  --env LOAD_SAMPLE_DATA="true" \  
   --env SQLITE_PATH="./exp.db" \
   --env JSON_STORAGE_PATH="./users.json" \
   --env CORS_ALLOWLIST="*" \
