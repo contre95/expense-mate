@@ -93,7 +93,7 @@ jobs:
           podman image build --build-arg IMAGE_TAG=beta-$version -t contre95/expense-mate:beta .
           podman push contre95/expense-mate:beta
 
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
+          if [[ "${{ github.event.pull_request.head.ref }}" == release/* ]]; then
             # Tag and push the :latest tag
             podman tag contre95/expense-mate:$version contre95/expense-mate:latest
             podman push contre95/expense-mate:latest
