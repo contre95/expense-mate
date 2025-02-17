@@ -49,17 +49,16 @@ func main() {
 	}
 	// SQL storage
 	var db *sql.DB
-	defer db.Close()
-	switch os.Getenv("STORAGE_ENGINE") {
-	case "mysql":
+	dbEngine := os.Getenv("STORAGE_ENGINE")
+	if dbEngine == "mysql" {
 		mysqlUser := os.Getenv("MYSQL_USER") + ":" + os.Getenv("MYSQL_PASS")
 		mysqlUrl := "@tcp(" + os.Getenv("MYSQL_HOST") + ":" + os.Getenv("MYSQL_PORT") + ")/" + os.Getenv("MYSQL_DB") + "?parseTime=true"
 		db, err = sql.Open("mysql", mysqlUser+mysqlUrl)
-		defer db.Close()
 		if err != nil {
 			initLogger.Err("Error instanciating mysql: %v", err)
 			return
 		}
+		defer db.Close()
 		statements := strings.Split(sqlstorage.MySQLTables, ";")
 		for _, stmt := range statements {
 			stmt = strings.TrimSpace(stmt)
@@ -79,13 +78,17 @@ func main() {
 			}
 		}
 		initLogger.Info("MySQL storage initialized on %s", mysqlUrl)
-	case "sqlite":
+	} else if dbEngine == "sqlite" || dbEngine == "" {
 		path := os.Getenv("SQLITE_PATH")
+		if path == "" {
+			path = "./exp.db"
+		}
 		db, err = sql.Open("sqlite3", path)
 		if err != nil {
 			initLogger.Err("Error instanciating sqlite3: %v", err)
 			return
 		}
+		defer db.Close()
 		_, err = db.Exec(sqlstorage.SQLiteTables)
 		if err != nil {
 			initLogger.Err("Error creating sqlite tables: %v", err)
@@ -98,8 +101,8 @@ func main() {
 				return
 			}
 		}
-		initLogger.Info("SQLte storage initialized on %s", path)
-	case "":
+		initLogger.Info("SQLite storage initialized on %s", path)
+	} else {
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
 	}
 	expensesStorage := sqlstorage.NewExpensesStorage(db)
@@ -107,6 +110,9 @@ func main() {
 
 	// JSON Storage
 	path := os.Getenv("JSON_STORAGE_PATH")
+	if path == "" {
+		path = "./users.json"
+	}
 	if path == "" {
 		initLogger.Err("No storage set. Please set STORAGE_ENGINE variabel")
 		return
