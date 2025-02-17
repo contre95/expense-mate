@@ -9,9 +9,27 @@ You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot
 
 ### 🦭 Run in a container 
 ```sh
+podman container run -p 3535:3535 \
+  --env STORAGE_ENGINE="sqlite" \
+  --env LOAD_SAMPLE_DATA="true" \
+  --env MYSQL_USER="expuser" \
+  --env MYSQL_PASS="11223344" \
+  --env MYSQL_PORT="3306" \
+  --env MYSQL_HOST="localhost" \
+  --env MYSQL_DB="expdb" \
+  --env SQLITE_PATH="./exp.db" \
+  --env JSON_STORAGE_PATH="./users.json" \
+  --env CORS_ALLOWLIST="*" \
+  --env TELEGRAM_APITOKEN="" \
+  --env VISION_MODEL="llama3.2-vision:11b-instruct-q4_K_M" \
+  --env TEXT_MODEL="llama3.2:3b-instruct-q6_K" \
+  --env OLLAMA_ENDPOINT="http://localhost:11434/api/generate" \
+  contre95/expense-mate:latest
+```
+Alternatively
+```sh
   cp .env.example .env
   podman container run -p 3535:3535 --env-file=.env contre95/expense-mate
-
 ```
 
 ### 💻 Run locally
