@@ -20,7 +20,7 @@ RUN go build -trimpath -ldflags='-s -w -extldflags "-static"' -o /app/expenses-a
 
 
 # Stage 2: Run the Go binary in a minimal environment
-FROM golang:alpine
+FROM scratch
 ARG IMAGE_TAG
 ENV IMAGE_TAG=$IMAGE_TAG
 # Set the Current Working Directory inside the container
