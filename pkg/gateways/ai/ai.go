@@ -25,7 +25,7 @@ type ExpenseGuess struct {
 	Product string
 }
 
-const OUTPUT_PROMPT = `1. OUTPUT FORMAT:
+var OUTPUT_PROMPT = `1. OUTPUT FORMAT:
 {
     "transactions": [
         {
@@ -51,6 +51,9 @@ const OUTPUT_PROMPT = `1. OUTPUT FORMAT:
 - If amount contains symbols, REMOVE THEM (keep numeric value)
 - If amount is negative, CONVERT TO POSITIVE
 Convert this transaction text to JSON. Follow ALL rules EXACTLY.
+    ` + "If no specific year is specified, assume is " + time.Now().Format("2006") + `
+    ` + "If no specific year is specified, assume is " + time.Now().Format("Jan") + `
+    ` + "Treat today as day " + time.Now().Format("02") + "and yesterday as " + time.Now().Add(-24*time.Hour).Format("02") + `
 GOOD EXAMPLE:
 {
     "transactions": [
@@ -79,9 +82,6 @@ func (g *Guesser) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
 		"model": g.visionModel,
 		"prompt": `You are an image to json model converter of bank transaction screenshots. Convert the information to JSON following these STRICT RULES:
     ` + OUTPUT_PROMPT + `
-    ` + "If no specific year is specified, assume is " + time.Now().Format("2006") + `
-    ` + "If no specific year is specified, assume is " + time.Now().Format("Jan") + `
-    ` + "Treat today as day " + time.Now().Format("02") + "and yesterday as " + time.Now().Add(-24*time.Hour).Format("02") + `
 Current screenshot to parse:`,
 		"stream": false,
 		"format": "json",
