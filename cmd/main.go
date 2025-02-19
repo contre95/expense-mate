@@ -205,8 +205,9 @@ func main() {
 			return
 		}
 	}()
+	// Shutdown
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	_ = <-c
+	<-c
 	_ = fiberApp.Shutdown()
 }
