@@ -6,7 +6,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
-	"expenses-app/pkg/gateways/ai"
+	"expenses-app/pkg/gateways/ollama"
 	"fmt"
 	"strings"
 	"sync"
@@ -52,7 +52,7 @@ type BotContext struct {
 	Querying     *querying.Service
 	Managing     *managing.Service
 	Analyzing    *analyzing.Service
-	AI           *ai.Guesser
+	AI           *ollama.OllamaAPI
 	AllowedUsers *[]string
 	Mu           *sync.Mutex
 }

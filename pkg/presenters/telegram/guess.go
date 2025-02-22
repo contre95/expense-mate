@@ -5,7 +5,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/tracking"
 	"expenses-app/pkg/domain/expense"
-	"expenses-app/pkg/gateways/ai"
+	"expenses-app/pkg/gateways/ollama"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,12 +13,19 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, m *managing.Service, aiGuesser *ai.Guesser, username string) {
+func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, m *managing.Service, o *ollama.OllamaAPI, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
-
+	running, ollamaErr := o.IsRunning()
+	if !running || ollamaErr != nil {
+		msg = tgbotapi.NewMessage(chatID, "⚠️ Failed to reach 🦙 Ollama.")
+		tbot.Send(msg)
+		return
+	}
 	// Handle initial request
-	msg = tgbotapi.NewMessage(chatID, "📸 Send a receipt photo or paste transaction text")
+	msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("ℹ️ Info: Timeout set to ⏱️%.2f minutes", o.TimeOut.Minutes()))
+	tbot.Send(msg)
+	msg = tgbotapi.NewMessage(chatID, "Send a receipt photo 📸 or write 💬 the expense.")
 	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	tbot.Send(msg)
 
@@ -56,7 +63,7 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 	}
 
 	// Process input
-	var guesses []ai.ExpenseGuess
+	var guesses []ollama.ExpenseGuess
 	var err error
 
 	if u.Message.Photo != nil {
@@ -81,10 +88,10 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 			return
 		}
 
-		guesses, err = aiGuesser.GuessFromImage(imageData)
+		guesses, err = o.GuessFromImage(imageData)
 	} else {
 		// Process text
-		guesses, err = aiGuesser.GuessFromText(u.Message.Text)
+		guesses, err = o.GuessFromText(u.Message.Text)
 	}
 
 	if err != nil {
