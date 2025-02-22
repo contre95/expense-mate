@@ -15,8 +15,10 @@ import (
 	"expenses-app/pkg/presenters/rest/ui"
 	"expenses-app/pkg/presenters/telegram"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -197,9 +199,15 @@ func main() {
 		},
 	})
 	rest.MapRoutes(fiberApp, &healthChecker, &manager, &tracker, &querier, &analyzer)
-	if err := rest.Run(fiberApp, 3535); err != nil {
-		initLogger.Err("Error instanciating mysql: %v", err)
-		return
-	}
-
+	go func() {
+		if err := rest.Run(fiberApp, 3535); err != nil {
+			initLogger.Err("Error instanciating mysql: %v", err)
+			return
+		}
+	}()
+	// Shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
+	_ = fiberApp.Shutdown()
 }
