@@ -1,4 +1,4 @@
-package ai
+package ollama
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type Guesser struct {
+type OllamaAPI struct {
 	apiURL      string
 	client      *http.Client
 	txtModel    string
@@ -67,8 +67,8 @@ GOOD EXAMPLE:
 
 // const TEXT_MODEL = "llama3.2:3b-instruct-q4_K_M"
 
-func NewGuesser(txtModel, imgModel, ollamaEndpoint string) (*Guesser, error) {
-	return &Guesser{
+func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string) (*OllamaAPI, error) {
+	return &OllamaAPI{
 		apiURL:      ollamaEndpoint,
 		client:      &http.Client{Timeout: 300 * time.Second},
 		txtModel:    txtModel,
@@ -76,10 +76,10 @@ func NewGuesser(txtModel, imgModel, ollamaEndpoint string) (*Guesser, error) {
 	}, nil
 }
 
-func (g *Guesser) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
+func (o *OllamaAPI) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
 	encodedImage := base64.StdEncoding.EncodeToString(imageData)
 	requestBody := map[string]interface{}{
-		"model": g.visionModel,
+		"model": o.visionModel,
 		"prompt": `You are an image to json model converter of bank transaction screenshots. Convert the information to JSON following these STRICT RULES:
     ` + OUTPUT_PROMPT + `
 Current screenshot to parse:`,
@@ -92,22 +92,22 @@ Current screenshot to parse:`,
 		return nil, fmt.Errorf("error encoding request: %v", err)
 	}
 
-	resp, err := g.sendRequest(jsonBody)
+	resp, err := o.sendRequest(jsonBody)
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Printf("\n\n%s\n\n", resp)
-	return g.parseAndConvertTransactions(resp)
+	return o.parseAndConvertTransactions(resp)
 }
 
-func (g *Guesser) GuessFromText(text string) ([]ExpenseGuess, error) {
+func (o *OllamaAPI) GuessFromText(text string) ([]ExpenseGuess, error) {
 	prompt := fmt.Sprintf(`You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
 You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
     `+OUTPUT_PROMPT+`
 Current  text to parse: %s`, text)
 	requestBody := map[string]interface{}{
-		"model":  g.txtModel,
+		"model":  o.txtModel,
 		"prompt": prompt,
 		"stream": false,
 		"format": "json",
@@ -118,23 +118,23 @@ Current  text to parse: %s`, text)
 		return nil, fmt.Errorf("error encoding request: %v", err)
 	}
 
-	resp, err := g.sendRequest(jsonBody)
+	resp, err := o.sendRequest(jsonBody)
 	if err != nil {
 		return nil, err
 	}
 
-	return g.parseAndConvertTransactions(resp)
+	return o.parseAndConvertTransactions(resp)
 }
 
 // Shared request handling
-func (g *Guesser) sendRequest(jsonBody []byte) (string, error) {
-	req, err := http.NewRequestWithContext(context.Background(), "POST", g.apiURL, bytes.NewBuffer(jsonBody))
+func (o *OllamaAPI) sendRequest(jsonBody []byte) (string, error) {
+	req, err := http.NewRequestWithContext(context.Background(), "POST", o.apiURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := g.client.Do(req)
+	resp, err := o.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("API request failed: %v", err)
 	}
@@ -155,7 +155,7 @@ func (g *Guesser) sendRequest(jsonBody []byte) (string, error) {
 }
 
 // Shared parsing logic
-func (g *Guesser) parseAndConvertTransactions(responseStr string) ([]ExpenseGuess, error) {
+func (o *OllamaAPI) parseAndConvertTransactions(responseStr string) ([]ExpenseGuess, error) {
 	fmt.Printf("\n%s\n", responseStr)
 	var response struct {
 		Transactions []struct {

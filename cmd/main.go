@@ -7,8 +7,8 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
-	"expenses-app/pkg/gateways/ai"
 	"expenses-app/pkg/gateways/logger"
+	"expenses-app/pkg/gateways/ollama"
 	"expenses-app/pkg/gateways/storage/jsonstorage"
 	"expenses-app/pkg/gateways/storage/sqlstorage"
 	"expenses-app/pkg/presenters/rest"
@@ -45,7 +45,7 @@ func main() {
 	txtModel := os.Getenv("TEXT_MODEL")
 	visioModel := os.Getenv("VISION_MODEL")
 	ollamaURL := os.Getenv("OLLAMA_ENDPOINT")
-	guesser, err := ai.NewGuesser(txtModel, visioModel, ollamaURL)
+	guesser, err := ollama.NewOllamaAPI(txtModel, visioModel, ollamaURL)
 	if err != nil {
 		initLogger.Err("failed to create guesser: %v", err)
 	}
