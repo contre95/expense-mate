@@ -19,6 +19,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -45,7 +46,7 @@ func main() {
 	txtModel := os.Getenv("TEXT_MODEL")
 	visioModel := os.Getenv("VISION_MODEL")
 	ollamaURL := os.Getenv("OLLAMA_ENDPOINT")
-	guesser, err := ollama.NewOllamaAPI(txtModel, visioModel, ollamaURL)
+	guesser, err := ollama.NewOllamaAPI(txtModel, visioModel, ollamaURL, 300*time.Second)
 	if err != nil {
 		initLogger.Err("failed to create guesser: %v", err)
 	}

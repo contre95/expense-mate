@@ -23,7 +23,9 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 		return
 	}
 	// Handle initial request
-	msg = tgbotapi.NewMessage(chatID, "📸 Send a receipt photo or paste transaction text")
+	msg = tgbotapi.NewMessage(chatID, fmt.Sprintf("ℹ️ Info: Timeout set to ⏱️%.2f minutes", o.TimeOut.Minutes()))
+	tbot.Send(msg)
+	msg = tgbotapi.NewMessage(chatID, "Send a receipt photo 📸 or write 💬 the expense.")
 	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	tbot.Send(msg)
 

@@ -12,6 +12,7 @@ import (
 )
 
 type OllamaAPI struct {
+	TimeOut     time.Duration
 	apiURL      string
 	client      *http.Client
 	txtModel    string
@@ -67,10 +68,11 @@ GOOD EXAMPLE:
 
 // const TEXT_MODEL = "llama3.2:3b-instruct-q4_K_M"
 
-func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string) (*OllamaAPI, error) {
+func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string, to time.Duration) (*OllamaAPI, error) {
 	return &OllamaAPI{
+		TimeOut:     to,
+		client:      &http.Client{Timeout: to},
 		apiURL:      ollamaEndpoint,
-		client:      &http.Client{Timeout: 300 * time.Second},
 		txtModel:    txtModel,
 		visionModel: imgModel,
 	}, nil
