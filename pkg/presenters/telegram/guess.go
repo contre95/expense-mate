@@ -16,7 +16,12 @@ import (
 func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, m *managing.Service, o *ollama.OllamaAPI, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
-
+	running, ollamaErr := o.IsRunning()
+	if !running || ollamaErr != nil {
+		msg = tgbotapi.NewMessage(chatID, "⚠️ Failed to reach 🦙 Ollama.")
+		tbot.Send(msg)
+		return
+	}
 	// Handle initial request
 	msg = tgbotapi.NewMessage(chatID, "📸 Send a receipt photo or paste transaction text")
 	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)

@@ -76,59 +76,23 @@ func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string) (*OllamaAPI, error)
 	}, nil
 }
 
-func (o *OllamaAPI) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
-	encodedImage := base64.StdEncoding.EncodeToString(imageData)
-	requestBody := map[string]interface{}{
-		"model": o.visionModel,
-		"prompt": `You are an image to json model converter of bank transaction screenshots. Convert the information to JSON following these STRICT RULES:
-    ` + OUTPUT_PROMPT + `
-Current screenshot to parse:`,
-		"stream": false,
-		"format": "json",
-		"images": []string{encodedImage},
-	}
-	jsonBody, err := json.Marshal(requestBody)
+func (o *OllamaAPI) IsRunning() (bool, error) {
+	healthEndpoint := o.apiURL
+	resp, err := o.client.Get(healthEndpoint)
 	if err != nil {
-		return nil, fmt.Errorf("error encoding request: %v", err)
+		fmt.Printf("failed to reach Ollama API: %s\n", err)
+		return false, fmt.Errorf("failed to reach Ollama API: %w", err)
 	}
-
-	resp, err := o.sendRequest(jsonBody)
-	if err != nil {
-		return nil, err
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("Ollama API returned non-OK status: %s", resp.Status)
 	}
-
-	fmt.Printf("\n\n%s\n\n", resp)
-	return o.parseAndConvertTransactions(resp)
-}
-
-func (o *OllamaAPI) GuessFromText(text string) ([]ExpenseGuess, error) {
-	prompt := fmt.Sprintf(`You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
-You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
-    `+OUTPUT_PROMPT+`
-Current  text to parse: %s`, text)
-	requestBody := map[string]interface{}{
-		"model":  o.txtModel,
-		"prompt": prompt,
-		"stream": false,
-		"format": "json",
-	}
-
-	jsonBody, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, fmt.Errorf("error encoding request: %v", err)
-	}
-
-	resp, err := o.sendRequest(jsonBody)
-	if err != nil {
-		return nil, err
-	}
-
-	return o.parseAndConvertTransactions(resp)
+	return true, nil
 }
 
 // Shared request handling
 func (o *OllamaAPI) sendRequest(jsonBody []byte) (string, error) {
-	req, err := http.NewRequestWithContext(context.Background(), "POST", o.apiURL, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(context.Background(), "POST", o.apiURL+"/api/generate", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating request: %v", err)
 	}
@@ -211,4 +175,62 @@ func parseDate(dateStr string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("error parsing date %q: no matching format found", dateStr)
+}
+
+func (o *OllamaAPI) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
+	ollamaHealthy, err := o.IsRunning()
+	if !ollamaHealthy || err != nil {
+		return nil, fmt.Errorf("Ollama not running. %s", err)
+	}
+	encodedImage := base64.StdEncoding.EncodeToString(imageData)
+	requestBody := map[string]interface{}{
+		"model": o.visionModel,
+		"prompt": `You are an image to json model converter of bank transaction screenshots. Convert the information to JSON following these STRICT RULES:
+    ` + OUTPUT_PROMPT + `
+Current screenshot to parse:`,
+		"stream": false,
+		"format": "json",
+		"images": []string{encodedImage},
+	}
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("error encoding request: %v", err)
+	}
+
+	resp, err := o.sendRequest(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("\n\n%s\n\n", resp)
+	return o.parseAndConvertTransactions(resp)
+}
+
+func (o *OllamaAPI) GuessFromText(text string) ([]ExpenseGuess, error) {
+	ollamaHealthy, err := o.IsRunning()
+	if !ollamaHealthy || err != nil {
+		return nil, fmt.Errorf("Ollama not running. %s", err)
+	}
+	prompt := fmt.Sprintf(`You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
+You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
+    `+OUTPUT_PROMPT+`
+Current  text to parse: %s`, text)
+	requestBody := map[string]interface{}{
+		"model":  o.txtModel,
+		"prompt": prompt,
+		"stream": false,
+		"format": "json",
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("error encoding request: %v", err)
+	}
+
+	resp, err := o.sendRequest(jsonBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.parseAndConvertTransactions(resp)
 }
