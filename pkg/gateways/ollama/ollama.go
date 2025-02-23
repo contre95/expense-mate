@@ -79,14 +79,27 @@ func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string, to time.Duration) (
 }
 
 // TODO: Implement context cancelation for different timeout.
-func (o *OllamaAPI) IsRunning() (bool, error) {
+
+func (o *OllamaAPI) IsRunning(ctx context.Context) (bool, error) {
 	healthEndpoint := o.apiURL
-	resp, err := o.client.Get(healthEndpoint)
+	// Create a new HTTP request with the provided context
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, healthEndpoint, nil)
 	if err != nil {
-		fmt.Printf("failed to reach Ollama API: %s\n", err)
+		return false, fmt.Errorf("failed to create request: %w", err)
+	}
+	// Perform the HTTP request
+	resp, err := o.client.Do(req)
+	if err != nil {
+		// Check if the error is due to context cancellation or timeout
+		if ctx.Err() == context.Canceled {
+			return false, fmt.Errorf("request canceled: %w", ctx.Err())
+		} else if ctx.Err() == context.DeadlineExceeded {
+			return false, fmt.Errorf("request timed out: %w", ctx.Err())
+		}
 		return false, fmt.Errorf("failed to reach Ollama API: %w", err)
 	}
 	defer resp.Body.Close()
+	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("Ollama API returned non-OK status: %s", resp.Status)
 	}
@@ -181,10 +194,6 @@ func parseDate(dateStr string) (time.Time, error) {
 }
 
 func (o *OllamaAPI) GuessFromImage(imageData []byte) ([]ExpenseGuess, error) {
-	ollamaHealthy, err := o.IsRunning()
-	if !ollamaHealthy || err != nil {
-		return nil, fmt.Errorf("Ollama not running. %s", err)
-	}
 	encodedImage := base64.StdEncoding.EncodeToString(imageData)
 	requestBody := map[string]interface{}{
 		"model": o.visionModel,
@@ -210,10 +219,6 @@ Current screenshot to parse:`,
 }
 
 func (o *OllamaAPI) GuessFromText(text string) ([]ExpenseGuess, error) {
-	ollamaHealthy, err := o.IsRunning()
-	if !ollamaHealthy || err != nil {
-		return nil, fmt.Errorf("Ollama not running. %s", err)
-	}
 	prompt := fmt.Sprintf(`You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
 You are a text to JSON model converter of bank transaction descriptions. Convert the information to JSON following these STRICT RULES:
     `+OUTPUT_PROMPT+`
