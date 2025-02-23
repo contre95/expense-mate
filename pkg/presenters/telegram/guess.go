@@ -2,6 +2,7 @@
 package telegram
 
 import (
+	"context"
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/tracking"
 	"expenses-app/pkg/domain/expense"
@@ -9,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -16,8 +18,12 @@ import (
 func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, m *managing.Service, o *ollama.OllamaAPI, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
-	running, ollamaErr := o.IsRunning()
+	ctx := context.TODO() // Add context to function
+	octx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	running, ollamaErr := o.IsRunning(octx)
 	if !running || ollamaErr != nil {
+		fmt.Println(ollamaErr)
 		msg = tgbotapi.NewMessage(chatID, "⚠️ Failed to reach 🦙 Ollama.")
 		tbot.Send(msg)
 		return
