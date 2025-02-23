@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   tag-and-release:
-    if: github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'fix/') || startsWith(github.event.pull_request.head.ref, 'feature/') || startsWith(github.event.pull_request.head.ref, 'release/' || startsWith(github.event.pull_request.head.ref, 'dev/'))
+    if: github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'fix/') || startsWith(github.event.pull_request.head.ref, 'feature/') || startsWith(github.event.pull_request.head.ref, 'release/' || startsWith(github.event.pull_request.head.ref, 'dev/')))
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.set_tag.outputs.tag_name }}
