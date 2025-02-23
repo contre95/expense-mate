@@ -78,6 +78,7 @@ func NewOllamaAPI(txtModel, imgModel, ollamaEndpoint string, to time.Duration) (
 	}, nil
 }
 
+// TODO: Implement context cancelation for different timeout.
 func (o *OllamaAPI) IsRunning() (bool, error) {
 	healthEndpoint := o.apiURL
 	resp, err := o.client.Get(healthEndpoint)
