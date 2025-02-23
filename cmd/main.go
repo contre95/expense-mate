@@ -120,7 +120,10 @@ func main() {
 			return
 		}
 
-		tgbot := telegram.Bot{API: bot}
+		tgbot := telegram.Bot{
+			API:    bot,
+			Config: cfg,
+		}
 		ctx := telegram.BotContext{
 			BotAPI:       bot,
 			Health:       &healthChecker,
