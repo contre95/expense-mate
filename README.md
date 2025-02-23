@@ -2,7 +2,7 @@
 ExpenseMate is an expense tracking app with a handy Telegram bot and a front end.
 Stack:
  * Go
- * MySQL or SQLite
+ * SQLite
  * HTMX
 
 You can try a [demo](https://demo1.contre.io), it resets every 3hs. Telegram bot is not enabled.
