@@ -6,43 +6,41 @@ metadata:
     io.podman.annotations.infra.name: "expense-mate-infra"
   labels:
     app: Expense Mate
-    purpose: Expense tracker
+    purpose: Tracking expenses
     category: Tools
     language: Go
-    content: N/A
 spec:
   containers:
-  - name: expense-mate
-    image: docker.io/contre95/expense-mate:latest
-    ports:
-      - containerPort: 3535
-        hostPort: 3535
-    env:
-      - name: STORAGE_ENGINE
-        value: "sqlite"
-      - name: LOAD_SAMPLE_DATA
-        value: "false"
-      - name: SQLITE_PATH
-        value: "/data/exp.db"
-      - name: VISION_MODEL
-        value: llama3.2-vision:11b-instruct-q4_K_M
-      - name: TEXT_MODEL
-        value: llama3.2:3b-instruct-q6_K 
-      - name: OLLAMA_ENDPOINT
-        value: http://localhost:11434
-      - name: JSON_STORAGE_PATH
-        value: "/data/users.json"
-      - name: TELEGRAM_APITOKEN
-        valueFrom:
-          secretKeyRef:
-            name: bots-secrets
-            key: mate-telegram-token
-    volumeMounts:
-      - mountPath: /data
-        name: data
+    - name: expense-mate
+      image: docker.io/contre95/expense-mate:beta
+      ports:
+        - containerPort: 3535
+          hostPort: 3535
+      env:
+        - name: STORAGE_ENGINE
+          value: "sqlite"
+        - name: LOAD_SAMPLE_DATA
+          value: "false"
+        - name: SQLITE_PATH
+          value: "/data/exp.db"
+        - name: VISION_MODEL
+          value: llama3.2-vision:11b-instruct-q4_K_M
+        - name: TEXT_MODEL
+          value: llama3.2:3b-instruct-q6_K
+        - name: OLLAMA_ENDPOINT
+          value: http://localhost:11434
+        - name: JSON_STORAGE_PATH
+          value: "/data/users.json"
+        # - name: TELEGRAM_APITOKEN
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: bots-secrets
+        #       key: expensemate-telegram-token
+      volumeMounts:
+        - mountPath: /data
+          name: data
   volumes:
     - name: data
       hostPath:
-        path: ${DISK_SSD_A}/data/expense-mate
+        path: ./data
         type: DirectoryOrCreate
-
