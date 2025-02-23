@@ -1,12 +1,9 @@
 module expenses-app
 
-go 1.22.7
-
-toolchain go1.23.4
+go 1.24.0
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/gofiber/jwt/v3 v3.3.4
