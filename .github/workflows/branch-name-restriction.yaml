@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Validate source branch name
         run: |
-          ALLOWED_PATTERNS=("^feature/" "^fix/" "^release/" "^develop/" "^dev/")
+          ALLOWED_PATTERNS=("^feature/" "^fix/" "^release/" "^dev/")
           BRANCH_NAME="${{ github.head_ref }}"
           for PATTERN in "${ALLOWED_PATTERNS[@]}"; do
             if [[ "$BRANCH_NAME" =~ $PATTERN ]]; then
