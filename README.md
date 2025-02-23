@@ -26,6 +26,10 @@ Alternatively
   cp .env.example .env
   podman container run -p 3535:3535 --env-file=.env contre95/expense-mate
 ```
+or 
+```sh
+  podman play kube pod.yml --replace
+```
 
 ### 💻 Run locally
 All configurations are set in the `.env` file and passed as environment variables. You can access from [localhost:8080](http://localhost:8080)
