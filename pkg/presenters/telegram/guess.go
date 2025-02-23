@@ -34,7 +34,6 @@ func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.Update
 	msg = tgbotapi.NewMessage(chatID, "Send a receipt photo 📸 or write 💬 the expense.")
 	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	tbot.Send(msg)
-
 	// Wait for response
 	for {
 	waitForInput:

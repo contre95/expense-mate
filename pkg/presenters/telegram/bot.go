@@ -6,6 +6,7 @@ import (
 	"expenses-app/pkg/app/managing"
 	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
+	"expenses-app/pkg/config"
 	"expenses-app/pkg/gateways/ollama"
 	"fmt"
 	"strings"
@@ -43,6 +44,7 @@ type UserSession struct {
 type Bot struct {
 	API          *tgbotapi.BotAPI
 	AllowedUsers []string
+	Config       *config.Config
 }
 
 type BotContext struct {
@@ -129,11 +131,20 @@ func (b *Bot) checkUpdates(done chan bool, updates tgbotapi.UpdatesChannel, ctx 
 				ctx.BotAPI.Send(msg)
 				continue
 			}
+			fmt.Println(b.Config.OllamaEnabled())
 			switch update.Message.Text {
 			case "/categories":
 				listCategories(ctx.BotAPI, &update, ctx.Querying)
 			case "/ai":
-				guessExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Managing, ctx.AI, update.Message.Chat.UserName)
+				if b.Config.OllamaEnabled() {
+					guessExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Managing, ctx.AI, update.Message.Chat.UserName)
+				} else {
+					fmt.Println("🦙 Ollama API currently not enabled.")
+					omsg := tgbotapi.NewMessage(update.Message.Chat.ID, "🦙 Ollama API currently not enabled. Please refer to the [docs](https://chat.deepseek.com) to enable it.")
+					omsg.ParseMode = tgbotapi.ModeMarkdown
+					omsg.DisableWebPagePreview = true
+					ctx.BotAPI.Send(omsg)
+				}
 			case "/new":
 				createExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Querying, ctx.Managing)
 			case "/help":
