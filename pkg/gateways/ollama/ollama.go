@@ -53,7 +53,7 @@ var OUTPUT_PROMPT = `1. OUTPUT FORMAT:
 - If amount is negative, CONVERT TO POSITIVE
 Convert this transaction text to JSON. Follow ALL rules EXACTLY.
     ` + "If no specific year is specified, assume is " + time.Now().Format("2006") + `
-    ` + "If no specific year is specified, assume is " + time.Now().Format("Jan") + `
+    ` + "If no specific month is specified, assume is " + time.Now().Format("Jan") + `
     ` + "Treat today as day " + time.Now().Format("02") + "and yesterday as " + time.Now().Add(-24*time.Hour).Format("02") + `
 GOOD EXAMPLE:
 {
