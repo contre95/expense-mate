@@ -61,3 +61,4 @@ func (c *Config) OllamaConfig() (endpoint, textModel, visionModel string, timeou
 		c.Ollama.VisionModel,
 		c.Ollama.Timeout
 }
+
