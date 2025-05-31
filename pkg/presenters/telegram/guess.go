@@ -4,18 +4,19 @@ package telegram
 import (
 	"context"
 	"expenses-app/pkg/app/managing"
+	"expenses-app/pkg/app/querying"
 	"expenses-app/pkg/app/tracking"
-	"expenses-app/pkg/domain/expense"
 	"expenses-app/pkg/gateways/ollama"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, m *managing.Service, o *ollama.OllamaAPI, username string) {
+func guessExpense(tbot *tgbotapi.BotAPI, u *tgbotapi.Update, uc *tgbotapi.UpdatesChannel, t *tracking.Service, q *querying.Service, m *managing.Service, o *ollama.OllamaAPI, username string) {
 	chatID := u.Message.Chat.ID
 	var msg tgbotapi.MessageConfig
 	ctx := context.TODO() // Add context to function
@@ -138,11 +139,13 @@ Product: %s
 Save this expense?`,
 			guess.Shop, guess.Amount, guess.Date.Format("2006-01-02"), guess.Product)
 
+		// First prompt: Save, Skip, or Change Date
 		msg := tgbotapi.NewMessage(chatID, expenseText)
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton("Skip"),
+				tgbotapi.NewKeyboardButton("Change Date"),
 				tgbotapi.NewKeyboardButton("Save"),
 			),
 		)
@@ -150,6 +153,7 @@ Save this expense?`,
 
 		// Wait for user response
 		var response string
+		var newDate time.Time
 		for response == "" {
 			update := <-*uc
 			if update.Message == nil || update.Message.Chat.UserName != username {
@@ -164,19 +168,103 @@ Save this expense?`,
 			}
 
 			switch update.Message.Text {
-			case "Save", "Skip":
+			case "Save", "Skip", "Change Date":
 				response = update.Message.Text
 			default:
-				tbot.Send(tgbotapi.NewMessage(chatID, "⚠️ Please choose Skip or Save"))
+				tbot.Send(tgbotapi.NewMessage(chatID, "⚠️ Please choose Skip, Change Date, or Save"))
 			}
 		}
 
-		// Handle response
+		// Handle Change Date
+		if response == "Change Date" {
+			msg = tgbotapi.NewMessage(chatID, "📅 Enter the new date (YYYY-MM-DD, 'today', or 'yesterday'):")
+			tbot.Send(msg)
+
+			for {
+				update := <-*uc
+				if update.Message == nil || update.Message.Chat.UserName != username {
+					continue
+				}
+
+				if update.Message.Text == "/cancel" {
+					msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
+					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					tbot.Send(msg)
+					return
+				}
+
+				input := strings.ToLower(update.Message.Text)
+				if input == "today" || input == "now" {
+					newDate = time.Now()
+					break
+				} else if input == "y" || input == "yesterday" {
+					newDate = time.Now().Add(-24 * time.Hour)
+					break
+				} else {
+					var err error
+					newDate, err = time.Parse("2006-01-02", update.Message.Text)
+					if err == nil {
+						break
+					}
+					tbot.Send(tgbotapi.NewMessage(chatID, "⚠️ Invalid date format. Use YYYY-MM-DD, 'today', or 'yesterday'"))
+				}
+			}
+			response = "Save" // Proceed to save after changing date
+		}
+
+		// Handle Save (with or without date change)
 		if response == "Save" {
+			// Fetch available categories
+			categoryResp, err := q.CategoryQuerier.Query()
+			if err != nil {
+				tbot.Send(tgbotapi.NewMessage(chatID, fmt.Sprintf("❌ Failed to fetch categories: %v", err)))
+				return
+			}
+
+			// Prepare category selection
+			var categoryNames []string
+			var reverseMap = map[string]string{}
+			for id, name := range categoryResp.Categories {
+				reverseMap[name] = id
+				categoryNames = append(categoryNames, name)
+			}
+
+			// Prompt for category
+			msg = tgbotapi.NewMessage(chatID, "📂 Choose a category:")
+			msg.ReplyMarkup = getKeyboardMarkup(categoryNames, 3)
+			tbot.Send(msg)
+
+			var categoryID string
+			for {
+				update := <-*uc
+				if update.Message == nil || update.Message.Chat.UserName != username {
+					continue
+				}
+
+				if update.Message.Text == "/cancel" {
+					msg = tgbotapi.NewMessage(chatID, "🚫 Expense guessing canceled")
+					msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+					tbot.Send(msg)
+					return
+				}
+
+				if id, exists := reverseMap[update.Message.Text]; exists {
+					categoryID = id
+					break
+				}
+				tbot.Send(tgbotapi.NewMessage(chatID, "⚠️ Invalid category. Please choose from the list."))
+			}
+
+			// Prepare the expense request
+			dateToUse := guess.Date
+			if !newDate.IsZero() {
+				dateToUse = newDate
+			}
+
 			req := tracking.CreateExpenseReq{
 				Amount:     guess.Amount,
-				CategoryID: expense.UnknownCategoryID,
-				Date:       guess.Date,
+				CategoryID: categoryID,
+				Date:       dateToUse,
 				Product:    guess.Product,
 				Shop:       guess.Shop,
 				UsersID:    []string{userID},

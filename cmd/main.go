@@ -124,7 +124,7 @@ func main() {
 			API:    bot,
 			Config: cfg,
 		}
-		ctx := telegram.BotContext{
+		ctx := telegram.BotConfig{
 			BotAPI:       bot,
 			Health:       &healthChecker,
 			Tracking:     &tracker,
