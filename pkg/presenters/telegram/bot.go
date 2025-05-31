@@ -47,7 +47,7 @@ type Bot struct {
 	Config       *config.Config
 }
 
-type BotContext struct {
+type BotConfig struct {
 	BotAPI       *tgbotapi.BotAPI
 	Health       *health.Service
 	Tracking     *tracking.Service
@@ -60,20 +60,20 @@ type BotContext struct {
 }
 
 // Run starts the Telegram expense bot
-func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, ctx BotContext) {
+func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, cfg BotConfig) {
 	tbot.Debug = true
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := tbot.GetUpdatesChan(u)
 
-	err := b.updateAllowedUsers(ctx.Managing)
+	err := b.updateAllowedUsers(cfg.Managing)
 	if err != nil {
 		fmt.Println("Couldn't get allowed users:", err)
 		return
 	}
 
 	done := make(chan bool)
-	go b.checkUpdates(done, updates, ctx)
+	go b.checkUpdates(done, updates, cfg)
 
 	running := true
 	for command := range receives {
@@ -97,7 +97,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, ctx BotCon
 			}
 			fmt.Println("Go routine stopped")
 		case "updateAllowedUsers":
-			err := b.updateAllowedUsers(ctx.Managing)
+			err := b.updateAllowedUsers(cfg.Managing)
 			if err != nil {
 				fmt.Println("Couldn't update allowed users:", err)
 			} else {
@@ -111,7 +111,7 @@ func (b *Bot) Run(tbot *tgbotapi.BotAPI, receives, sends chan string, ctx BotCon
 	}
 }
 
-func (b *Bot) checkUpdates(done chan bool, updates tgbotapi.UpdatesChannel, ctx BotContext) {
+func (b *Bot) checkUpdates(done chan bool, updates tgbotapi.UpdatesChannel, botUseCases BotConfig) {
 	fmt.Println("Go routine started")
 	for {
 		select {
@@ -122,41 +122,41 @@ func (b *Bot) checkUpdates(done chan bool, updates tgbotapi.UpdatesChannel, ctx 
 			if update.Message == nil {
 				continue
 			}
-			if !isAllowed(update.Message.Chat.UserName, ctx.AllowedUsers, ctx.Mu) {
+			if !isAllowed(update.Message.Chat.UserName, botUseCases.AllowedUsers, botUseCases.Mu) {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, NOT_ALLOWED_MSG)
 				if strings.Contains(update.Message.Text, ANSWER) {
 					msg = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Yeah.. it's a '%s', %s. But I'm still not letting you in.", ANSWER, update.Message.Chat.UserName))
 				}
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-				ctx.BotAPI.Send(msg)
+				botUseCases.BotAPI.Send(msg)
 				continue
 			}
 			fmt.Println(b.Config.OllamaEnabled())
 			switch update.Message.Text {
 			case "/categories":
-				listCategories(ctx.BotAPI, &update, ctx.Querying)
+				listCategories(botUseCases.BotAPI, &update, botUseCases.Querying)
 			case "/ai":
 				if b.Config.OllamaEnabled() {
-					guessExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Managing, ctx.AI, update.Message.Chat.UserName)
+					guessExpense(botUseCases.BotAPI, &update, &updates, botUseCases.Tracking, botUseCases.Querying, botUseCases.Managing, botUseCases.AI, update.Message.Chat.UserName)
 				} else {
 					fmt.Println("🦙 Ollama API currently not enabled.")
 					omsg := tgbotapi.NewMessage(update.Message.Chat.ID, "🦙 Ollama API currently not enabled. Please refer to the [docs](https://chat.deepseek.com) to enable it.")
 					omsg.ParseMode = tgbotapi.ModeMarkdown
 					omsg.DisableWebPagePreview = true
-					ctx.BotAPI.Send(omsg)
+					botUseCases.BotAPI.Send(omsg)
 				}
 			case "/new":
-				createExpense(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Querying, ctx.Managing)
+				createExpense(botUseCases.BotAPI, &update, &updates, botUseCases.Tracking, botUseCases.Querying, botUseCases.Managing)
 			case "/help":
-				ctx.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				botUseCases.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			case "/summary":
-				lastMonthSummary(ctx.BotAPI, &update, ctx.Analyzing)
+				lastMonthSummary(botUseCases.BotAPI, &update, botUseCases.Analyzing)
 			case "/unknown":
-				categorizeUnknowns(ctx.BotAPI, &update, &updates, ctx.Tracking, ctx.Querying, ctx.Managing, update.Message.Chat.UserName)
+				categorizeUnknowns(botUseCases.BotAPI, &update, &updates, botUseCases.Tracking, botUseCases.Querying, botUseCases.Managing, update.Message.Chat.UserName)
 			case "/ping":
-				b.ping(update, ctx.Health)
+				b.ping(update, botUseCases.Health)
 			default:
-				ctx.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
+				botUseCases.BotAPI.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HELP_MSG))
 			}
 		}
 	}
